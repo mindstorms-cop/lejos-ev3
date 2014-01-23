@@ -219,7 +219,7 @@ public class EV3MotorPort extends EV3IOPort implements TachoMotorPort {
          */
         protected void subMove(int t1, int t2, int t3, float c1, float c2, float c3, float v1, float v2, float a1, float a3, int sl, int st, int ts, boolean hold)
         {
-            //System.out.println("t1 " + t1 + " t2 " + t2 + " t3 " + t3 + " c1 " + c1 + " c2 " + c2 + " c3 " + c3 + " v1 " + v1 + " v2 " + v2 + " a1 " + a1 + " a3 " + a3);
+            System.out.println("t1 " + t1 + " t2 " + t2 + " t3 " + t3 + " c1 " + c1 + " c2 " + c2 + " c3 " + c3 + " v1 " + v1 + " v2 " + v2 + " a1 " + a1 + " a3 " + a3);
             // convert units from /s (i.e 100ms) to be per 1024ms to allow div to be performed by shift
 //System.out.println("c1 " + c1 + " c2 " + c2 + " ts " + ts + " ct " + System.currentTimeMillis());
             v1 = (v1/1000f)*1024f;
@@ -272,63 +272,76 @@ public class EV3MotorPort extends EV3IOPort implements TachoMotorPort {
             float v = speed;
             float a1 = acc;
             float a3 = acc;
-            //System.out.println("limit " + limit + " len " + len + " speed " + speed + " hold " + hold);
+            System.out.println("pos " + curPos + " curVel " + curVel + " limit " + limit + " len " + len + " speed " + speed + " hold " + hold);
             if (speed == 0.0)
             {
-                //System.out.println("Stop");
-                if (curVel < 0)
-                    a3 = -a3;
                 // Stop case
-                float s3 = (u2)/(2*a3);
-                int t3 = (int)(1000*(2*(s3))/(curVel));
+                System.out.println("Stop");
+                if (curVel < 0)
+                    a3 = -acc;
+                int t3 = (int)(1000*(curVel/a3));
                 subMove(0, 0, t3, 0, 0, curCnt, 0, curVel, 0, -a3, stallLimit, stallTime, curTime, hold);
                 return;
             }
-            if (len < 0)
-            {
-                a3 = -a3;
-                a1 = -a1;
-                v = -speed;
-            }
             float v2 = v*v;
-            if (v2 < u2)
-                a1 = -a1;
             if (Math.abs(limit) == NO_LIMIT)
             {
-                //System.out.println("Unlimited move");
-                // Run forever, no need for deceleration
+                // Run forever, no need for deceleration at end
+                System.out.println("Unlimited move");
+                if (limit < 0)
+                    v = -speed;
+                if (v < curVel)
+                    a1 = -acc;
                 float s1 = (v2 - u2)/(2*a1);
-                int t1 = (int)(1000*(2*s1)/(curVel + v));
+                int t1 = (int)(1000*(v - curVel)/a1);
                 subMove(t1, NO_LIMIT, 0, curCnt, curCnt + s1, 0, curVel, v, a1, 0, stallLimit, stallTime, curTime, hold);
                 return;
             }
+            // We have some sort of target position work out how to get to it
+            if (curVel != 0)
+            {
+                // we need to work out if we can get to the end point in a single move
+                if (curVel < 0)
+                    a3 = -acc;
+                float s3 = (u2)/(2*a3);
+                System.out.println("stop pos " + s3);
+                // if final position is less than stop pos we need to reverse direction
+                if (len < s3)
+                    v = -speed;       
+            }
+            else
+                if (len < 0)
+                    v = -speed;
+            if (v < curVel)
+                a1 = -acc;
+            if (v < 0)
+                a3 = -acc;
             float vmax2 = a3*len + u2/2;
             if (vmax2 <= v2)
             {
-                //System.out.println("Triangle");
-                v = (float) Math.sqrt(vmax2);
-                if (len < 0)
-                {
-                    v = -v;
-                }
+                System.out.println("Triangle");
+                if (v < 0)
+                    v = -(float) Math.sqrt(vmax2);
+                else
+                    v = (float) Math.sqrt(vmax2);
                 // triangular move
                 float s1 = (vmax2 - u2)/(2*a1);
-                int t1 = (int)(1000*(2*s1)/(curVel + v));
+                int t1 = (int)(1000*(v - curVel)/a1);
                 int t2 = t1;
-                int t3 = t2 + (int)(1000*(2*(len-s1))/(v));
+                int t3 = t2 + (int)(1000*(v/a3));
                 subMove(t1, t2, t3, curCnt, 0, s1+curCnt, curVel, v, a1, -a3, stallLimit, stallTime, curTime, hold);         
             }
             else
             {
-                //System.out.println("Trap");
+                System.out.println("Trap");
                 // trapezoid move
                 float s1 = (v2 - u2)/(2*a1);
                 float s3 = (v2)/(2*a3);
                 float s2 = len - s1 - s3;
                 //System.out.println("s1 " + s1 + " s2 " + s2 + " s3 " + s3);
-                int t1 = (int)(1000*(2*s1)/(curVel + v));
+                int t1 = (int)(1000*(v - curVel)/a1);
                 int t2 = t1 + (int)(1000*s2/v);
-                int t3 = t2 + (int)(1000*(2*(s3))/(v));
+                int t3 = t2 + (int)(1000*(v/a3));
                 //System.out.println("v " + v + " a1 " + a1 + " a3 " + (-a3));
                 subMove(t1, t2, t3, curCnt, curCnt+s1, curCnt+s1+s2, curVel, v, a1, -a3, stallLimit, stallTime, curTime, hold);
 
@@ -380,6 +393,13 @@ public class EV3MotorPort extends EV3IOPort implements TachoMotorPort {
                 return;
 //System.out.println("New command " + speed + " ismoving " + getRegState());
             updateVelocityAndPosition();
+            if (isMoving())
+                // moving already, blend moves
+                genMove(curVelocity, curPosition, curCnt, curTime, speed, acceleration, limit, hold);
+            else
+                // not moving, start a new move
+                genMove(curVelocity, curPosition, curCnt, 0, speed, acceleration, limit, hold);
+            /*   
             // Stop moves always happen now
             if (speed == 0)
                 genMove(curVelocity, curPosition, curCnt, curTime, 0, acceleration, NO_LIMIT, hold);
@@ -396,6 +416,8 @@ public class EV3MotorPort extends EV3IOPort implements TachoMotorPort {
                 // acceleration request.
                 float moveLen = limit - curPosition;
                 float acc = (curVelocity*curVelocity)/(2*(moveLen));
+                genMove(curVelocity, curPosition, curCnt, curTime, speed, acceleration, limit, hold);
+/*
                 if (moveLen*curVelocity >= 0 && Math.abs(acc) <= acceleration)
                     genMove(curVelocity, curPosition, curCnt, curTime, speed, acceleration, limit, hold);
                 else
@@ -406,7 +428,8 @@ public class EV3MotorPort extends EV3IOPort implements TachoMotorPort {
                     updateVelocityAndPosition();
                     genMove(curVelocity, curPosition, curCnt, 0, speed, acceleration, limit, hold);
                 }
-            }
+                
+            }*/
             if (waitComplete)
                 waitComplete();
         }
