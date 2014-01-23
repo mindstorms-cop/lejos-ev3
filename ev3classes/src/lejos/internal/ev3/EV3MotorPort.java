@@ -317,14 +317,15 @@ public class EV3MotorPort extends EV3IOPort implements TachoMotorPort {
             if (v < 0)
                 a3 = -acc;
             float vmax2 = a3*len + u2/2;
+            // can we ever reach target velocity?
             if (vmax2 <= v2)
             {
+                // triangular move
                 System.out.println("Triangle");
                 if (v < 0)
                     v = -(float) Math.sqrt(vmax2);
                 else
                     v = (float) Math.sqrt(vmax2);
-                // triangular move
                 float s1 = (vmax2 - u2)/(2*a1);
                 int t1 = (int)(1000*(v - curVel)/a1);
                 int t2 = t1;
@@ -333,8 +334,8 @@ public class EV3MotorPort extends EV3IOPort implements TachoMotorPort {
             }
             else
             {
-                System.out.println("Trap");
                 // trapezoid move
+                System.out.println("Trap");
                 float s1 = (v2 - u2)/(2*a1);
                 float s3 = (v2)/(2*a3);
                 float s2 = len - s1 - s3;
@@ -391,7 +392,7 @@ public class EV3MotorPort extends EV3IOPort implements TachoMotorPort {
             // Ignore repeated commands
             if (!waitComplete && (speed == curSpeed) && (curAcc == acceleration) && (curLimit == limit) && (curHold == hold))
                 return;
-//System.out.println("New command " + speed + " ismoving " + getRegState());
+            
             updateVelocityAndPosition();
             if (isMoving())
                 // moving already, blend moves
@@ -399,37 +400,7 @@ public class EV3MotorPort extends EV3IOPort implements TachoMotorPort {
             else
                 // not moving, start a new move
                 genMove(curVelocity, curPosition, curCnt, 0, speed, acceleration, limit, hold);
-            /*   
-            // Stop moves always happen now
-            if (speed == 0)
-                genMove(curVelocity, curPosition, curCnt, curTime, 0, acceleration, NO_LIMIT, hold);
-            else if (!isMoving())
-            {
-                // not moving so we start a new move
-                genMove(curVelocity, curPosition, curCnt, 0, speed, acceleration, limit, hold);
-            }
-            else
-            {
-                // we already have a move in progress can we modify it to match
-                // the new request? We must ensure that the new move is in the
-                // same direction and that any stop will not exceed the current
-                // acceleration request.
-                float moveLen = limit - curPosition;
-                float acc = (curVelocity*curVelocity)/(2*(moveLen));
-                genMove(curVelocity, curPosition, curCnt, curTime, speed, acceleration, limit, hold);
-/*
-                if (moveLen*curVelocity >= 0 && Math.abs(acc) <= acceleration)
-                    genMove(curVelocity, curPosition, curCnt, curTime, speed, acceleration, limit, hold);
-                else
-                {
-                    //System.out.println("gen two moves");
-                    genMove(curVelocity, curPosition, curCnt, curTime, 0, acceleration, NO_LIMIT, true);
-                    waitComplete();
-                    updateVelocityAndPosition();
-                    genMove(curVelocity, curPosition, curCnt, 0, speed, acceleration, limit, hold);
-                }
-                
-            }*/
+
             if (waitComplete)
                 waitComplete();
         }
