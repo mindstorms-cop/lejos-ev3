@@ -50,6 +50,7 @@ public class EV3MotorPort extends EV3IOPort implements TachoMotorPort {
     public class EV3MotorRegulatorKernelModule extends Thread implements MotorRegulator
     {
         static final int NO_LIMIT = 0x7fffffff;
+        // Regulator move states
         static final int ST_IDLE = 0;
         static final int ST_STALL = 1;
         static final int ST_HOLD = 2;
@@ -237,9 +238,8 @@ public class EV3MotorPort extends EV3IOPort implements TachoMotorPort {
          */
         protected void subMove(int t1, int t2, int t3, float c1, float c2, float c3, float v1, float v2, float a1, float a3, int sl, int st, int ts, boolean hold)
         {
-            System.out.println("t1 " + t1 + " t2 " + t2 + " t3 " + t3 + " c1 " + c1 + " c2 " + c2 + " c3 " + c3 + " v1 " + v1 + " v2 " + v2 + " a1 " + a1 + " a3 " + a3);
+            //System.out.println("t1 " + t1 + " t2 " + t2 + " t3 " + t3 + " c1 " + c1 + " c2 " + c2 + " c3 " + c3 + " v1 " + v1 + " v2 " + v2 + " a1 " + a1 + " a3 " + a3);
             // convert units from /s (i.e 100ms) to be per 1024ms to allow div to be performed by shift
-//System.out.println("c1 " + c1 + " c2 " + c2 + " ts " + ts + " ct " + System.currentTimeMillis());
             v1 = (v1/1000f)*1024f;
             v2 = (v2/1000f)*1024f;
             a1 = (((a1/1000f)*1024f)/1000f)*1024f;
@@ -261,38 +261,20 @@ public class EV3MotorPort extends EV3IOPort implements TachoMotorPort {
             setVal(regCmd, 46, st);
             setVal(regCmd, 50, ts);
             regCmd[54] = (byte) (hold ? 1 : 0);
-            
-            if ((v1 != 0 || v2 != 0) && !started)
+            // if we are going to move then tell any listeners.
+            if ((v1 != 0 || v2 != 0) && ts == 0)
                 startNewMove();
-            
+
+            // Get ready to start the move.
+            // TODO: Understand what is going on with shared memory. There is something
+            // very odd here. We always set the regulator state in the kernel module
+            // however for some reason the shared memory as we see it does not always
+            // reflect the change straight away. The following code waits for the change
+            // to show up!
             int ser = curSerial;
             pwm.write(regCmd, 55);
-            int scnt = 0;
             while (getSerialNo() == ser)
-                scnt++;
-            if (scnt > 0)
-                System.out.println("had to wait " + scnt);
-            if (v1 != 0 || v2 != 0)
-            {
-                int cnt = 0;
-                while (this.getRegState() < ST_START)
-                    cnt++;
-                if (cnt > 0)
-                    System.out.println("state wrong cnt " + cnt + " val " + curState);
-            }
-            if ((v1 != 0 || v2 != 0) && !isMoving())
-            {
-                int cnt = 0;
-                while (this.getRegState() < ST_START)
-                    cnt++;
-                //Sound.beep();
-                System.out.println("tmp state " + curState + " cnt " + cnt);
-                System.out.println("not moving after start " + this.getRegState());
-                Delay.msDelay(10);
-                System.out.println("new state " + this.getRegState());
-                System.exit(0);
-            }
-                
+                Thread.yield();
         }
         
         /**
@@ -309,7 +291,7 @@ public class EV3MotorPort extends EV3IOPort implements TachoMotorPort {
          */
         protected void genMove(float curVel, float curPos, float curCnt, int curTime, float speed, float acc, int limit, boolean hold)
         {
-            // Save current move params
+            // Save current move params we may need these to adjust speed etc.
             curSpeed = speed;
             curHold = hold;
             curAcc = acc;
@@ -319,11 +301,11 @@ public class EV3MotorPort extends EV3IOPort implements TachoMotorPort {
             float v = speed;
             float a1 = acc;
             float a3 = acc;
-            System.out.println("pos " + curPos + " curVel " + curVel + " limit " + limit + " len " + len + " speed " + speed + " hold " + hold);
+            //System.out.println("pos " + curPos + " curVel " + curVel + " limit " + limit + " len " + len + " speed " + speed + " hold " + hold);
             if (speed == 0.0)
             {
                 // Stop case
-                System.out.println("Stop");
+                //System.out.println("Stop");
                 if (curVel < 0)
                     a3 = -acc;
                 int t3 = (int)(1000*(curVel/a3));
@@ -334,7 +316,7 @@ public class EV3MotorPort extends EV3IOPort implements TachoMotorPort {
             if (Math.abs(limit) == NO_LIMIT)
             {
                 // Run forever, no need for deceleration at end
-                System.out.println("Unlimited move");
+                //System.out.println("Unlimited move");
                 if (limit < 0)
                     v = -speed;
                 if (v < curVel)
@@ -351,8 +333,7 @@ public class EV3MotorPort extends EV3IOPort implements TachoMotorPort {
                 if (curVel < 0)
                     a3 = -acc;
                 float s3 = (u2)/(2*a3);
-                System.out.println("stop pos " + s3);
-                //Sound.beep();
+                //System.out.println("stop pos " + s3);
                 // if final position is less than stop pos we need to reverse direction
                 if (len < s3)
                     v = -speed;
@@ -370,7 +351,7 @@ public class EV3MotorPort extends EV3IOPort implements TachoMotorPort {
             if (vmax2 <= v2)
             {
                 // triangular move
-                System.out.println("Triangle");
+                //System.out.println("Triangle");
                 if (vmax2 < 0) System.out.println("vmax -ve" + vmax2);
                 if (v < 0)
                     v = -(float) Math.sqrt(vmax2);
@@ -385,7 +366,7 @@ public class EV3MotorPort extends EV3IOPort implements TachoMotorPort {
             else
             {
                 // trapezoid move
-                System.out.println("Trap");
+                //System.out.println("Trap");
                 float s1 = (v2 - u2)/(2*a1);
                 float s3 = (v2)/(2*a3);
                 float s2 = len - s1 - s3;
@@ -417,12 +398,6 @@ public class EV3MotorPort extends EV3IOPort implements TachoMotorPort {
                     pos = newPos;
                 }
             }*/
-            if(!isMoving())
-            {
-                //Sound.beep();
-                System.out.println("already stopped " + curState);
-                System.exit(0);
-            }
             while(isMoving())
                 Delay.msDelay(1);
             checkComplete();                
@@ -461,7 +436,14 @@ public class EV3MotorPort extends EV3IOPort implements TachoMotorPort {
             if (waitComplete)
                 waitComplete();
         }
-        
+
+        /**
+         * The kernel module updates the shared memory serial number every time
+         * a new command is issued. We can use this to wait for the shared mem
+         * to be updated. We must do this to ensure that we do not see a move
+         * as complete when in fact it may not have even started yet!
+         * @return
+         */
         protected int getSerialNo()
         {
             synchronized(ibuf)
@@ -470,7 +452,8 @@ public class EV3MotorPort extends EV3IOPort implements TachoMotorPort {
             }
         }
         /**
-         * Grabs the current state of the regulator
+         * Grabs the current state of the regulator and stores in class
+         * member variables
          */
         protected void updateRegulatorInformation()
         {
@@ -481,9 +464,16 @@ public class EV3MotorPort extends EV3IOPort implements TachoMotorPort {
             int time2;
             int state;
             int serial;
-            int loopCnt = 0;
+            //int loopCnt = 0;
             // Check to make sure time is not changed during read
             do {
+                // TODO: sort out how to handle JIT issues and shared memory.
+                // The problem is that when the JIT compiler gets to work 
+                // it ends up seeing the shared memory as a simple array.
+                // It is not possible to label this array as volatile so
+                // some of the following code is seen as invariant and so can be
+                // optimised. Adding the synchronized section seems to help
+                // with this but it is not ideal. Need a better solution if possible
                 synchronized(ibuf)
                 {
                     time = ibuf.get(port*8 + 5);
@@ -492,16 +482,14 @@ public class EV3MotorPort extends EV3IOPort implements TachoMotorPort {
                     vel = ibuf.get(port*8+2);
                     state = ibuf.get(port*8 + 4);
                     serial = ibuf.get(port*8 + 7);
-                    loopCnt++;
+                    //loopCnt++;
                     time2 = ibuf.get(port*8 + 6);
                 }
             } while (time != time2);
-            if (loopCnt > 1) System.out.println("loop cnt " + loopCnt + " time " + time);
+            //if (loopCnt > 1) System.out.println("loop cnt " + loopCnt + " time " + time);
             curCnt = FixToFloat(cnt);
             curPosition = curCnt + baseCnt;
             curVelocity = (FixToFloat(vel)/1024)*1000;
-            //if (curTime == time)
-                //System.out.println("t " + time + " cc " + curCnt + " s " + serial);
             curTime = time;
             curState = state;
             curSerial = serial;
@@ -527,7 +515,11 @@ public class EV3MotorPort extends EV3IOPort implements TachoMotorPort {
             return curVelocity;
         }
 
-        
+
+        /**
+         * return the regulator state.
+         * @return
+         */
         protected int getRegState()
         {
             synchronized(ibuf)
