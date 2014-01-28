@@ -4,6 +4,8 @@
     <property name="source.dir"     value="src"/>
     <property name="class.dir"      value="build"/>
     <property name="jar.dir"        value="."/>
+    <property name="docs.dir"	    value="docs"/>
+    <property name="docs.exclude"   value="**/internal/**"/>
     <property name="lejos.home"     value="/home/root/lejos"/>
     <property name="ev3.host"       value="10.0.1.1"/>
     <property name="jna.dir"        value="lib"/>
@@ -39,4 +41,24 @@
     	    <fileset file="${jar.dir}/${ant.project.name}.jar"/>
     	</scp>
     </target>
+    
+    <!-- generate javadocs -->
+	<target name="docs" description="generate javadocs">
+		<delete dir="${docs.dir}" />
+		<mkdir dir="${docs.dir}" />
+		<javadoc
+			destdir="${docs.dir}"
+			encoding="utf-8"
+			charset="utf-8"
+			locale="en_US"
+			author="true"
+			access="protected"
+			windowtitle="leJOS EV3 API documentation"
+			verbose="false"
+		>
+			<arg value="-quiet"/>
+			
+			<packageset dir="${source.dir}" excludes="${docs.exclude}" />
+		</javadoc>
+	</target>
 </project>
