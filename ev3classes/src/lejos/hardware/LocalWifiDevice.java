@@ -27,7 +27,7 @@ public class LocalWifiDevice {
 		System.arraycopy(ifName.getBytes(), 0, reqP.ifname, 0, ifName.length());
 		
 		int ret = wifi.ioctl(NativeWifi.SIOCSIWSCAN , reqP);
-		
+		System.out.println("ioctl ret is " + ret);
 		if (ret >= 0) {
 			// Wait for the results
 			
@@ -42,9 +42,26 @@ public class LocalWifiDevice {
 			// Get the results
 		
 			System.out.println("Getting the results");
-			
-			ret = wifi.ioctl(NativeWifi.SIOCGIWSCAN , reqP);
-			
+			// wait for the results to be available
+			// TODO: This code is very ugly. We should probably either use
+			// exceptions or use return codes not both!
+			ret = -1;
+			int retryCnt = 30;
+			while (ret < 0)
+			{
+			    try {
+			        ret = wifi.ioctl(NativeWifi.SIOCGIWSCAN , reqP);
+			    } catch (RuntimeException e)
+			    {
+			        if (retryCnt <= 0)
+			            throw e;
+			        ret = -1;
+			        System.out.println("Got error retry cnt " + retryCnt);
+			    }
+			    Delay.msDelay(1000);
+			    retryCnt--;
+			}
+			System.out.println("get results returns " + ret);
 			if (ret >= 0) {
 				int offset= 0;
 				while(offset < reqP.point.length) {
