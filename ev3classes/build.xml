@@ -59,6 +59,7 @@
 			<arg value="-quiet"/>
 			
 			<packageset dir="${source.dir}" excludes="${docs.exclude}" />
+			<classpath refid="libraries.path"/>
 		</javadoc>
 	</target>
 </project>
