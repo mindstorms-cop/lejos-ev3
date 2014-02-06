@@ -1,4 +1,7 @@
 /**
- * Access to third party and legacy RCX sensors, motors and other hardware not included in the Lego NXT kit
+ * Access to all the sensors that are supported on the EV3. 
+ * 
+ * Devices that are not strictly sensors are in lejos.hardwae.devie.
+ * 
  */
 package lejos.hardware.sensor;
