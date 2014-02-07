@@ -1,6 +1,7 @@
 package lejos.internal.io;
 
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Properties;
@@ -14,7 +15,9 @@ public class Settings {
 		try {
             //load a properties file
 			props.load(new FileInputStream(PROPS_FILE));
-		} catch (IOException e) {
+		} catch (FileNotFoundException e) {
+			// Ignore 
+	    } catch (IOException e) {
 			System.err.println("Failed to load properties file");
 		}
 	}
