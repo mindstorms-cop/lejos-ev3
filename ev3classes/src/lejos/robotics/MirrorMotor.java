@@ -157,6 +157,11 @@ public class MirrorMotor implements RegulatedMotor, RegulatedMotorListener {
 	public void rotationStopped(RegulatedMotor motor, int tachoCount,
 			boolean stalled, long timeStamp) {
 		if(regListener!=null)
-				regListener.rotationStarted(this, -tachoCount, stalled, timeStamp);
+				regListener.rotationStopped(this, -tachoCount, stalled, timeStamp);
+	}
+
+	@Override
+	public void close() {
+		regMotor.close();
 	}
 }

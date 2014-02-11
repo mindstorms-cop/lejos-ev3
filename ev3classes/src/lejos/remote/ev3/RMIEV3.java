@@ -19,7 +19,7 @@ public interface RMIEV3 extends Remote {
 	
 	public RMISampleProvider createSampleProvider(String portName, String sensorName, String modeName) throws RemoteException;
 	
-	public RMIRegulatedMotor createRegulatedMotor(String portName) throws RemoteException;
+	public RMIRegulatedMotor createRegulatedMotor(String portName, char motorType) throws RemoteException;
 
 	public RMIAudio getAudio() throws RemoteException;
 	

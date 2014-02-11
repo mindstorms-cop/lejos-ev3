@@ -1080,6 +1080,8 @@ public class GraphicStartup implements Menu {
             System.out.println("Waiting for process to die");;
             p.waitFor();
             System.out.println("Program finished");
+      	    // Turn the LED off, in case left on
+      	    Button.LEDPattern(0);
             lcd.setAutoRefresh(true);
             lcd.clear();
             lcd.refresh();

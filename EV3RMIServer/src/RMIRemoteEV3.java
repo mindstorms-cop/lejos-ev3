@@ -60,7 +60,7 @@ public class RMIRemoteEV3 extends UnicastRemoteObject implements RMIEV3 {
 	}
 
 	@Override
-	public RMIRegulatedMotor createRegulatedMotor(String portName)
+	public RMIRegulatedMotor createRegulatedMotor(String portName, char motorType)
 			throws RemoteException {
 		// TODO Auto-generated method stub
 		return null;
