@@ -197,4 +197,10 @@ public class MMXRegulatedMotor extends MMXMotor implements RegulatedMotor {
 	public int getLimitAngle() {
 		return mmx.doCommand(NXTMMX.CMD_GETLIMITANGLE, 0, channel);
 	}
+
+
+	@Override
+	public void close() {
+		// Do nothing
+	}
 }

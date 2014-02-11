@@ -18,7 +18,7 @@ public class RemoteSample {
 		
 		sp.close();
 
-		RMIRegulatedMotor m = ev3.createRegulatedMotor("A");
+		RMIRegulatedMotor m = ev3.createRegulatedMotor("A", 'L');
 		
 		m.rotate(360);
 		m.rotate(-360);

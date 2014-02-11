@@ -166,4 +166,9 @@ public class TetrixRegulatedMotor extends TetrixEncoderMotor implements Regulate
     public void setAcceleration(int acceleration) {
     	// do nothing
     }
+
+	@Override
+	public void close() {
+		// Do nothing
+	}
 }

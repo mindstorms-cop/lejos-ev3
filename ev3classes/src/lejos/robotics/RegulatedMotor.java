@@ -1,5 +1,7 @@
 package lejos.robotics;
 
+import java.io.Closeable;
+
 /*
  * WARNING: THIS CLASS IS SHARED BETWEEN THE classes AND pccomms PROJECTS.
  * DO NOT EDIT THE VERSION IN pccomms AS IT WILL BE OVERWRITTEN WHEN THE PROJECT IS BUILT.
@@ -11,7 +13,7 @@ package lejos.robotics;
  * 
  * @author dsturze
  */
-public interface RegulatedMotor extends BaseMotor, Tachometer {
+public interface RegulatedMotor extends BaseMotor, Tachometer, Closeable {
 
   /**
    * Adds a listener object that will be notified when rotation has started or stopped 
@@ -143,4 +145,10 @@ public interface RegulatedMotor extends BaseMotor, Tachometer {
     * @param acceleration
     */
    void setAcceleration(int acceleration);
+   
+   /**
+    * Close the port, the port can not be used after this call.
+    */
+   public void close();
+   
 }

@@ -1,20 +1,40 @@
 package lejos.remote.ev3;
 
+import java.io.IOException;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 
 import lejos.hardware.ev3.LocalEV3;
 import lejos.hardware.motor.NXTRegulatedMotor;
-import lejos.robotics.RegulatedMotorListener;
+import lejos.hardware.motor.EV3LargeRegulatedMotor;
+import lejos.hardware.motor.EV3MediumRegulatedMotor;
+import lejos.hardware.motor.MindsensorsGlideWheelMRegulatedMotor;
+import lejos.hardware.port.Port;
 
+import lejos.robotics.RegulatedMotor;
+import lejos.robotics.RegulatedMotorListener;
 
 public class RMIRemoteRegulatedMotor extends UnicastRemoteObject implements RMIRegulatedMotor {
 	private static final long serialVersionUID = 224060987071610845L;
-	private NXTRegulatedMotor motor;
+	private RegulatedMotor motor;
 	
-	protected RMIRemoteRegulatedMotor(String portName) throws RemoteException {
+	protected RMIRemoteRegulatedMotor(String portName, char motorType) throws RemoteException {
 		super(0);
-		motor = new NXTRegulatedMotor(LocalEV3.get().getPort(portName));
+		Port p = LocalEV3.get().getPort(portName);
+		switch (motorType) {
+		case 'N':
+			motor = new NXTRegulatedMotor(p);
+			break;
+		case 'L':
+			motor = new EV3LargeRegulatedMotor(p);
+			break;
+		case 'M':
+			motor = new EV3MediumRegulatedMotor(p);
+			break;
+		case 'G':
+			motor = new MindsensorsGlideWheelMRegulatedMotor(p);
+		}
+			
 	}
 
 	@Override
@@ -102,7 +122,7 @@ public class RMIRemoteRegulatedMotor extends UnicastRemoteObject implements RMIR
 
 	@Override
 	public void close() throws RemoteException {
-		motor.close();	
+		motor.close();
 	}
 
 	@Override
