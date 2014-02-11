@@ -75,12 +75,12 @@ public class EV3Audio implements Audio
             Delay.msDelay(50);
             playTone(600, 150);
         }
-        else if (aCode == DESCENDING)// C major arpeggio
+        else if (aCode == ASCENDING)// C major arpeggio
             for (int i = 4; i < 8; i++)
             {
                 playTone(C2 * i / 4, 100);
             }
-        else if (aCode == ASCENDING)
+        else if (aCode == DESCENDING)
             for (int i = 7; i > 3; i--)
             {
                 playTone(C2 * i / 4, 100);
