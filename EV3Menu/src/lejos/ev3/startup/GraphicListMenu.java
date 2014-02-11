@@ -28,7 +28,7 @@ public class GraphicListMenu extends GraphicMenu {
 	protected void display(int selectedIndex, int animateDirection, int tick)
 	{
 		if(_title != null) {
-			System.out.println("Displaying title " + _title + " on line " + (_topRow - 1));
+			//System.out.println("Displaying title " + _title + " on line " + (_topRow - 1));
 			lcd.drawString(_title, 0, _topRow - 1);
 		}
 			
