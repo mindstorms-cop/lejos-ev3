@@ -33,9 +33,6 @@ public class SimpleGPS extends Thread {
 	protected VTGSentence vtgSentence;
 	protected GSASentence gsaSentence;
 	
-	//Data
-	private StringTokenizer tokenizer;
-	
 	// Security
 	private boolean close = false;
 	
@@ -293,6 +290,7 @@ public class SimpleGPS extends Thread {
 	public void run() {
 		while(!close) {
 			String s = getNextString();
+			System.out.println("Sentence: " + s);
 			
 			// Check if sentence is valid:
 			if (!s.startsWith("$"))
@@ -315,10 +313,11 @@ public class SimpleGPS extends Thread {
 				s = s.substring(0, p);
 				
 				//TODO StringTokenizer must not be used to parse NMEA sentences since it doesn't return empty tokens 
-				tokenizer = new StringTokenizer(s);
-				String token = tokenizer.nextToken();
+				
+				int comma = s.indexOf(',');
+				String token = s.substring(0,comma);
 
-				//System.out.println(token);
+				System.out.println("Token: " + token);
 									
 				sentenceChooser(token, s);
 				
