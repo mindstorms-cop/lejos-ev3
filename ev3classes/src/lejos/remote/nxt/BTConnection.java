@@ -37,7 +37,11 @@ public class BTConnection extends NXTConnection {
 					for(int i=0;i<len-2;i++) buf[i] = buffer[i+2];
 					return len-2;
 				} else return len;
-			} else return socket.read(buf, length);
+			} else {
+				int len = socket.read(buf, length);
+				System.out.println("Read Raw: " + len + ", requested: " + length);
+				return len;
+			}
 		} catch (LastErrorException e) {
 			int errno = e.getErrorCode();
 			System.out.println("Error code is " + errno);

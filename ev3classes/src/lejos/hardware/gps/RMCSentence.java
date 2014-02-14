@@ -1,7 +1,6 @@
 package lejos.hardware.gps;
 
 import java.util.NoSuchElementException;
-import java.util.StringTokenizer;
 
 /**
  * RMC is a Class designed to manage RMC Sentences from a NMEA GPS Receiver
@@ -115,33 +114,30 @@ public class RMCSentence extends NMEASentence{
 	}
 	
 	/**
-	 * Parase a RMC Sentence
+	 * Parse a RMC Sentence
 	 * 
 	 * $GPRMC,081836,A,3751.65,S,14507.36,E,000.0,360.0,130998,011.3,E*62
 	 */
 	public void parse (String sentence){
 		
 		//TODO StringTokenizer must not be used to parse NMEA sentences since it doesn't return empty tokens 
-		StringTokenizer st = new StringTokenizer(sentence,",");
-	
+		String[] parts = sentence.split(",");
 		try{
 			
 			//Extracting data from a GGA Sentence
 			
-			String part1 = st.nextToken();//NMEA header
-			String part2 = st.nextToken();//Fix taken at 12:35:19 UTC
-			String part3 = st.nextToken();//Status A=active or V=Void.
-			String part4 = st.nextToken();//Latitude 48 deg 07.038' N
-			String part5 = st.nextToken();//Latitude Direction
-			String part6 = st.nextToken();//Longitude 11 deg 31.000' E
-			String part7 = st.nextToken();//Longitude Direction
-			String part8 = st.nextToken();//Speed over the ground in knots
-			String part9 = st.nextToken();//Track angle in degrees True
-			String part10 = st.nextToken();//Date - 23rd of March 1994
-			String part11 = st.nextToken();//Magnetic Variation
-			String part12 = st.nextToken();//Magnetic Variation Letter
-			
-			st = null;
+			String part1 = parts[0];//NMEA header
+			String part2 = parts[1];//Fix taken at 12:35:19 UTC
+			String part3 = parts[2];//Status A=active or V=Void.
+			String part4 = parts[3];//Latitude 48 deg 07.038' N
+			String part5 = parts[4];//Latitude Direction
+			String part6 = parts[5];//Longitude 11 deg 31.000' E
+			String part7 = parts[6];//Longitude Direction
+			String part8 = parts[7];//Speed over the ground in knots
+			String part9 = parts[8];//Track angle in degrees True
+			String part10 = parts[9];//Date - 23rd of March 1994
+			String part11 = parts[10];//Magnetic Variation
+			String part12 = parts[11];//Magnetic Variation Letter
 			
 			//Processing RMC data
 			
