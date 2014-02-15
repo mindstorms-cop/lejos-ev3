@@ -132,20 +132,6 @@ public class GSASentence extends NMEASentence{
 			String part1 = st.nextToken();//NMEA header
 			String part2 = st.nextToken();//mode
 			String part3 = st.nextToken();//modeValue
-			/*
-			String part4 = st.nextToken();//sv1
-			String part5 = st.nextToken();//sv2
-			String part6 = st.nextToken();//sv3
-			String part7 = st.nextToken();//sv4
-			String part8 = st.nextToken();//sv5
-			String part9 = st.nextToken();//sv6
-			String part10 = st.nextToken();//sv7
-			String part11 = st.nextToken();//sv8
-			String part12 = st.nextToken();//sv9
-			String part13 = st.nextToken();//sv10
-			String part14 = st.nextToken();//sv11
-			String part15 = st.nextToken();//sv12
-			*/
 			
 			//Processing GSA data
 			

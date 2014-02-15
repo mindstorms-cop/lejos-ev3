@@ -16,7 +16,7 @@ package lejos.hardware.gps;
  * @author Juan Antonio Brenha Moral
  *
  */
-public class Satellite{
+public class Satellite {
 	private int PRN = 0;
 	private int elevation = 0;
 	private int azimuth = 0;
@@ -27,7 +27,7 @@ public class Satellite{
 	 * Constructors
 	 */
 
-	public Satellite(){
+	public Satellite() {
 		//
 	}
 	
@@ -40,7 +40,7 @@ public class Satellite{
 	 * @param a
 	 * @param s
 	 */
-	public Satellite(int p, int e, int a, int s){
+	public Satellite(int p, int e, int a, int s) {
 		PRN = p;
 		elevation = e;
 		azimuth = a;
@@ -65,7 +65,7 @@ public class Satellite{
 	 * GPS satellites.
 	 * 
 	 */
-	public int getPRN(){
+	public int getPRN() {
 		return PRN;
 	}
 	
@@ -74,7 +74,7 @@ public class Satellite{
 	 * 
 	 * @param p
 	 */
-	public void setPRN(int p){
+	public void setPRN(int p) {
 		PRN = p;
 	}
 
@@ -84,7 +84,7 @@ public class Satellite{
 	 * 
 	 * @return Elevation in degrees (0 to 90)
 	 */
-	public int getElevation(){
+	public int getElevation() {
 		return elevation;
 	}
 	
@@ -105,7 +105,7 @@ public class Satellite{
 	 * 
 	 * @param e
 	 */
-	public void setElevation(int e){
+	public void setElevation(int e) {
 		elevation = e;
 	}
 
@@ -117,7 +117,7 @@ public class Satellite{
 	 * @return Azimuth in degrees, 0 to 360.
 	 */
 	  
-	public int getAzimuth(){
+	public int getAzimuth() {
 		return azimuth;
 	}
 	
@@ -126,7 +126,7 @@ public class Satellite{
 	 * 
 	 * @param a
 	 */
-	public void setAzimuth(int a){
+	public void setAzimuth(int a) {
 		azimuth = a;
 	}
 
@@ -138,7 +138,7 @@ public class Satellite{
 	 * @return SNR value between 0 and 99.
 	 */
 	 
-	public int getSignalNoiseRatio(){
+	public int getSignalNoiseRatio() {
 		return SNR;
 	}
 	
@@ -147,7 +147,7 @@ public class Satellite{
 	 * 
 	 * @param s
 	 */
-	public void setSignalNoiseRatio(int s){
+	public void setSignalNoiseRatio(int s) {
 		SNR = s;
 	}
 }

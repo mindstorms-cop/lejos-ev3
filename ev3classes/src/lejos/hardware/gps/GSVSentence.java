@@ -1,7 +1,6 @@
 package lejos.hardware.gps;
 
 import java.util.NoSuchElementException;
-import java.util.StringTokenizer;
 
 /**
  * This class has been designed to manage a GSV Sentence
@@ -102,8 +101,8 @@ public class GSVSentence extends NMEASentence{
 	 */
 	public void parse(String sentence){
 
-		//TODO StringTokenizer must not be used to parse NMEA sentences since it doesn't return empty tokens 
-		StringTokenizer st = new StringTokenizer(sentence,",");
+		String[] parts = sentence.split(",");
+		
 		int PRN = 0;
 		int elevation = 0;
 		int azimuth = 0;
@@ -116,63 +115,40 @@ public class GSVSentence extends NMEASentence{
 			//TODO Length of GSV Sentence varies.
 			// See http://www.gpsinformation.org/dale/nmea.htm for an example
 			
-			String part0 = st.nextToken();//NMEA header
-			st.nextToken();//Number of messages
-			st.nextToken();//Message number
-			String part3 = st.nextToken();//
-			String part4 = st.nextToken();//
-			String part5 = st.nextToken();//
-			String part6 = st.nextToken();//
-			String part7 = st.nextToken();//
-			String part8 = st.nextToken();//
-			String part9 = st.nextToken();//
-			String part10 = st.nextToken();//
-			String part11 = st.nextToken();//
-			String part12 = st.nextToken();//
-			String part13 = st.nextToken();//
-			String part14 = st.nextToken();//
-			String part15 = st.nextToken();//
-			String part16 = st.nextToken();//
-			String part17 = st.nextToken();//
-			String part18 = st.nextToken();//
-			String part19 = st.nextToken();//
+			nmeaHeader = parts[0];
 			
-			st = null;
-			
-			nmeaHeader = part0;
-			
-			if(part3.length() == 0){
+			if (parts[3].length() == 0) {
 				satellitesInView = 0;
-			}else{
-				satellitesInView = Math.round(Float.parseFloat(part3));
+			} else {
+				satellitesInView = Math.round(Float.parseFloat(parts[3]));
 			}
 			
-			if(satellitesInView > 0){
+			if(satellitesInView > 0) {
 				
 				//SAT 1
 				
-				if(part4.length() == 0){
+				if(parts[4].length() == 0) {
 					PRN = 0;
-				}else{
-					PRN = Math.round(Float.parseFloat(part4));
+				} else{
+					PRN = Math.round(Float.parseFloat(parts[4]));
 				}
 
-				if(part5.length() == 0){
+				if(parts[5].length() == 0) {
 					elevation = 0;
-				}else{
-					elevation = Math.round(Float.parseFloat(part5));
+				} else {
+					elevation = Math.round(Float.parseFloat(parts[5]));
 				}
 
-				if(part6.length() == 0){
+				if (parts[6].length() == 0) {
 					azimuth = 0;
-				}else{
-					azimuth = Math.round(Float.parseFloat(part6));
+				} else {
+					azimuth = Math.round(Float.parseFloat(parts[6]));
 				}
 
-				if(part7.length() == 0){
+				if (parts[7].length() == 0) {
 					SNR = 0;
-				}else{
-					SNR = Math.round(Float.parseFloat(part7));
+				} else {
+					SNR = Math.round(Float.parseFloat(parts[7]));
 				}
 
 				ns1.setPRN(PRN);
@@ -182,28 +158,28 @@ public class GSVSentence extends NMEASentence{
 				
 				//SAT 2
 				
-				if(part8.length() == 0){
+				if (parts[8].length() == 0) {
 					PRN = 0;
-				}else{
-					PRN = Math.round(Float.parseFloat(part8));
+				} else {
+					PRN = Math.round(Float.parseFloat(parts[8]));
 				}
 
-				if(part9.length() == 0){
+				if (parts[9].length() == 0) {
 					elevation = 0;
-				}else{
-					elevation = Math.round(Float.parseFloat(part9));
+				} else {
+					elevation = Math.round(Float.parseFloat(parts[9]));
 				}
 
-				if(part10.length() == 0){
+				if (parts[10].length() == 0) {
 					azimuth = 0;
-				}else{
-					azimuth = Math.round(Float.parseFloat(part10));
+				} else {
+					azimuth = Math.round(Float.parseFloat(parts[10]));
 				}
 
-				if(part11.length() == 0){
+				if (parts[11].length() == 0) {
 					SNR = 0;
-				}else{
-					SNR = Math.round(Float.parseFloat(part11));
+				} else {
+					SNR = Math.round(Float.parseFloat(parts[11]));
 				}
 				
 				ns2.setPRN(PRN);
@@ -213,28 +189,28 @@ public class GSVSentence extends NMEASentence{
 				
 				//SAT 3
 
-				if(part12.length() == 0){
+				if (parts[12].length() == 0) {
 					PRN = 0;
-				}else{
-					PRN = Math.round(Float.parseFloat(part12));
+				} else {
+					PRN = Math.round(Float.parseFloat(parts[12]));
 				}
 
-				if(part13.length() == 0){
+				if (parts[13].length() == 0) {
 					elevation = 0;
-				}else{
-					elevation = Math.round(Float.parseFloat(part13));
+				} else {
+					elevation = Math.round(Float.parseFloat(parts[13]));
 				}
 
-				if(part14.length() == 0){
+				if (parts[14].length() == 0) {
 					azimuth = 0;
-				}else{
-					azimuth = Math.round(Float.parseFloat(part14));
+				} else {
+					azimuth = Math.round(Float.parseFloat(parts[14]));
 				}
 
-				if(part15.length() == 0){
+				if (parts[15].length() == 0) {
 					SNR = 0;
-				}else{
-					SNR = Math.round(Float.parseFloat(part15));
+				} else {
+					SNR = Math.round(Float.parseFloat(parts[15]));
 				}
 				
 				ns3.setPRN(PRN);
@@ -244,45 +220,41 @@ public class GSVSentence extends NMEASentence{
 				
 				// SAT 4
 
-				if(part16.length() == 0){
+				if (parts[16].length() == 0) {
 					PRN = 0;
-				}else{
-					PRN = Math.round(Float.parseFloat(part16));
+				} else {
+					PRN = Math.round(Float.parseFloat(parts[16]));
 				}
 
-				if(part17.length() == 0){
+				if (parts[17].length() == 0) {
 					elevation = 0;
-				}else{
-					elevation = Math.round(Float.parseFloat(part17));
+				} else {
+					elevation = Math.round(Float.parseFloat(parts[17]));
 				}
 
-				if(part18.length() == 0){
+				if (parts[18].length() == 0) {
 					azimuth = 0;
-				}else{
-					azimuth = Math.round(Float.parseFloat(part18));
+				} else {
+					azimuth = Math.round(Float.parseFloat(parts[18]));
 				}
 
-				if(part19.length() == 0){
+				if (parts[19].length() == 0) {
 					SNR = 0;
-				}else{
-					SNR = Math.round(Float.parseFloat(part19));
+				} else {
+					SNR = Math.round(Float.parseFloat(parts[19]));
 				}
 				
 				ns4.setPRN(PRN);
 				ns4.setElevation(elevation);
 				ns4.setAzimuth(azimuth);
-				ns4.setSignalNoiseRatio(SNR);				
-				
-			}
-			
-		}catch(NoSuchElementException e){
+				ns4.setSignalNoiseRatio(SNR);						
+			}		
+		} catch(NoSuchElementException e) {
 			//System.err.println("GSVSentence: NoSuchElementException");
-		}catch(NumberFormatException e){
+		} catch(NumberFormatException e) {
 			//System.err.println("GSVSentence: NumberFormatException");
-		}catch(Exception e){
+		} catch(Exception e) {
 			//System.err.println("GSVSentence: Exception");
 		}
-
-	}//End parse
-	
+	}//End parse	
 }//End class

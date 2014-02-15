@@ -118,115 +118,98 @@ public class RMCSentence extends NMEASentence{
 	 * 
 	 * $GPRMC,081836,A,3751.65,S,14507.36,E,000.0,360.0,130998,011.3,E*62
 	 */
-	public void parse (String sentence){
+	public void parse (String sentence) {
 		
-		//TODO StringTokenizer must not be used to parse NMEA sentences since it doesn't return empty tokens 
 		String[] parts = sentence.split(",");
-		try{
-			
-			//Extracting data from a GGA Sentence
-			
-			String part1 = parts[0];//NMEA header
-			String part2 = parts[1];//Fix taken at 12:35:19 UTC
-			String part3 = parts[2];//Status A=active or V=Void.
-			String part4 = parts[3];//Latitude 48 deg 07.038' N
-			String part5 = parts[4];//Latitude Direction
-			String part6 = parts[5];//Longitude 11 deg 31.000' E
-			String part7 = parts[6];//Longitude Direction
-			String part8 = parts[7];//Speed over the ground in knots
-			String part9 = parts[8];//Track angle in degrees True
-			String part10 = parts[9];//Date - 23rd of March 1994
-			String part11 = parts[10];//Magnetic Variation
-			String part12 = parts[11];//Magnetic Variation Letter
-			
+		
+		try{		
 			//Processing RMC data
 			
-			nmeaHeader = part1;//$GPRMC
+			nmeaHeader = parts[0];//$GPRMC
 		
-			if(part2.length() == 0){
+			if (parts[1].length() == 0) {
 				dateTimeOfFix = 0;
-			}else{
-				dateTimeOfFix = Math.round(Float.parseFloat(part2));
+			} else {
+				dateTimeOfFix = Math.round(Float.parseFloat(parts[1]));
 			}
 			
-			if(part3.equals(ACTIVE)){
+			if (parts[2].equals(ACTIVE)) {
 				status = ACTIVE;
-			}else{
+			} else {
 				status = VOID;
 			}
 			
-			if(isNumeric(part4)){
-				latitude = degreesMinToDegrees(part4,NMEASentence.LATITUDE);
-			}else{
+			if (isNumeric(parts[3])) {
+				latitude = degreesMinToDegrees(parts[3],NMEASentence.LATITUDE);
+			} else {
 				latitude = 0f;
 			}
 			
-			latitudeDirection = part5;
+			latitudeDirection = parts[4];
 			
-			if(isNumeric(part6)){
-				longitude = degreesMinToDegrees(part6,NMEASentence.LONGITUDE);
-			}else{
+			if (isNumeric(parts[5])) {
+				longitude = degreesMinToDegrees(parts[5],NMEASentence.LONGITUDE);
+			} else {
 				longitude = 0f;
 			}
 
-			longitudeDirection = part7;
+			longitudeDirection = parts[6];
 			
 			if (longitudeDirection.equals("E") == false) {
 				longitude = -longitude;
 			}
+			
 			if (latitudeDirection.equals("N") == false) {
 				latitude = -latitude;
 			}
 			
-			if(part8.length() == 0){
+			if (parts[7].length() == 0) {
 				groundSpeed = 0f;
 				speed = 0f;
-			}else{
-				groundSpeed = Float.parseFloat(part8);
+			} else {
+				groundSpeed = Float.parseFloat(parts[7]);
 				
 				//Speed
 				if (groundSpeed > 0) {
 					// km/h = knots * 1.852
 					speed = groundSpeed * KNOT;
 				}
+				
 				// A negative speed doesn't make sense.
 				if (speed < 0) {
 					speed = 0f;
 				}
 			}
 			
-			if(part9.length() == 0){
+			if (parts[8].length() == 0) {
 				compassDegrees = 0;
-			}else{
-				compassDegrees = Math.round(Float.parseFloat(part9));
+			} else {
+				compassDegrees = Math.round(Float.parseFloat(parts[8]));
 			}
 			
-			if(part10.length() == 0){
+			if (parts[9].length() == 0) {
 				dateOfFix = 0;
-			}else{
-				dateOfFix = Math.round(Float.parseFloat(part10));
+			} else{
+				dateOfFix = Math.round(Float.parseFloat(parts[9]));
 			}
 
-			if(part11.length() == 0){
+			if (parts[10].length() == 0) {
 				magneticVariation = 0;
-			}else{
-				magneticVariation = Math.round(Float.parseFloat(part11));
+			} else{
+				magneticVariation = Math.round(Float.parseFloat(parts[10]));
 			}
 			
-			if(part12.length() == 0){
+			if (parts[11].length() == 0) {
 				magneticVariationLetter = "";
-			}else{
-				magneticVariationLetter = part12;
+			} else{
+				magneticVariationLetter = parts[11];
 			}
-
-		}catch(NoSuchElementException e){
+		} catch(NoSuchElementException e) {
 			//System.err.println("RMCSentence: NoSuchElementException");
-		}catch(NumberFormatException e){
-			//System.err.println("RMCSentence: NumberFormatException");
-		}catch(Exception e){
+		} catch(NumberFormatException e) {
+		 	//System.err.println("RMCSentence: NumberFormatException");
+		} catch(Exception e) {
 			//System.err.println("RMCSentence: Exception");
 		}
-
 	}//End Parse
-
 }//End Class
