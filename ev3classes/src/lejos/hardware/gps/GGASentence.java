@@ -1,7 +1,6 @@
 package lejos.hardware.gps;
 
 import java.util.NoSuchElementException;
-import java.util.StringTokenizer;
 
 /**
  * This class has been designed to manage a GGA Sentence
@@ -142,93 +141,74 @@ public class GGASentence extends NMEASentence{
 	/**
 	 * Method used to parse a GGA Sentence
 	 */
-	protected void parse(String sentence){
+	protected void parse(String sentence) {
 		
-		//TODO StringTokenizer must not be used to parse NMEA sentences since it doesn't return empty tokens 
-		StringTokenizer st = new StringTokenizer(sentence,",");
+		String[] parts = sentence.split(",");
 
 		try{
-			
-			//Extracting data from a GGA Sentence
-			
-			String part1 = st.nextToken();//NMEA header
-			String part2 = st.nextToken();//Global Positioning System Fix Data
-			String part3 = st.nextToken();//Latitude
-			String part4 = st.nextToken();//Latitude Direction
-			String part5 = st.nextToken();//Longitude
-			String part6 = st.nextToken();//Longitude Direction
-			String part7 = st.nextToken();//Quality
-			String part8 = st.nextToken();//Satellite Tracked
-			String part9 = st.nextToken();//Hdop
-			String part10 = st.nextToken();//Altitude
-			
-			st = null;
-			
 			//Processing GGA data
 			
-			nmeaHeader = part1;
+			nmeaHeader = parts[0];
 
-			if(part2.length() == 0){
+			if (parts[1].length() == 0) {
 				dateTimeOfFix = 0;
-			}else{
-				dateTimeOfFix = Math.round(Float.parseFloat(part2));
+			} else {
+				dateTimeOfFix = Math.round(Float.parseFloat(parts[1]));
 			}
 						
-			if(isNumeric(part3)){
-				latitude = degreesMinToDegrees(part3,NMEASentence.LATITUDE);
-			}else{
+			if (isNumeric(parts[2])) {
+				latitude = degreesMinToDegrees(parts[2],NMEASentence.LATITUDE);
+			} else {
 				latitude = 0f;
 			}
 			
-			latitudeDirection = part4.charAt(0);
+			latitudeDirection = parts[3].charAt(0);
 			
-			if(isNumeric(part5)){
-				longitude = degreesMinToDegrees(part5,NMEASentence.LONGITUDE);
-			}else{
+			if (isNumeric(parts[4])) {
+				longitude = degreesMinToDegrees(parts[4],NMEASentence.LONGITUDE);
+			} else {
 				longitude = 0f;
 			}
 
-			longitudeDirection = part6.charAt(0);
+			longitudeDirection = parts[5].charAt(0);
 			
 			if (longitudeDirection != 'E') {
 				longitude = -longitude;
 			}
+			
 			if (latitudeDirection != 'N') {
 				latitude = -latitude;
 			}
 
-			if(part7.length() == 0){
+			if (parts[6].length() == 0) {
 				quality = 0;
-			}else{
-				quality = Math.round(Float.parseFloat(part7));//Fix quality
+			} else{
+				quality = Math.round(Float.parseFloat(parts[6]));//Fix quality
 			}
 
-			if(part8.length() == 0){
+			if (parts[7].length() == 0) {
 				satellitesTracked = 0;
-			}else{
-				satellitesTracked = Math.round(Float.parseFloat(part8));
+			} else{
+				satellitesTracked = Math.round(Float.parseFloat(parts[7]));
 			}
 
-			if(part9.length() == 0){
+			if (parts[8].length() == 0) {
 				hdop = 0;
-			}else{
-				hdop = Float.parseFloat(part9);//Horizontal dilution of position
+			} else {
+				hdop = Float.parseFloat(parts[8]);//Horizontal dilution of position
 			}
 			
-			if(isNumeric(part10)){
-				altitude = Float.parseFloat(part10);
-			}else{
+			if (isNumeric(parts[9])) {
+				altitude = Float.parseFloat(parts[9]);
+			} else{
 				altitude = 0f;
-			}
-			
-		}catch(NoSuchElementException e){
+			}	
+		} catch(NoSuchElementException e) {
 			//System.err.println("GGASentence: NoSuchElementException");
-		}catch(NumberFormatException e){
+		} catch(NumberFormatException e) {
 			//System.err.println("GGASentence: NumberFormatException");
-		}catch(Exception e){
+		} catch(Exception e){
 			//System.err.println("GGASentence: Exception");
 		}
-
 	}//End parse
-	
 }//End class

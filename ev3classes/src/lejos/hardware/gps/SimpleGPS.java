@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.NoSuchElementException;
-import java.util.StringTokenizer;
 
 /**
  * This class manages data received from a GPS Device.
@@ -311,25 +310,22 @@ public class SimpleGPS extends Thread {
 					continue;
 				
 				s = s.substring(0, p);
-				
-				//TODO StringTokenizer must not be used to parse NMEA sentences since it doesn't return empty tokens 
-				
 				int comma = s.indexOf(',');
 				String token = s.substring(0,comma);
 
-				System.out.println("Token: " + token);
+				//System.out.println("Token: " + token);
 									
 				sentenceChooser(token, s);
 				
 				//System.out.println(s);
 				
-			}catch(NoSuchElementException e){
+			} catch(NoSuchElementException e) {
 				//System.out.println("GPS: NoSuchElementException");				
-			}catch(StringIndexOutOfBoundsException e){
+			} catch(StringIndexOutOfBoundsException e) {
 				//System.out.println("GPS: StringIndexOutOfBoundsException");
-			}catch(ArrayIndexOutOfBoundsException e){
+			} catch(ArrayIndexOutOfBoundsException e) {
 				//System.out.println("GPS: ArrayIndexOutOfBoundsException");
-			}catch(Exception e){
+			} catch(Exception e) {
 				//System.out.println("GPS: Exception");
 			}
 		}
@@ -382,5 +378,4 @@ public class SimpleGPS extends Thread {
 			notifyListeners(this.gsaSentence);
 		}
 	}
-
 }

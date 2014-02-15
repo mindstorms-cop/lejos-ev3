@@ -1,7 +1,6 @@
 package lejos.hardware.gps;
 
 import java.util.NoSuchElementException;
-import java.util.StringTokenizer;
 
 /**
  * VTGSentence is a Class designed to manage VTG Sentences from a NMEA GPS Receiver
@@ -70,47 +69,30 @@ public class VTGSentence extends NMEASentence{
 	 * 
 	 * $GPVTG,054.7,T,034.4,M,005.5,N,010.2,K,A*53
 	 */
-	public void parse(String sentence){
+	public void parse(String sentence) {
 		
-		//TODO StringTokenizer must not be used to parse NMEA sentences since it doesn't return empty tokens 
-		StringTokenizer st = new StringTokenizer(sentence,",");
+		String[] parts = sentence.split(",");
 
 		try{
 			
-			//Extracting data from a VTG Sentence
-			
-			String part1 = st.nextToken();//NMEA header
-			st.nextToken();//True course made good over ground, degrees
-			st.nextToken();//Letter
-			st.nextToken();//Magnetic course made good over ground
-			st.nextToken();//Letter
-			st.nextToken();//Ground speed, N=Knots
-			st.nextToken();//Letter
-			String part8 = st.nextToken();//Speed over the ground in knots
-			// String part9 = st.nextToken();//Letter
-			
-			st = null;
-			
 			//Processing VTG data
 			
-			nmeaHeader = part1;//$GPVTG
+			nmeaHeader = parts[0];//$GPVTG
 			
-			if(part8.length() == 0){
+			if (parts[7].length() == 0){
 				speed = 0;
-			}else{
-				speed = Float.parseFloat(part8);
+			} else {
+				speed = Float.parseFloat(parts[7]);
 			}
 			
 			//System.out.println(speed);
 			
-		}catch(NoSuchElementException e){
+		} catch(NoSuchElementException e) {
 			//System.err.println("VTGSentence: NoSuchElementException");
-		}catch(NumberFormatException e){
+		} catch(NumberFormatException e) {
 			//System.err.println("VTGSentence: NumberFormatException");
-		}catch(Exception e){
+		} catch(Exception e){
 			//System.err.println("VTGSentence: Exception");
-		}
-		
+		}		
 	}//End Parse
-
 }//End Class
