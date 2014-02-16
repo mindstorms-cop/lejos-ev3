@@ -1,10 +1,9 @@
 package lejos.ev3.tools;
+
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.SystemColor;
-import java.io.File;
-import java.io.IOException;
 
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
@@ -13,9 +12,9 @@ import lejos.robotics.mapping.NavigationModel;
 import lejos.robotics.mapping.NavigationModel.NavEvent;
 
 /**
- * MapCommand shows a mapped area and allow navigation commands to be sent to the NXT.
+ * MapCommand shows a mapped area and allow navigation commands to be sent to the EV3.
  * 
- * The NXT must run the MapTest sample.
+ * The EV3 must run the MapTest sample.
  * 
  * @author Lawrie Griffiths
  */
@@ -27,7 +26,7 @@ public class EV3MapCommand extends NavigationPanel {
 	private static final int INITIAL_ZOOM = 100;
 	private static final Point INITIAL_MAP_ORIGIN = new Point(-10,-10);
 	private static final Dimension MAP_AREA_SIZE = new Dimension(800,550);
-	private static final String FRAME_TITLE = "NXJ Map Command";
+	private static final String FRAME_TITLE = "EV3 Map Command";
 	
 	private SliderPanel setHeading, rotate, travelSpeed, rotateSpeed;
 	private JPanel leftPanel = new JPanel();
@@ -35,7 +34,7 @@ public class EV3MapCommand extends NavigationPanel {
   
 	/**
 	 * Create a MapTest object and display it in a GUI frame.
-	 * Then connect to the NXT.
+	 * Then connect to the EV3.
 	 */
 	public static void main(String[] args) {
 		ToolStarter.startSwingTool(EV3MapCommand.class, args);
@@ -141,17 +140,7 @@ public class EV3MapCommand extends NavigationPanel {
 	public int run() {
 		// Set debugging on to get information of events being processed
 		model.setDebug(true);
-		
-		// Use MapTest.nxj from the bin directory as the NXJ program
-		String home = null; // TODO: Implement this
-		File progFile = new File(home, "bin" + File.separator + "MapTest.nxj");
-		try {
-			program = progFile.getCanonicalPath();
-		} catch (IOException e) {
-			// leave as is
-		}
 
-	
 		// Open the panel in a frame
 		openInJFrame(this, FRAME_WIDTH, FRAME_HEIGHT, FRAME_TITLE, SystemColor.controlShadow, menuBar);
 		return 0;

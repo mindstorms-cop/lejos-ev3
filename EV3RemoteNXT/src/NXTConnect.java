@@ -4,16 +4,18 @@ import java.io.DataOutputStream;
 import lejos.hardware.Bluetooth;
 import lejos.remote.nxt.NXTCommConnector;
 import lejos.remote.nxt.NXTConnection;
+import lejos.remote.nxt.SocketConnector;
 
 
 public class NXTConnect {
 	//private static final String NXT = "00:16:53:12:92:AA";
-	private static final String NXT = "NXT2";
+	private static final String NXT = "192.168.0.9";
 
 	public static void main(String[] args) throws Exception {
-		NXTCommConnector connector = Bluetooth.getNXTCommConnector();	
+		//NXTCommConnector connector = Bluetooth.getNXTCommConnector();
+		NXTCommConnector connector = new SocketConnector();
 		System.out.println("Connecting to " + NXT);
-		NXTConnection connection = connector.connect(NXT, NXTConnection.PACKET);
+		NXTConnection connection = connector.connect(NXT, NXTConnection.RAW);
 		if (connection == null) {
 			System.err.println("Failed to connect");
 			return;
