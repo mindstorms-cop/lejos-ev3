@@ -11,7 +11,10 @@ import java.util.Collection;
 
 import lejos.remote.nxt.FileInfo;
 import lejos.remote.nxt.NXTCommConnector;
+import lejos.remote.nxt.NXTCommRequest;
 import lejos.remote.nxt.NXTCommand;
+import lejos.remote.nxt.NXTConnection;
+import lejos.remote.nxt.SocketConnector;
 import lejos.robotics.RangeReading;
 import lejos.robotics.RangeReadings;
 import lejos.robotics.geometry.Point;
@@ -427,10 +430,12 @@ public class PCNavigationModel extends NavigationModel {
 	 * Connect to the NXT
 	 */
 	public void connect(String nxtName) {
-		/*if (connected) panel.error("Already connected");
-		NXTConnector conn = new NXTConnector();
+		if (connected) panel.error("Already connected");
+		NXTCommConnector connector = new SocketConnector();
+		System.out.println("Connecting to " + nxtName);
+		NXTConnection conn = connector.connect(nxtName, NXTConnection.RAW);
 
-		if (!conn.connectTo(nxtName, null, NXTCommFactory.BLUETOOTH)) {
+		if (conn == null) {
 		
 			panel.error("NO NXT found");
 			return;
@@ -438,8 +443,8 @@ public class PCNavigationModel extends NavigationModel {
   
 		if (debug) panel.log("Connected to " + nxtName);
   
-		dis = new DataInputStream(conn.getInputStream());
-		dos = new DataOutputStream(conn.getOutputStream());
+		dis = new DataInputStream(conn.openInputStream());
+		dos = new DataOutputStream(conn.openOutputStream());
 		connected = true;
 		
 		// Start the receiver thread
@@ -447,7 +452,7 @@ public class PCNavigationModel extends NavigationModel {
 		receiver.start();
 		
 		// Hook for actions required after connection
-		panel.whenConnected();*/
+		panel.whenConnected();
 	}
 	
 	/**

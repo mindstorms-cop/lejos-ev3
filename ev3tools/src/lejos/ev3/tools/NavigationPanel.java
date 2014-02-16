@@ -121,7 +121,7 @@ public abstract class NavigationPanel extends JPanel implements MapApplicationUI
 	protected JSlider zoomSlider;
 	
 	// Connect Panel
-	protected JLabel nxtLabel = new JLabel("NXT name:");
+	protected JLabel nxtLabel = new JLabel("EV3 name:");
 	protected JTextField nxtName = new JTextField(10);
 	protected JButton connectButton = new JButton("Connect");
 	
@@ -152,7 +152,7 @@ public abstract class NavigationPanel extends JPanel implements MapApplicationUI
 	protected Point initialViewStart = new Point(0,0);
 	protected String title;
 	protected String description = "";
-	protected String program = "../samples/MapTest.nxj";
+	protected String program = "MapTest.jar";
 	
 	//Menu
 	protected JMenuBar menuBar = new JMenuBar();
@@ -174,7 +174,7 @@ public abstract class NavigationPanel extends JPanel implements MapApplicationUI
 	protected JLabel mapFileLabel = new JLabel("Map file");
 	protected JTextField mapFileField = new JTextField(10);
 	protected JButton loadMapButton = new JButton("Load");
-	protected JCheckBox uploadBox = new JCheckBox("Upload NXT Program?");
+	protected JCheckBox uploadBox = new JCheckBox("Upload EV3 Program?");
 	
 	// Configure Pilot
 	protected JDialog configurePilot;
@@ -709,7 +709,7 @@ public abstract class NavigationPanel extends JPanel implements MapApplicationUI
 	}
 	
 	/**
-	 * Create the Connect panel to allow connection to a NXT brick
+	 * Create the Connect panel to allow connection to a EV3 brick
 	 */
 	protected void createConnectPanel() {
 		connectPanel.add(nxtLabel);
@@ -1224,7 +1224,7 @@ public abstract class NavigationPanel extends JPanel implements MapApplicationUI
 	}
 	
 	/**
-	 * Override this method to specify actions to do after connection to the NXT
+	 * Override this method to specify actions to do after connection to the EV3
 	 */
 	public void whenConnected() {
 		connectedLabel.setText("Connected");
@@ -1290,7 +1290,7 @@ public abstract class NavigationPanel extends JPanel implements MapApplicationUI
 			String nxtName = (String)JOptionPane.showInputDialog(
                     this,
                     "Name:",
-                    "Connect to NXT", 
+                    "Connect to EV3", 
                     JOptionPane.PLAIN_MESSAGE,
                     null,
                     null,
