@@ -21,7 +21,8 @@ public class EV3ColorSensor extends UARTSensor implements LampController, ColorI
         Color.NONE, Color.BLACK, Color.BLUE, Color.GREEN, Color.YELLOW, Color.RED, Color.WHITE, Color.BROWN
     };
     protected static final int SWITCH_DELAY = 250;
-    
+
+    protected static final int COL_RESET = -1;
     protected static final int COL_REFLECT = 0;
     protected static final int COL_AMBIENT = 1;
     protected static final int COL_COLOR = 2;
@@ -29,7 +30,7 @@ public class EV3ColorSensor extends UARTSensor implements LampController, ColorI
     protected static final int COL_RGBRAW = 4;
     protected static final int COL_CAL = 5;
     // following maps operating mode to lamp color
-    protected static final int []lightColor = {Color.RED, Color.BLUE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE};
+    protected static final int []lightColor = {Color.NONE, Color.RED, Color.BLUE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE};
     protected short[]raw = new short[3];
     
     private class ModeProvider implements SensorMode
@@ -113,7 +114,7 @@ public class EV3ColorSensor extends UARTSensor implements LampController, ColorI
     @Override
     public boolean isFloodlightOn()
     {
-        return lightColor[currentMode] != Color.NONE;
+        return lightColor[currentMode+1] != Color.NONE;
     }
 
     /** {@inheritDoc}
@@ -121,7 +122,7 @@ public class EV3ColorSensor extends UARTSensor implements LampController, ColorI
     @Override
     public int getFloodlight()
     {
-         return lightColor[currentMode];
+         return lightColor[currentMode+1];
     }
 
     /** {@inheritDoc}
@@ -140,6 +141,9 @@ public class EV3ColorSensor extends UARTSensor implements LampController, ColorI
             break;
         case Color.RED:
             mode = COL_REFLECT;
+            break;
+        case Color.NONE:
+            mode = COL_RESET;
             break;
         default:
             // TODO: Should we ignore a wrong color or throw an exception?

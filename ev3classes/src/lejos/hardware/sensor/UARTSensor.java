@@ -69,6 +69,7 @@ public class UARTSensor extends BaseSensor
     /**
      * Switch to the selected mode (if not already in that mode) and delay for the
      * specified period to allow the sensor to settle in the new mode. <br>
+     * A mode of -1 resets the sensor.
      * TODO: There really should be a better way to work out when the switch is
      * complete, if you don't wait though you end up reading data from the previous
      * mode.
@@ -79,7 +80,9 @@ public class UARTSensor extends BaseSensor
     {
         if (currentMode != newMode)
         {
-            if (!port.setMode(newMode))
+            if (newMode == -1)
+                port.resetSensor();
+            else if (!port.setMode(newMode))
                 throw new IllegalArgumentException("Invalid sensor mode");
             currentMode = newMode;
             Delay.msDelay(switchDelay);
