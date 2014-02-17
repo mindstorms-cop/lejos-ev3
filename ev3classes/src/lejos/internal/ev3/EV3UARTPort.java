@@ -443,7 +443,7 @@ public class EV3UARTPort extends EV3IOPort implements UARTPort
         checkSensor();
         int loc = calcRawOffset();
         for(int i = 0; i < len; i++)
-            vals[i+offset] = raw.get(loc + i*2);
+            vals[i+offset] = raw.getShort(loc + i*2);
     }
 
     /**
