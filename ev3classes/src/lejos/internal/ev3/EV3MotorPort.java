@@ -502,7 +502,7 @@ public class EV3MotorPort extends EV3IOPort implements TachoMotorPort {
         public synchronized float getPosition()
         {
             updateRegulatorInformation();
-            return curPosition + zeroTachoCnt;
+            return curPosition - zeroTachoCnt;
         }
 
         /**
