@@ -360,13 +360,28 @@ public class EV3UARTPort extends EV3IOPort implements UARTPort
         setOperatingMode(mode);
         int status = waitNonZeroStatus(TIMEOUT);
         //System.out.println("status is " + status);
+        boolean ret;
         if ((status & UART_DATA_READY) != 0 && (status & UART_PORT_CHANGED) == 0)
         {
-            return super.setMode(mode);
+            ret = super.setMode(mode);
         }
         else
+        {
             // Sensor may have reset try and initialise it in the new mode.
-            return initialiseSensor(mode);
+            ret =  initialiseSensor(mode);
+            System.out.println("reset");
+        }
+        if (ret)
+        {
+            // wait for new data to be available to ensure we do not return stale values.
+            // TODO: Understand why this delay is needed. Some sort of race condition
+            // or possibly a delay in the shared memory state being updated.
+            Delay.msDelay(20);
+            //long s = System.currentTimeMillis();
+            ret = waitDataUpdate(TIMEOUT);
+            //System.out.println("time " + (System.currentTimeMillis() - s));
+        }
+        return ret;
     }
 
     /**
@@ -377,7 +392,30 @@ public class EV3UARTPort extends EV3IOPort implements UARTPort
      */
     private int calcRawOffset()
     {
-        return port*DEV_RAW_SIZE1 + actual.getShort(port*2)*DEV_RAW_SIZE2;
+        synchronized (actual)
+        {
+            return port*DEV_RAW_SIZE1 + actual.getShort(port*2)*DEV_RAW_SIZE2;
+        }
+    }
+    
+
+    /**
+     * Wait for a new data point to be added to the data set. Return true if
+     * new data is available, false if not
+     * @param timeout
+     * @return true if updated
+     */
+    protected boolean waitDataUpdate(int timeout)
+    {
+        int cnt = timeout/TIMEOUT_DELTA;
+        int offset = calcRawOffset();
+        while (cnt-- > 0)
+        {
+            if (calcRawOffset() != offset)
+                return true;
+            Delay.msDelay(TIMEOUT_DELTA);
+        }
+        return false;       
     }
 
     /**
