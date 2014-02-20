@@ -125,6 +125,8 @@ public class SensorPanel extends JPanel implements ItemListener {
 		    if (sensor != null) {
 		    	sensor.close();
 		    	sensor = null;
+		    	sensorModeList.removeAllItems();
+		    	sensorValue.setText("");
 		    }
 		   
 		    if (selected == 0) return;
