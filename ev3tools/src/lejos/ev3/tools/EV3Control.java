@@ -1384,28 +1384,32 @@ public class EV3Control implements ListSelectionListener, NXTProtocol, ConsoleVi
 	 */
 	private void stopMotors() {
 		try {
+			if (motor0 != null) motor0.stop(true);
+			if (motor1 != null) motor1.stop(true);
+			if (motor2 != null) motor2.stop(true);
+			if (motor3 != null) motor3.stop(true);
+			
 			if (motor0 != null) {
-				motor0.stop(true);
-				motor0.close();
 				tachos[0].setText("      " + motor0.getTachoCount());
+				motor0.close();			
 				motor0=null;
 			}
+			
 			if (motor1 != null) {
-				motor1.stop(true);
-				motor1.close();
 				tachos[1].setText("      " + motor1.getTachoCount());
+				motor1.close();
 				motor1=null;
 			}
+			
 			if (motor2 != null) {
-				motor2.stop(true);
-				motor2.close();
 				tachos[2].setText("      " + motor2.getTachoCount());
+				motor2.close();
 				motor2=null;	
 			}
+			
 			if (motor3 != null) {
-				motor3.stop(true);
-				motor3.close();
 				tachos[3].setText("      " + motor3.getTachoCount());
+				motor3.close();	
 				motor3=null;	
 			}
 		} catch (RemoteException e) {
@@ -1638,38 +1642,55 @@ public class EV3Control implements ListSelectionListener, NXTProtocol, ConsoleVi
 		try {
 			
 			if (ev3 == null) return;
+			
 			if (selectors[0].isSelected()) {
-				motor0 = ev3.createRegulatedMotor("A", 'L');
+				if (motor0 == null) motor0 = ev3.createRegulatedMotor("A", 'L');
 				float maxSpeed = motor0.getMaxSpeed();
 				float speedFactor = maxSpeed/100f;
 			    motor0.setSpeed((int) (speed0 * speedFactor));
-			    if (lim[0] !=0) motor0.rotateTo(lim[0]);
-			    else if (speed0 > 0) motor0.forward(); else motor0.backward();
 			}
+			
 			if (selectors[1].isSelected()) {
-				motor1 = ev3.createRegulatedMotor("B",'L');
+				if (motor1 == null) motor1 = ev3.createRegulatedMotor("B",'L');
 				float maxSpeed = motor1.getMaxSpeed();
 				float speedFactor = maxSpeed/100f;
 			    motor1.setSpeed((int) (speed1 * speedFactor));
-			    if (lim[1] !=0) motor1.rotateTo(lim[1]);
-			    else if (speed1 > 0) motor1.forward(); else motor1.backward();
 			}
+			
 			if (selectors[2].isSelected()) {
-				motor2 = ev3.createRegulatedMotor("C", 'L');
+				if (motor2 == null) motor2 = ev3.createRegulatedMotor("C", 'L');
 				float maxSpeed = motor2.getMaxSpeed();
 				float speedFactor = maxSpeed/100f;
 			    motor2.setSpeed((int) (speed2 * speedFactor));
-			    if (lim[2] !=0) motor2.rotateTo(lim[2]);
-			    else if (speed2 > 0) motor2.forward(); else motor2.backward();
 			}
+			
 			if (selectors[3].isSelected()) {
-				motor3 = ev3.createRegulatedMotor("D", 'L');
+				if (motor3 == null) motor3 = ev3.createRegulatedMotor("D", 'L');
 				float maxSpeed = motor3.getMaxSpeed();
 				float speedFactor = maxSpeed/100f;
 			    motor3.setSpeed((int) (speed3 * speedFactor));
-			    if (lim[3] !=0) motor3.rotateTo(lim[3]);
+			}
+			
+			if (selectors[0].isSelected()) {
+			    if (lim[0] !=0) motor0.rotateTo(lim[0], true);
+			    else if (speed0 > 0) motor0.forward(); else motor0.backward();
+			}
+			
+			if (selectors[1].isSelected()) {
+			    if (lim[1] !=0) motor1.rotateTo(lim[1], true);
+			    else if (speed1 > 0) motor1.forward(); else motor1.backward();
+			}
+			
+			if (selectors[2].isSelected()) {
+			    if (lim[2] !=0) motor2.rotateTo(lim[2], true);
+			    else if (speed2 > 0) motor2.forward(); else motor2.backward();
+			}
+			
+			if (selectors[3].isSelected()) {
+			    if (lim[3] !=0) motor3.rotateTo(lim[3], true);
 			    else if (speed3 > 0) motor3.forward(); else motor3.backward();
 			}
+
 		} catch (IOException ioe) {
 			showMessage("IOException doing move");
 		}
@@ -1691,21 +1712,10 @@ public class EV3Control implements ListSelectionListener, NXTProtocol, ConsoleVi
 	/**
 	 * Reset the tachometer for a motor
 	 */
-	private void resetTacho(JButton b) {
-		RMIRegulatedMotor motor = null;
+	private void resetTacho(JButton b) {		
+		for(int i=0;i<NUM_MOTORS;i++) if (b == resetButtons[i]) tachos[i].setText("   0");
 		
-		if (ev3 == null) return;
-		
-		if (b == resetButtons[0]) motor = motor0;
-		if (b == resetButtons[1]) motor = motor1;
-		if (b == resetButtons[2]) motor = motor2;
-		if (b == resetButtons[3]) motor = motor3;
-		
-		try {
-			motor.resetTachoCount();
-		} catch (Exception ioe) {
-			showMessage("IO Exception resetting motor");
-		}
+		// No need to reset tacho count as the motor is closed after use
 	}
 	
 	/**
