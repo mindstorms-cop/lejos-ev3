@@ -134,5 +134,15 @@ public class RMIRemoteRegulatedMotor extends UnicastRemoteObject implements RMIR
 	public void backward() throws RemoteException {
 		motor.backward();	
 	}
+
+	@Override
+	public void resetTachoCount() throws RemoteException {
+		motor.resetTachoCount();
+	}
+
+	@Override
+	public int getTachoCount() throws RemoteException {
+		return motor.getTachoCount();
+	}
 }
 

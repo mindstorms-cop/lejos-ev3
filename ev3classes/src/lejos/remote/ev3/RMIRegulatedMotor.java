@@ -143,6 +143,10 @@ public interface RMIRegulatedMotor extends Remote {
 	   void forward() throws RemoteException;
 	   
 	   void backward() throws RemoteException;
+	   
+	   void resetTachoCount() throws RemoteException;
+	   
+	   int getTachoCount() throws RemoteException;
 
 }
 
