@@ -108,15 +108,18 @@ public class EV3Control implements ListSelectionListener, NXTProtocol, ConsoleVi
 
 	private static final String[] sensorPorts = { "S1", "S2", "S3", "S4" };
 	
-	private final String[] motorNames = { "A", "B", "C", "D" };
+	private static final String[] motorNames = { "A", "B", "C", "D" };
 	
-	private final String[] volumeLevels = {"0", "10", "20", "30", "40", "50", "60", "70", "80", "90", "100"};
+	private static final String[] volumeLevels = {"0", "10", "20", "30", "40", "50", "60", "70", "80", "90", "100"};
 	
-	private final String[] frequencyLevels = {"100", "200", "300", "400", "500", "600", "700", "800", "900", "1000", "1100",
+	private static final String[] frequencyLevels = {"100", "200", "300", "400", "500", "600", "700", "800", "900", "1000", "1100",
 			                                  "1200", "1300", "1400", "1500", "1600", "1700", "1800", "1900", "2000"};
 	
-	private final String[] lengthLevels = {"100", "200", "300", "400", "500", "600", "700", "800", "900", "1000", "1100",
+	private static final String[] lengthLevels = {"100", "200", "300", "400", "500", "600", "700", "800", "900", "1000", "1100",
                                            "1200", "1300", "1400", "1500", "1600", "1700", "1800", "1900", "2000"};
+	
+	private static final int NUM_MOTORS =4;
+	
 	// GUI components
 	private Cursor hourglassCursor = new Cursor(Cursor.WAIT_CURSOR);
 	private Cursor normalCursor = new Cursor(Cursor.DEFAULT_CURSOR);
@@ -1100,7 +1103,7 @@ public class EV3Control implements ListSelectionListener, NXTProtocol, ConsoleVi
 		JPanel motorsPanel = new JPanel();
 		motorsPanel.setLayout(new BoxLayout(motorsPanel, BoxLayout.Y_AXIS));
 		motorsPanel.add(createMotorsHeader());
-		for (int i = 0; i < 4; i++) {
+		for (int i = 0; i < NUM_MOTORS; i++) {
 			motorsPanel.add(createMotorPanel(i));
 		}
 		JPanel buttonsPanel = new JPanel();
@@ -1115,7 +1118,7 @@ public class EV3Control implements ListSelectionListener, NXTProtocol, ConsoleVi
 			public void mousePressed(MouseEvent e) {
 				if (!aMotorSelected()) return;
 				int[] speed = getSpeeds();
-				move(speed[0], speed[1], speed[2]);
+				move(speed[0], speed[1], speed[2], speed[3]);
 			}
 
 			public void mouseReleased(MouseEvent e) {
@@ -1127,7 +1130,7 @@ public class EV3Control implements ListSelectionListener, NXTProtocol, ConsoleVi
 			public void mousePressed(MouseEvent e) {
 				if (!aMotorSelected()) return;
 				int[] speed = getSpeeds();
-				move(-speed[0], -speed[1], -speed[2]);
+				move(-speed[0], -speed[1], -speed[2], -speed[3]);
 			}
 
 			public void mouseReleased(MouseEvent e) {
@@ -1140,7 +1143,7 @@ public class EV3Control implements ListSelectionListener, NXTProtocol, ConsoleVi
 				if (!twoMotorsSelected()) return;
 				int[] speed = getSpeeds();
 				int[] multipliers = leftMultipliers();
-				move(speed[0] * multipliers[0], speed[1] * multipliers[1], speed[2] * multipliers[2]);
+				move(speed[0] * multipliers[0], speed[1] * multipliers[1], speed[2] * multipliers[2], speed[3] * multipliers[3]);
 			}
 
 			public void mouseReleased(MouseEvent e) {
@@ -1153,7 +1156,7 @@ public class EV3Control implements ListSelectionListener, NXTProtocol, ConsoleVi
 				if (!twoMotorsSelected()) return;
 				int[] speed = getSpeeds();
 				int[] multipliers = rightMultipliers();
-				move(speed[0] * multipliers[0], speed[1] * multipliers[1], speed[2] * multipliers[2]);
+				move(speed[0] * multipliers[0], speed[1] * multipliers[1], speed[2] * multipliers[2], speed[3] * multipliers[3]);
 			}
 
 			public void mouseReleased(MouseEvent e) {
@@ -1168,7 +1171,7 @@ public class EV3Control implements ListSelectionListener, NXTProtocol, ConsoleVi
 	private int numMotorsSelected() {
 		int numSelected = 0;
 		
-		for(int i=0;i<3;i++) {
+		for(int i=0;i<NUM_MOTORS;i++) {
 			if (selectors[i].isSelected()) numSelected ++;
 		}
 		
@@ -1201,10 +1204,10 @@ public class EV3Control implements ListSelectionListener, NXTProtocol, ConsoleVi
 	 * Calculate speed multipliers for turning left
 	 */
 	private int[] leftMultipliers() {
-		int[] multipliers = new int[3];
+		int[] multipliers = new int[NUM_MOTORS];
 		boolean firstFound = false, secondFound = false;
 		
-		for(int i=0;i<3;i++) {
+		for(int i=0;i<NUM_MOTORS;i++) {
 			if (selectors[i].isSelected() && !firstFound) {
 				firstFound = true;
 				multipliers[i] = -1;
@@ -1223,10 +1226,10 @@ public class EV3Control implements ListSelectionListener, NXTProtocol, ConsoleVi
 	 * Calculate the speed multipliers for turning right
 	 */
 	private int[] rightMultipliers() {
-		int[] multipliers = new int[3];
+		int[] multipliers = new int[NUM_MOTORS];
 		boolean firstFound = false, secondFound = false;
 		
-		for(int i=0;i<3;i++) {
+		for(int i=0;i<NUM_MOTORS;i++) {
 			if (selectors[i].isSelected() && !firstFound) {
 				firstFound = true;
 				multipliers[i] = 1;
@@ -1384,17 +1387,26 @@ public class EV3Control implements ListSelectionListener, NXTProtocol, ConsoleVi
 			if (motor0 != null) {
 				motor0.stop(true);
 				motor0.close();
+				tachos[0].setText("      " + motor0.getTachoCount());
 				motor0=null;
 			}
 			if (motor1 != null) {
 				motor1.stop(true);
 				motor1.close();
+				tachos[1].setText("      " + motor1.getTachoCount());
 				motor1=null;
 			}
 			if (motor2 != null) {
 				motor2.stop(true);
 				motor2.close();
-				motor2=null;
+				tachos[2].setText("      " + motor2.getTachoCount());
+				motor2=null;	
+			}
+			if (motor3 != null) {
+				motor3.stop(true);
+				motor3.close();
+				tachos[3].setText("      " + motor3.getTachoCount());
+				motor3=null;	
 			}
 		} catch (RemoteException e) {
 			e.printStackTrace();
@@ -1405,9 +1417,9 @@ public class EV3Control implements ListSelectionListener, NXTProtocol, ConsoleVi
 	 * Get an array of the tacho limit text boxes
 	 */
 	private int[] getLimits() {
-		int[] lim = new int[3];
+		int[] lim = new int[NUM_MOTORS];
 
-		for (int i = 0; i < 3; i++) {
+		for (int i = 0; i < NUM_MOTORS; i++) {
 			try {
 				lim[i] = Integer.parseInt(limits[i].getText());
 			} catch (NumberFormatException nfe) {
@@ -1421,9 +1433,9 @@ public class EV3Control implements ListSelectionListener, NXTProtocol, ConsoleVi
 	 * Get an array of the speed slider values
 	 */
 	private int[] getSpeeds() {
-		int[] speed = new int[3];
+		int[] speed = new int[NUM_MOTORS];
 
-		for (int i = 0; i < 3; i++) {
+		for (int i = 0; i < NUM_MOTORS; i++) {
 			speed[i] = sliders[i].getValue();
 			if (reversors[i].isSelected()) speed[i] = -speed[i];
 		}
@@ -1610,42 +1622,56 @@ public class EV3Control implements ListSelectionListener, NXTProtocol, ConsoleVi
 	 * Change the friendly name of the EV3
 	 */
 	private void rename(String name) {
+		try {
+			menu.setName(name);
+		} catch (RemoteException e) {
+			showMessage("Exception while renaming EV3");
+		}
 	}
 	
 	/**
 	 * Move the motors
 	 */
-	private void move(int speed0, int speed1, int speed2 ) {
+	private void move(int speed0, int speed1, int speed2, int speed3 ) {
 		int[] lim = getLimits();
 		
 		try {
+			
 			if (ev3 == null) return;
 			if (selectors[0].isSelected()) {
 				motor0 = ev3.createRegulatedMotor("A", 'L');
-			    motor0.setSpeed(speed0);
+				float maxSpeed = motor0.getMaxSpeed();
+				float speedFactor = maxSpeed/100f;
+			    motor0.setSpeed((int) (speed0 * speedFactor));
 			    if (lim[0] !=0) motor0.rotateTo(lim[0]);
 			    else if (speed0 > 0) motor0.forward(); else motor0.backward();
 			}
 			if (selectors[1].isSelected()) {
 				motor1 = ev3.createRegulatedMotor("B",'L');
-			    motor1.setSpeed(speed1);
+				float maxSpeed = motor1.getMaxSpeed();
+				float speedFactor = maxSpeed/100f;
+			    motor1.setSpeed((int) (speed1 * speedFactor));
 			    if (lim[1] !=0) motor1.rotateTo(lim[1]);
 			    else if (speed1 > 0) motor1.forward(); else motor1.backward();
 			}
 			if (selectors[2].isSelected()) {
 				motor2 = ev3.createRegulatedMotor("C", 'L');
-			    motor2.setSpeed(speed2);
+				float maxSpeed = motor2.getMaxSpeed();
+				float speedFactor = maxSpeed/100f;
+			    motor2.setSpeed((int) (speed2 * speedFactor));
 			    if (lim[2] !=0) motor2.rotateTo(lim[2]);
 			    else if (speed2 > 0) motor2.forward(); else motor2.backward();
 			}
 			if (selectors[3].isSelected()) {
 				motor3 = ev3.createRegulatedMotor("D", 'L');
-			    motor3.setSpeed(speed2);
-			    if (lim[2] !=0) motor3.rotateTo(lim[2]);
-			    else if (speed2 > 0) motor3.forward(); else motor3.backward();
+				float maxSpeed = motor3.getMaxSpeed();
+				float speedFactor = maxSpeed/100f;
+			    motor3.setSpeed((int) (speed3 * speedFactor));
+			    if (lim[3] !=0) motor3.rotateTo(lim[3]);
+			    else if (speed3 > 0) motor3.forward(); else motor3.backward();
 			}
 		} catch (IOException ioe) {
-			showMessage("IOException updating control");
+			showMessage("IOException doing move");
 		}
 	}
 	
@@ -1666,7 +1692,7 @@ public class EV3Control implements ListSelectionListener, NXTProtocol, ConsoleVi
 	 * Reset the tachometer for a motor
 	 */
 	private void resetTacho(JButton b) {
-		RMIRegulatedMotor motor;
+		RMIRegulatedMotor motor = null;
 		
 		if (ev3 == null) return;
 		
@@ -1675,9 +1701,8 @@ public class EV3Control implements ListSelectionListener, NXTProtocol, ConsoleVi
 		if (b == resetButtons[2]) motor = motor2;
 		if (b == resetButtons[3]) motor = motor3;
 		
-		
 		try {
-			// TODO: add tacho stuff to RMIRegulatedMotor
+			motor.resetTachoCount();
 		} catch (Exception ioe) {
 			showMessage("IO Exception resetting motor");
 		}

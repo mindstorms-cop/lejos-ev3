@@ -1,11 +1,11 @@
 package lejos.remote.ev3;
+
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 
 import lejos.hardware.ev3.LocalEV3;
 import lejos.hardware.port.TachoMotorPort;
 import lejos.remote.ev3.RMIMotorPort;
-
 
 public class RMIRemoteMotorPort extends UnicastRemoteObject implements RMIMotorPort {
 
@@ -25,7 +25,6 @@ public class RMIRemoteMotorPort extends UnicastRemoteObject implements RMIMotorP
 
 	@Override
 	public int getTachoCount() throws RemoteException {
-		// TODO Auto-generated method stub
 		return port.getTachoCount();
 	}
 
