@@ -85,7 +85,7 @@ public class UARTSensor extends BaseSensor
             else if (!port.setMode(newMode))
                 throw new IllegalArgumentException("Invalid sensor mode");
             currentMode = newMode;
-            Delay.msDelay(switchDelay);
+            //Delay.msDelay(switchDelay);
         }
         
     }
