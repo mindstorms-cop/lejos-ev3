@@ -82,5 +82,12 @@ public interface Brick
      * Set this brick as the default one for static methods
      */
     public void setDefault();
+    
+    /**
+     * Get access to a specific Key (aka Button)
+     * @param id the key identifier
+     * @return an implementation of the Key interface
+     */
+    public Key getKey(int id);
 
 }

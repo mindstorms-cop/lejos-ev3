@@ -8,6 +8,7 @@ import java.util.ArrayList;
 
 import lejos.hardware.Audio;
 import lejos.hardware.BrickFinder;
+import lejos.hardware.Key;
 import lejos.hardware.Power;
 import lejos.hardware.LocalBTDevice;
 import lejos.hardware.LocalWifiDevice;
@@ -161,5 +162,14 @@ public class RemoteEV3 implements EV3 {
 	@Override
 	public void setDefault() {
 		BrickFinder.setDefault(this);
+	}
+
+	@Override
+	public Key getKey(int id) {
+		try {
+			return new RemoteKey(rmiEV3.getKey(id));
+		} catch (RemoteException e) {
+			throw new PortException(e);
+		}
 	}
 }
