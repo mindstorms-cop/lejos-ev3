@@ -93,4 +93,11 @@ public class RMIRemoteEV3 extends UnicastRemoteObject implements RMIEV3 {
 	public String getName() throws RemoteException {
 		return LocalEV3.get().getName();
 	}
+
+	@Override
+	public RMIKey getKey(int id) throws RemoteException {
+		RMIRemoteKey key = new RMIRemoteKey();
+		key.setId(id);
+		return key;
+	}
 }

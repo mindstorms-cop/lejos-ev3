@@ -34,4 +34,7 @@ public interface RMIEV3 extends Remote {
 	public RMIBluetooth getBluetooth() throws RemoteException;
 	
 	public String getName() throws RemoteException;
+	
+	public RMIKey getKey(int id) throws RemoteException;
+	
 }

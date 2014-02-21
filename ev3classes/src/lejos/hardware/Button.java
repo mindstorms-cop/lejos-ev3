@@ -27,7 +27,7 @@ import lejos.utility.Delay;
  * or the static Button.waitForAnyEvent(). In case this is needed, it is strongly recommended that you write
  * your own Thread, which waits for button events and dispatches the events to anyone who's interested.
  */
-public class Button implements ListenerCaller
+public class Button implements Key, ListenerCaller
 {
   public static final int ID_UP = 0x1;
   public static final int ID_ENTER = 0x2;
@@ -93,6 +93,8 @@ public class Button implements ListenerCaller
   private final int iCode;
   private ButtonListener[] iListeners;
   private int iNumListeners;
+  
+  private static int simulatedState = 0;
 
   // Module interface
   static NativeDevice dev;
@@ -330,7 +332,7 @@ public class Button implements ListenerCaller
 	    {
 	        state1 = checkButtons();
 	        if (state1 == state2)
-	            return state1;
+	            return state1 | simulatedState;
 	        Delay.msDelay(DEBOUNCE_TIME);
 	        state2 = checkButtons();
 	    }	    
@@ -462,5 +464,23 @@ public class Button implements ListenerCaller
       clickFreq = SystemSettings.getIntSetting(FREQ_SETTING, 1000);
       dev = new NativeDevice("/dev/lms_ui");
       buttonState = dev.mmap(6).getByteBuffer(0, 6);
+  }
+
+  public void addKeyListener(KeyListener listener) {
+    // TODO : not yet implemented	
+  }
+
+  public int getPosition() {
+	  return 31 - Integer.numberOfLeadingZeros(iCode);
+  }
+  
+  public void simulateEvent(int event) {
+	  if (event == Key.KEY_PRESSED) simulatedState |= iCode; // set bit
+	  else if (event == Key.KEY_RELEASED) simulatedState &= ~iCode; // unset bit
+	  else if (event == Key.KEY_PRESSED_AND_RELEASED) {
+		  simulatedState |= iCode;
+		  Delay.msDelay(DEBOUNCE_TIME * 4);
+		  simulatedState &= ~iCode;
+	  }
   }  
 }

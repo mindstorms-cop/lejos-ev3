@@ -55,6 +55,7 @@ import javax.swing.table.TableModel;
 import javax.swing.table.AbstractTableModel;
 
 import lejos.hardware.Button;
+import lejos.hardware.Key;
 import lejos.hardware.RemoteBTDevice;
 import lejos.hardware.Sound;
 import lejos.hardware.port.I2CPort;
@@ -233,6 +234,7 @@ public class EV3Control implements ListSelectionListener, NXTProtocol, ConsoleVi
 				System.exit(0);
 			}
 		};
+		
 		frame.addWindowListener(listener);
 		cvc = new ConsoleViewComms(this,true);
 
@@ -411,7 +413,62 @@ public class EV3Control implements ListSelectionListener, NXTProtocol, ConsoleVi
         lcd.setMinimumSize(new Dimension(LCD_WIDTH, LCD_HEIGHT));
         lcd.setEnabled(true);
         lcd.setPreferredSize(lcd.getMinimumSize());
+        
+        JPanel buttonPanel = new JPanel();
+        buttonPanel.setLayout(new BorderLayout());
+        JButton escapeButton = new JButton("Escape");
+        JButton enterButton = new JButton("Enter");
+        JButton leftButton = new JButton("Left");
+        JButton rightButton = new JButton("Right");
+        JButton upButton = new JButton("Up");
+        JButton downButton = new JButton("Down");
+        
+        consolePanel.add(escapeButton);
         consolePanel.add(lcd);
+        buttonPanel.add(enterButton, BorderLayout.CENTER);
+        buttonPanel.add(leftButton, BorderLayout.WEST);
+        buttonPanel.add(rightButton, BorderLayout.EAST);
+        buttonPanel.add(upButton, BorderLayout.NORTH);
+        buttonPanel.add(downButton, BorderLayout.SOUTH);
+        
+		escapeButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent ae) {
+				ev3.getKey(Key.ESCAPE).simulateEvent(Key.KEY_PRESSED_AND_RELEASED);
+			}
+		});
+		
+		enterButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent ae) {
+				ev3.getKey(Key.ENTER).simulateEvent(Key.KEY_PRESSED_AND_RELEASED);
+			}
+		});
+		
+		leftButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent ae) {
+				ev3.getKey(Key.LEFT).simulateEvent(Key.KEY_PRESSED_AND_RELEASED);
+			}
+		});
+		
+		rightButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent ae) {
+				ev3.getKey(Key.RIGHT).simulateEvent(Key.KEY_PRESSED_AND_RELEASED);
+			}
+		});
+		
+		upButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent ae) {
+				ev3.getKey(Key.UP).simulateEvent(Key.KEY_PRESSED_AND_RELEASED);
+			}
+		});
+		
+		downButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent ae) {
+				ev3.getKey(Key.DOWN).simulateEvent(Key.KEY_PRESSED_AND_RELEASED);
+			}
+		});
+		
+		consolePanel.add(buttonPanel);
+        
 	}
 
 	/**
