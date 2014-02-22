@@ -103,7 +103,12 @@ public class RMIRemoteEV3 extends UnicastRemoteObject implements RMIEV3 {
 
 	@Override
 	public RMILED getLED() throws RemoteException {
-		// TODO Auto-generated method stub
 		return new RMIRemoteLED();
+	}
+
+	@Override
+	public RMIKeys getKeys() throws RemoteException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

@@ -84,6 +84,12 @@ public interface Brick
     public void setDefault();
     
     /**
+     * Get access to the keys (buttons)
+     * @return an implementation of the Keys interface
+     */
+    public Keys getKeys();
+    
+    /**
      * Get access to a specific Key (aka Button)
      * @param id the key identifier
      * @return an implementation of the Key interface
