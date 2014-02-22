@@ -100,4 +100,10 @@ public class RMIRemoteEV3 extends UnicastRemoteObject implements RMIEV3 {
 		key.setId(id);
 		return key;
 	}
+
+	@Override
+	public RMILED getLED() throws RemoteException {
+		// TODO Auto-generated method stub
+		return new RMIRemoteLED();
+	}
 }
