@@ -7,8 +7,10 @@ import java.rmi.RemoteException;
 import java.util.ArrayList;
 
 import lejos.hardware.Audio;
+import lejos.hardware.Brick;
 import lejos.hardware.BrickFinder;
 import lejos.hardware.Key;
+import lejos.hardware.LED;
 import lejos.hardware.Power;
 import lejos.hardware.LocalBTDevice;
 import lejos.hardware.LocalWifiDevice;
@@ -168,6 +170,16 @@ public class RemoteEV3 implements EV3 {
 	public Key getKey(int id) {
 		try {
 			return new RemoteKey(rmiEV3.getKey(id));
+		} catch (RemoteException e) {
+			throw new PortException(e);
+		}
+	}
+
+	@Override
+	public LED getLED() {
+		// TODO Auto-generated method stub
+		try {
+			return new RemoteLED(rmiEV3.getLED());
 		} catch (RemoteException e) {
 			throw new PortException(e);
 		}

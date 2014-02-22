@@ -423,6 +423,21 @@ public class EV3Control implements ListSelectionListener, NXTProtocol, ConsoleVi
         JButton upButton = new JButton("Up");
         JButton downButton = new JButton("Down");
         
+        JPanel ledPanel = new JPanel();
+        JLabel ledLabel = new JLabel("LED pattern:");
+        ledPanel.add(ledLabel);
+        final JComboBox<String> ledDropDown = new JComboBox<String>(new String[] {"0","1","2","3","4","5","6","7","8","9"});
+        ledPanel.add(ledDropDown);
+        
+        ledDropDown.addActionListener( new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				ev3.getLED().setPattern(ledDropDown.getSelectedIndex());
+			}  	
+        });
+        
+        consolePanel.add(ledPanel);
+        
         consolePanel.add(escapeButton);
         consolePanel.add(lcd);
         buttonPanel.add(enterButton, BorderLayout.CENTER);

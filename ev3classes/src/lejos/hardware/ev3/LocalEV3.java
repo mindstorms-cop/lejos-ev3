@@ -10,6 +10,7 @@ import lejos.hardware.Audio;
 import lejos.hardware.BrickFinder;
 import lejos.hardware.Button;
 import lejos.hardware.Key;
+import lejos.hardware.LED;
 import lejos.hardware.Power;
 import lejos.hardware.Bluetooth;
 import lejos.hardware.LocalBTDevice;
@@ -22,6 +23,7 @@ import lejos.hardware.port.Port;
 import lejos.internal.ev3.EV3Audio;
 import lejos.internal.ev3.EV3DeviceManager;
 import lejos.internal.ev3.EV3GraphicsLCD;
+import lejos.internal.ev3.EV3LED;
 import lejos.internal.ev3.EV3Port;
 import lejos.internal.ev3.EV3Battery;
 import lejos.internal.ev3.EV3TextLCD;
@@ -152,5 +154,10 @@ public class LocalEV3 implements EV3
 	@Override
 	public Key getKey(int id) {
 		return Button.BUTTONS[id];
+	}
+
+	@Override
+	public LED getLED() {
+		return new EV3LED();
 	}
 }

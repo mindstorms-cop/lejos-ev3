@@ -89,5 +89,11 @@ public interface Brick
      * @return an implementation of the Key interface
      */
     public Key getKey(int id);
-
+    
+    /**
+     * Get access to the LED
+     * @return an implementation of the LED interface
+     */
+    public LED getLED();
+    
 }
