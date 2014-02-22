@@ -38,5 +38,7 @@ public interface RMIEV3 extends Remote {
 	public RMIKey getKey(int id) throws RemoteException;
 
 	public RMILED getLED() throws RemoteException;
+
+	public RMIKeys getKeys()  throws RemoteException;
 	
 }
