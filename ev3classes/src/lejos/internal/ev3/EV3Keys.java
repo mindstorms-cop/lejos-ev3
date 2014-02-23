@@ -180,4 +180,12 @@ public class EV3Keys implements Keys {
 				state |= 1 << i;
 		return state;
 	}
+	
+	public void setSimultedState(int state) {
+		simulatedState = state;
+	}
+
+	public int getSimulatedState() {
+		return simulatedState;
+	}
 }
