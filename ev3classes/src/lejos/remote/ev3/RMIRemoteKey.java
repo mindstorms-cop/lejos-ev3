@@ -6,6 +6,7 @@ import java.rmi.server.UnicastRemoteObject;
 import lejos.hardware.Button;
 import lejos.hardware.Key;
 import lejos.hardware.KeyListener;
+import lejos.hardware.ev3.LocalEV3;
 
 public class RMIRemoteKey  extends UnicastRemoteObject implements RMIKey {
 	private Key key;
@@ -51,6 +52,6 @@ public class RMIRemoteKey  extends UnicastRemoteObject implements RMIKey {
 	}
 
 	public void setId(int id) {
-		key = Button.BUTTONS[id];	
+		key = LocalEV3.get().getKey(id);	
 	}
 }
