@@ -6,6 +6,7 @@ import java.io.FileOutputStream;
 
 import lejos.hardware.BrickFinder;
 import lejos.hardware.Button;
+import lejos.hardware.Keys;
 import lejos.hardware.Sound;
 import lejos.hardware.motor.Motor;
 import lejos.hardware.motor.NXTRegulatedMotor;
@@ -570,7 +571,7 @@ public class LCP {
 			int volume = cmd[2];
 			if (volume >= 0 && volume <= 100) {
 				Button.setKeyClickVolume(volume);
-				Settings.setProperty(Button.VOL_SETTING, String.valueOf(volume));
+				Settings.setProperty(Keys.VOL_SETTING, String.valueOf(volume));
 			}
 			break;
 		}
