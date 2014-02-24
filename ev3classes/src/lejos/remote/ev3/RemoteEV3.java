@@ -186,7 +186,6 @@ public class RemoteEV3 implements EV3 {
 
 	@Override
 	public Keys getKeys() {
-		// TODO Auto-generated method stub
 		try {
 			return new RemoteKeys(rmiEV3.getKeys());
 		} catch (RemoteException e) {
