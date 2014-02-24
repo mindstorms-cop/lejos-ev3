@@ -1,6 +1,8 @@
 package lejos.internal.ev3;
 
 import java.nio.ByteBuffer;
+import java.util.HashMap;
+import java.util.Map;
 
 import lejos.hardware.Keys;
 import lejos.hardware.Sound;
@@ -9,28 +11,19 @@ import lejos.internal.io.SystemSettings;
 import lejos.utility.Delay;
 
 public class EV3Keys implements Keys {
-	public static final int ID_UP = 0x1;
-	public static final int ID_ENTER = 0x2;
-	public static final int ID_DOWN = 0x4;
-	public static final int ID_RIGHT = 0x8;
-	public static final int ID_LEFT = 0x10;
-	public static final int ID_ESCAPE = 0x20;
-	public static final int ID_ALL = 0x3f;
 
 	private static final int PRESS_EVENT_SHIFT = 0;
 	private static final int RELEASE_EVENT_SHIFT = 8;
 	private static final int WAITFOR_RELEASE_SHIFT = 8;
+	
+	private Map<Integer,EV3Key> listeners;
 
 	private static final int DEBOUNCE_TIME = 10;
 	private static final int POLL_TIME = 50;
 
-	public static final String VOL_SETTING = "lejos.keyclick_volume";
-	public static final String LEN_SETTING = "lejos.keyclick_length";
-	public static final String FREQ_SETTING = "lejos.keyclick_frequency";
+	private static int simulatedState;
 
-	public static int simulatedState;
-
-	// protected by Button.class monitor
+	// protected by monitor
 	private int clickVol;
 	private int clickLen;
 	private int clickFreq = 1000;
@@ -39,7 +32,7 @@ public class EV3Keys implements Keys {
 	private int curButtonsE;
 
 	private NativeDevice dev;
-	ByteBuffer buttonState;
+	private ByteBuffer buttonState;
 
 	public EV3Keys() {
 		clickVol = SystemSettings.getIntSetting(VOL_SETTING, 20);
@@ -188,4 +181,40 @@ public class EV3Keys implements Keys {
 	public int getSimulatedState() {
 		return simulatedState;
 	}
+	
+	void addListener(int iCode,EV3Key key) {
+		if (listeners == null) {
+			listeners = new HashMap<Integer,EV3Key>();
+			new KeysListenThread().start();
+		}
+		listeners.put(iCode, key);
+	}
+	
+	class KeysListenThread extends Thread {
+		
+		public KeysListenThread() {
+			setDaemon(true);
+		}
+		
+		@Override
+		public void run() {
+			while (true) {
+				int state = EV3Keys.this.waitForAnyEvent();
+				
+				int mask  = 1;
+				for (int i=0;i<NUM_KEYS;i++) {
+					if ((state & (mask << PRESS_EVENT_SHIFT))  != 0 || (state & (mask << RELEASE_EVENT_SHIFT)) != 0) {;
+						EV3Key key = listeners.get(mask);
+						if (key != null) key.callListeners();
+					}
+					mask <<= 1;
+				}
+			}
+		}
+		
+	}
 }
+
+
+
+

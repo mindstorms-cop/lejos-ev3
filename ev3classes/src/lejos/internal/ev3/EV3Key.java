@@ -1,8 +1,9 @@
 package lejos.internal.ev3;
 
+import java.util.ArrayList;
+
 import lejos.hardware.Key;
 import lejos.hardware.KeyListener;
-import lejos.hardware.ev3.LocalEV3;
 import lejos.utility.Delay;
 
 public class EV3Key implements Key {	
@@ -11,6 +12,9 @@ public class EV3Key implements Key {
 	
 	private int iCode;
 	private EV3Keys keys;
+	
+	
+	private ArrayList<KeyListener> listeners;
 	
 	public EV3Key(EV3Keys keys, int iCode) {
 		this.iCode = iCode;
@@ -52,7 +56,11 @@ public class EV3Key implements Key {
 
 	@Override
 	public void addKeyListener(KeyListener listener) {
-		// TODO Auto-generated method stub
+	    if (listeners == null) {
+	      listeners = new ArrayList<KeyListener>();
+	    }
+	    listeners.add(listener);
+	    keys.addListener(iCode, this);
 	}
 
 	@Override
@@ -67,7 +75,12 @@ public class EV3Key implements Key {
 		}
 	}
 	
-	private void checkKeys() {
-		if (keys == null) keys = (EV3Keys) LocalEV3.get().getKeys();
+	public void callListeners() {
+	    boolean pressed = isDown();
+	    
+	    for(KeyListener listener: listeners)  {
+	    	if (pressed) listener.keyPressed(this);
+	    	else listener.keyReleased(this);
+	    }
 	}
 }
