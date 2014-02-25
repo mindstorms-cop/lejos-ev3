@@ -24,12 +24,14 @@ import lejos.hardware.port.PortException;
 public class RemoteEV3 implements EV3 {
 	private String host;
 	private  RMIEV3 rmiEV3;
-	protected ArrayList<RemotePort> ports = new ArrayList<RemotePort>();
+	private ArrayList<RemotePort> ports = new ArrayList<RemotePort>();
+	private RemoteKeys keys;
 	
 	public RemoteEV3(String host) throws RemoteException, MalformedURLException, NotBoundException {
 		this.host = host;
 		rmiEV3 = (RMIEV3) Naming.lookup("//" + host + "/RemoteEV3");
 		createPorts();
+		keys = new RemoteKeys(rmiEV3.getKeys());
 	}
 	
 	private void createPorts() {
@@ -169,7 +171,7 @@ public class RemoteEV3 implements EV3 {
 	@Override
 	public Key getKey(int id) {
 		try {
-			return new RemoteKey(rmiEV3.getKey(id));
+			return new RemoteKey(rmiEV3.getKey(id), keys, 1 << id );
 		} catch (RemoteException e) {
 			throw new PortException(e);
 		}
@@ -186,10 +188,6 @@ public class RemoteEV3 implements EV3 {
 
 	@Override
 	public Keys getKeys() {
-		try {
-			return new RemoteKeys(rmiEV3.getKeys());
-		} catch (RemoteException e) {
-			throw new PortException(e);
-		}
+		return keys;
 	}
 }
