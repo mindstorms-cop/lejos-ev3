@@ -1,6 +1,7 @@
 package lejos.remote.ev3;
 
 import java.rmi.RemoteException;
+import java.util.ArrayList;
 
 import lejos.hardware.Key;
 import lejos.hardware.KeyListener;
@@ -8,8 +9,14 @@ import lejos.hardware.port.PortException;
 
 public class RemoteKey implements Key {
 	private RMIKey key;
+	private RemoteKeys keys;
+	private int iCode;
 	
-	public RemoteKey(RMIKey key) {
+	private ArrayList<KeyListener> listeners;
+	
+	public RemoteKey(RMIKey key, RemoteKeys keys, int iCode) {
+		this.keys = keys;
+		this.iCode = iCode;
 		this.key=key;
 	}
 
@@ -60,11 +67,11 @@ public class RemoteKey implements Key {
 
 	@Override
 	public void addKeyListener(KeyListener listener) {
-		try {
-			key.addKeyListener(listener);
-		} catch (RemoteException e) {
-			throw new PortException(e);
-		}
+	    if (listeners == null) {
+		      listeners = new ArrayList<KeyListener>();
+		    }
+		    listeners.add(listener);
+		    keys.addListener(iCode, this);
 	}
 
 	@Override
@@ -74,5 +81,14 @@ public class RemoteKey implements Key {
 		} catch (RemoteException e) {
 			throw new PortException(e);
 		}
+	}
+	
+	public void callListeners() {
+	    boolean pressed = isDown();
+	    
+	    for(KeyListener listener: listeners)  {
+	    	if (pressed) listener.keyPressed(this);
+	    	else listener.keyReleased(this);
+	    }
 	}
 }
