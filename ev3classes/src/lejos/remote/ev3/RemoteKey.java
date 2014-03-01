@@ -73,10 +73,10 @@ public class RemoteKey implements Key {
 	@Override
 	public void addKeyListener(KeyListener listener) {
 	    if (listeners == null) {
-		      listeners = new ArrayList<KeyListener>();
-		    }
-		    listeners.add(listener);
-		    keys.addListener(iCode, this);
+	    	listeners = new ArrayList<KeyListener>();
+		}
+		listeners.add(listener);
+		keys.addListener(iCode, this);
 	}
 
 	@Override
@@ -91,10 +91,11 @@ public class RemoteKey implements Key {
 	public void callListeners() {
 	    boolean pressed = isDown();
 	    
-	    for(KeyListener listener: listeners)  {
-	    	if (pressed) listener.keyPressed(this);
-	    	else listener.keyReleased(this);
-	    }
+	    if (listeners != null)
+		    for(KeyListener listener: listeners)  {
+		    	if (pressed) listener.keyPressed(this);
+		    	else listener.keyReleased(this);
+		    }
 	}
 
 	@Override
