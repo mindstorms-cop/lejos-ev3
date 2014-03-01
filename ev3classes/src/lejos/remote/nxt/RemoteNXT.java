@@ -135,7 +135,7 @@ public class RemoteNXT implements NXT {
 	}
 
 	@Override
-	public Key getKey(int id) {
+	public Key getKey(String name) {
 		// TODO Auto-generated method stub
 		return null;
 	}

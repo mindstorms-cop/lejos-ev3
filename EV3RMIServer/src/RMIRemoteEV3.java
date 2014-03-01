@@ -108,7 +108,7 @@ public class RMIRemoteEV3 extends UnicastRemoteObject implements RMIEV3 {
 	}
 
 	@Override
-	public RMIKey getKey(int id) throws RemoteException {
+	public RMIKey getKey(String name) throws RemoteException {
 		// TODO Auto-generated method stub
 		return null;
 	}

@@ -20,6 +20,7 @@ import lejos.hardware.lcd.GraphicsLCD;
 import lejos.hardware.lcd.TextLCD;
 import lejos.hardware.port.Port;
 import lejos.hardware.port.PortException;
+import lejos.internal.ev3.EV3Key;
 
 public class RemoteEV3 implements EV3 {
 	private String host;
@@ -169,9 +170,9 @@ public class RemoteEV3 implements EV3 {
 	}
 
 	@Override
-	public Key getKey(int id) {
+	public Key getKey(String name) {
 		try {
-			return new RemoteKey(rmiEV3.getKey(id), keys, 1 << id );
+			return new RemoteKey(rmiEV3.getKey(name), keys, name);
 		} catch (RemoteException e) {
 			throw new PortException(e);
 		}

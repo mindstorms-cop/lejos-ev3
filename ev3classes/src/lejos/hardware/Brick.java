@@ -91,10 +91,10 @@ public interface Brick
     
     /**
      * Get access to a specific Key (aka Button)
-     * @param id the key identifier
+     * @param name the key name
      * @return an implementation of the Key interface
      */
-    public Key getKey(int id);
+    public Key getKey(String name);
     
     /**
      * Get access to the LED
