@@ -83,15 +83,17 @@ public class EV3Key implements Key {
 	public void callListeners() {
 	    boolean pressed = isDown();
 	    
-	    for(KeyListener listener: listeners)  {
-	    	if (pressed) listener.keyPressed(this);
-	    	else listener.keyReleased(this);
-	    }
+	    if (listeners != null) 
+		    for(KeyListener listener: listeners)  {
+		    	if (pressed) listener.keyPressed(this);
+		    	else listener.keyReleased(this);
+		    }
 	    
-	    for(ButtonListener listener: buttonListeners)  {
-	    	if (pressed) listener.buttonPressed(this);
-	    	else listener.buttonReleased(this);
-	    }
+	    if (buttonListeners != null)
+		    for(ButtonListener listener: buttonListeners)  {
+		    	if (pressed) listener.buttonPressed(this);
+		    	else listener.buttonReleased(this);
+		    }
 	}
 
 	@Override
