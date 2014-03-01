@@ -51,7 +51,7 @@ public class RMIRemoteKey  extends UnicastRemoteObject implements RMIKey {
 		key.simulateEvent(event);
 	}
 
-	public void setId(int id) {
-		key = LocalEV3.get().getKey(id);	
+	public void setId(String name) {
+		key = LocalEV3.get().getKey(name);	
 	}
 }

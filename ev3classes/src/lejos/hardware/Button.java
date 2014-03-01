@@ -40,27 +40,27 @@ public class Button {
 	/**
 	 * The Enter button.
 	 */
-	public static final Key ENTER = BrickFinder.getDefault().getKey(Key.ENTER);
+	public static final Key ENTER = BrickFinder.getDefault().getKey("Enter");
 	/**
 	 * The Left button.
 	 */
-	public static final Key LEFT = BrickFinder.getDefault().getKey(Key.LEFT);
+	public static final Key LEFT = BrickFinder.getDefault().getKey("Left");
 	/**
 	 * The Right button.
 	 */
-	public static final Key RIGHT = BrickFinder.getDefault().getKey(Key.RIGHT);
+	public static final Key RIGHT = BrickFinder.getDefault().getKey("Right");
 	/**
 	 * The Escape button.
 	 */
-	public static final Key ESCAPE = BrickFinder.getDefault().getKey(Key.ESCAPE);
+	public static final Key ESCAPE = BrickFinder.getDefault().getKey("Escape");
 	/**
 	 * The Up button.
 	 */
-	public static final Key UP = BrickFinder.getDefault().getKey(Key.UP);
+	public static final Key UP = BrickFinder.getDefault().getKey("Up");
 	/**
 	 * The Down button.
 	 */
-	public static final Key DOWN = BrickFinder.getDefault().getKey(Key.DOWN);
+	public static final Key DOWN = BrickFinder.getDefault().getKey("Down");
 
 	public static final Keys keys = BrickFinder.getDefault().getKeys();
 

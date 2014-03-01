@@ -59,12 +59,12 @@ public class LocalEV3 implements EV3
     protected EV3Keys keys = new EV3Keys();
     protected final LED led = new EV3LED();
     
-    protected final Key enter = new EV3Key(keys, ID_ENTER);
-    protected final Key escape = new EV3Key(keys, ID_ESCAPE);
-    protected final Key left = new EV3Key(keys, ID_LEFT);
-    protected final Key right = new EV3Key(keys, ID_RIGHT);
-    protected final Key up = new EV3Key(keys, ID_UP);
-    protected final Key down = new EV3Key(keys, ID_DOWN);
+    protected final Key enter = new EV3Key(keys, "Enter");
+    protected final Key escape = new EV3Key(keys, "Escape");
+    protected final Key left = new EV3Key(keys, "Left");
+    protected final Key right = new EV3Key(keys, "Right");
+    protected final Key up = new EV3Key(keys, "Up");
+    protected final Key down = new EV3Key(keys, "Down");
     
     protected final Key[] keyArray = { up, enter, down, right, left,  escape };
     
@@ -179,9 +179,9 @@ public class LocalEV3 implements EV3
 	}
 
 	@Override
-	public Key getKey(int id) 
+	public Key getKey(String name) 
 	{
-		return keyArray[id];
+		return keyArray[EV3Key.getKeyPos(name)];
 	}
 
 	@Override

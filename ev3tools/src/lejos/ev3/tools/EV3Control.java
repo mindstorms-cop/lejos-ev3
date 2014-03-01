@@ -448,37 +448,37 @@ public class EV3Control implements ListSelectionListener, NXTProtocol, ConsoleVi
         
 		escapeButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
-				ev3.getKey(Key.ESCAPE).simulateEvent(Key.KEY_PRESSED_AND_RELEASED);
+				ev3.getKey("Escape").simulateEvent(Key.KEY_PRESSED_AND_RELEASED);
 			}
 		});
 		
 		enterButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
-				ev3.getKey(Key.ENTER).simulateEvent(Key.KEY_PRESSED_AND_RELEASED);
+				ev3.getKey("Enter").simulateEvent(Key.KEY_PRESSED_AND_RELEASED);
 			}
 		});
 		
 		leftButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
-				ev3.getKey(Key.LEFT).simulateEvent(Key.KEY_PRESSED_AND_RELEASED);
+				ev3.getKey("Left").simulateEvent(Key.KEY_PRESSED_AND_RELEASED);
 			}
 		});
 		
 		rightButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
-				ev3.getKey(Key.RIGHT).simulateEvent(Key.KEY_PRESSED_AND_RELEASED);
+				ev3.getKey("Right").simulateEvent(Key.KEY_PRESSED_AND_RELEASED);
 			}
 		});
 		
 		upButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
-				ev3.getKey(Key.UP).simulateEvent(Key.KEY_PRESSED_AND_RELEASED);
+				ev3.getKey("Up").simulateEvent(Key.KEY_PRESSED_AND_RELEASED);
 			}
 		});
 		
 		downButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
-				ev3.getKey(Key.DOWN).simulateEvent(Key.KEY_PRESSED_AND_RELEASED);
+				ev3.getKey("Down").simulateEvent(Key.KEY_PRESSED_AND_RELEASED);
 			}
 		});
 		

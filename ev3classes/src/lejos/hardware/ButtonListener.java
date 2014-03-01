@@ -6,6 +6,6 @@ package lejos.hardware;
  */
 public interface ButtonListener
 {
-  public void buttonPressed (Button b);
-  public void buttonReleased (Button b);
+  public void buttonPressed (Key b);
+  public void buttonReleased (Key b);
 }
