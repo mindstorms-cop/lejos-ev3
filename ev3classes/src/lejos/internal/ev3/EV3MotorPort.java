@@ -539,7 +539,7 @@ public class EV3MotorPort extends EV3IOPort implements TachoMotorPort {
             return getRegState() == ST_STALL;
         }
                         
-        public synchronized int getTachoCount()
+        public int getTachoCount()
         {
             return EV3MotorPort.this.getTachoCount() - zeroTachoCnt;
         }
