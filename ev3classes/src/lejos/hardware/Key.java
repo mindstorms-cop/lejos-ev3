@@ -25,8 +25,6 @@ public interface Key {
 	
 	public void addKeyListener (KeyListener listener);
 	
-	public void addButtonListener(ButtonListener listener);
-	
 	public void simulateEvent(int event);
 	
 	public String getName();

@@ -2,7 +2,6 @@ package lejos.internal.ev3;
 
 import java.util.ArrayList;
 
-import lejos.hardware.ButtonListener;
 import lejos.hardware.Key;
 import lejos.hardware.KeyListener;
 import lejos.utility.Delay;
@@ -18,7 +17,6 @@ public class EV3Key implements Key {
 	private String name;
 	
 	private ArrayList<KeyListener> listeners;
-	private ArrayList<ButtonListener> buttonListeners;
 	
 	public EV3Key(EV3Keys keys, String name) {
 		this.iCode = getKeyId(name);
@@ -88,21 +86,6 @@ public class EV3Key implements Key {
 		    	if (pressed) listener.keyPressed(this);
 		    	else listener.keyReleased(this);
 		    }
-	    
-	    if (buttonListeners != null)
-		    for(ButtonListener listener: buttonListeners)  {
-		    	if (pressed) listener.buttonPressed(this);
-		    	else listener.buttonReleased(this);
-		    }
-	}
-
-	@Override
-	public void addButtonListener(ButtonListener listener) {
-	    if (buttonListeners == null) {
-		      buttonListeners = new ArrayList<ButtonListener>();
-		    }
-		    buttonListeners.add(listener);
-		    keys.addListener(iCode, this);	
 	}
 	
 	public static int getKeyPos(String name) {
