@@ -108,6 +108,8 @@ public class GraphicStartup implements Menu {
 	private static GraphicStartup menu = new GraphicStartup();
 	
 	private static TextLCD lcd = LocalEV3.get().getTextLCD();
+	
+	private static Process program;
     
     /**
      * Main method
@@ -1088,6 +1090,47 @@ public class GraphicStartup implements Menu {
           }
           catch (Exception e) {
             System.err.println("Failed to execute program: " + e);
+          } 	
+    }
+    
+    /**
+     * Execute a program and display its output to System.out and error stream to System.err
+     */
+    private static void start(String programName) {
+        try {
+        	lcd.clear();
+        	lcd.refresh();
+        	lcd.setAutoRefresh(false);
+            program = Runtime.getRuntime().exec(programName);
+            BufferedReader input = new BufferedReader(new InputStreamReader(program.getInputStream()));
+            BufferedReader err= new BufferedReader(new InputStreamReader(program.getErrorStream()));
+            
+            EchoThread echoIn = new EchoThread(input, System.out);
+            EchoThread echoErr = new EchoThread(err, System.err);
+            
+            echoIn.start();
+            echoErr.start();
+        } catch (Exception e) {
+        	System.err.println("Failed to start program: " + e);
+        } 
+    }
+    
+    private static void stopProgram() {           
+        try {  
+        	program.destroy();
+        
+            System.out.println("Waiting for process to die");;
+            program.waitFor();
+            System.out.println("Program finished");
+            resetMotors();
+      	    // Turn the LED off, in case left on
+      	    Button.LEDPattern(0);
+            lcd.setAutoRefresh(true);
+            lcd.clear();
+            lcd.refresh();
+          }
+          catch (Exception e) {
+            System.err.println("Failed to stop program: " + e);
           } 	
     }
    

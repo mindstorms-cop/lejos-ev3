@@ -4,6 +4,7 @@ import java.rmi.server.UnicastRemoteObject;
 
 import lejos.hardware.ev3.LocalEV3;
 import lejos.hardware.lcd.Font;
+import lejos.internal.ev3.EV3Key;
 import lejos.remote.ev3.RMIAnalogPort;
 import lejos.remote.ev3.RMIBattery;
 import lejos.remote.ev3.RMIEV3;
@@ -92,5 +93,22 @@ public class RMIRemoteEV3 extends UnicastRemoteObject implements RMIEV3 {
 	@Override
 	public String getName() throws RemoteException {
 		return LocalEV3.get().getName();
+	}
+
+	@Override
+	public RMIKey getKey(String name) throws RemoteException {
+		RMIRemoteKey key = new RMIRemoteKey();
+		key.setId(name);
+		return key;
+	}
+
+	@Override
+	public RMILED getLED() throws RemoteException {
+		return new RMIRemoteLED();
+	}
+
+	@Override
+	public RMIKeys getKeys() throws RemoteException {
+		return new RMIRemoteKeys();
 	}
 }

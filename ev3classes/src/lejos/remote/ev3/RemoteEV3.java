@@ -8,6 +8,9 @@ import java.util.ArrayList;
 
 import lejos.hardware.Audio;
 import lejos.hardware.BrickFinder;
+import lejos.hardware.Key;
+import lejos.hardware.Keys;
+import lejos.hardware.LED;
 import lejos.hardware.Power;
 import lejos.hardware.LocalBTDevice;
 import lejos.hardware.LocalWifiDevice;
@@ -17,16 +20,19 @@ import lejos.hardware.lcd.GraphicsLCD;
 import lejos.hardware.lcd.TextLCD;
 import lejos.hardware.port.Port;
 import lejos.hardware.port.PortException;
+import lejos.internal.ev3.EV3Key;
 
 public class RemoteEV3 implements EV3 {
 	private String host;
 	private  RMIEV3 rmiEV3;
-	protected ArrayList<RemotePort> ports = new ArrayList<RemotePort>();
+	private ArrayList<RemotePort> ports = new ArrayList<RemotePort>();
+	private RemoteKeys keys;
 	
 	public RemoteEV3(String host) throws RemoteException, MalformedURLException, NotBoundException {
 		this.host = host;
 		rmiEV3 = (RMIEV3) Naming.lookup("//" + host + "/RemoteEV3");
 		createPorts();
+		keys = new RemoteKeys(rmiEV3.getKeys());
 	}
 	
 	private void createPorts() {
@@ -161,5 +167,28 @@ public class RemoteEV3 implements EV3 {
 	@Override
 	public void setDefault() {
 		BrickFinder.setDefault(this);
+	}
+
+	@Override
+	public Key getKey(String name) {
+		try {
+			return new RemoteKey(rmiEV3.getKey(name), keys, name);
+		} catch (RemoteException e) {
+			throw new PortException(e);
+		}
+	}
+
+	@Override
+	public LED getLED() {
+		try {
+			return new RemoteLED(rmiEV3.getLED());
+		} catch (RemoteException e) {
+			throw new PortException(e);
+		}
+	}
+
+	@Override
+	public Keys getKeys() {
+		return keys;
 	}
 }

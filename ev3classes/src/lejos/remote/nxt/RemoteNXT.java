@@ -5,6 +5,9 @@ import java.util.ArrayList;
 
 import lejos.hardware.Audio;
 import lejos.hardware.BrickFinder;
+import lejos.hardware.Key;
+import lejos.hardware.Keys;
+import lejos.hardware.LED;
 import lejos.hardware.Power;
 import lejos.hardware.LocalBTDevice;
 import lejos.hardware.LocalWifiDevice;
@@ -129,5 +132,23 @@ public class RemoteNXT implements NXT {
 	@Override
 	public void setDefault() {
 		BrickFinder.setDefault(this);	
+	}
+
+	@Override
+	public Key getKey(String name) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public LED getLED() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Keys getKeys() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }
