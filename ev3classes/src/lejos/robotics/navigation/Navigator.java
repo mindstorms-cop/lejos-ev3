@@ -6,13 +6,6 @@ import lejos.robotics.localization.OdometryPoseProvider;
 import lejos.robotics.localization.PoseProvider;
 import lejos.robotics.pathfinding.Path;
 
-//import lejos.nxt.comm.RConsole;
-
-
-/*
- * WARNING: THIS CLASS IS SHARED BETWEEN THE classes AND pccomms PROJECTS.
- * DO NOT EDIT THE VERSION IN pccomms AS IT WILL BE OVERWRITTEN WHEN THE PROJECT IS BUILT.
- */
 /**
  * This class controls a robot to traverse a Path,  a sequence of  {@link  lejos.robotics.navigation.Waypoint}s.
  * It's default mode for a new path is continuous movement (no stopping at waypoints)  but see also {@link #singleStep(boolean)}.  To interrupt the path traversal,  call stop().
