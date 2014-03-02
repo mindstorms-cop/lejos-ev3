@@ -1,6 +1,5 @@
 package lejos.remote.ev3;
 
-import java.io.IOException;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 
@@ -33,8 +32,7 @@ public class RMIRemoteRegulatedMotor extends UnicastRemoteObject implements RMIR
 			break;
 		case 'G':
 			motor = new MindsensorsGlideWheelMRegulatedMotor(p);
-		}
-			
+		}		
 	}
 
 	@Override
@@ -50,12 +48,12 @@ public class RMIRemoteRegulatedMotor extends UnicastRemoteObject implements RMIR
 
 	@Override
 	public void stop(boolean immediateReturn) throws RemoteException {
-		motor.stop();
+		motor.stop(immediateReturn);
 	}
 
 	@Override
 	public void flt(boolean immediateReturn) throws RemoteException {
-		motor.flt();
+		motor.flt(immediateReturn);
 	}
 
 	@Override
@@ -133,6 +131,16 @@ public class RMIRemoteRegulatedMotor extends UnicastRemoteObject implements RMIR
 	@Override
 	public void backward() throws RemoteException {
 		motor.backward();	
+	}
+
+	@Override
+	public void resetTachoCount() throws RemoteException {
+		motor.resetTachoCount();
+	}
+
+	@Override
+	public int getTachoCount() throws RemoteException {
+		return motor.getTachoCount();
 	}
 }
 

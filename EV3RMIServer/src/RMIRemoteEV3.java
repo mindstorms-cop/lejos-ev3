@@ -9,15 +9,15 @@ import lejos.remote.ev3.RMIBluetooth;
 import lejos.remote.ev3.RMIEV3;
 import lejos.remote.ev3.RMIGraphicsLCD;
 import lejos.remote.ev3.RMII2CPort;
-import lejos.remote.ev3.RMILCD;
+import lejos.remote.ev3.RMIKey;
+import lejos.remote.ev3.RMIKeys;
+import lejos.remote.ev3.RMILED;
 import lejos.remote.ev3.RMIMotorPort;
 import lejos.remote.ev3.RMIRegulatedMotor;
-import lejos.remote.ev3.RMIRemoteTextLCD;
 import lejos.remote.ev3.RMISampleProvider;
 import lejos.remote.ev3.RMITextLCD;
 import lejos.remote.ev3.RMIUARTPort;
 import lejos.remote.ev3.RMIWifi;
-
 
 public class RMIRemoteEV3 extends UnicastRemoteObject implements RMIEV3 {
 
@@ -103,6 +103,24 @@ public class RMIRemoteEV3 extends UnicastRemoteObject implements RMIEV3 {
 
 	@Override
 	public String getName() throws RemoteException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public RMIKey getKey(String name) throws RemoteException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public RMILED getLED() throws RemoteException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public RMIKeys getKeys() throws RemoteException {
 		// TODO Auto-generated method stub
 		return null;
 	}

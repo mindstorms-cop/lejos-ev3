@@ -383,6 +383,6 @@ public abstract class BaseRegulatedMotor extends Device implements RegulatedMoto
         // It is generally assumed, that the maximum accurate speed of Motor is
         // 100 degree/second * Voltage
         // TODO: Should this be using the Brick interface?
-        return LocalEV3.ev3.battery.getVoltage() * 100.0f;
+        return LocalEV3.ev3.getPower().getVoltage() * 100.0f;
     }
 }

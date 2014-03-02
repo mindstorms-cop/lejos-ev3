@@ -82,5 +82,24 @@ public interface Brick
      * Set this brick as the default one for static methods
      */
     public void setDefault();
-
+    
+    /**
+     * Get access to the keys (buttons)
+     * @return an implementation of the Keys interface
+     */
+    public Keys getKeys();
+    
+    /**
+     * Get access to a specific Key (aka Button)
+     * @param name the key name
+     * @return an implementation of the Key interface
+     */
+    public Key getKey(String name);
+    
+    /**
+     * Get access to the LED
+     * @return an implementation of the LED interface
+     */
+    public LED getLED();
+    
 }

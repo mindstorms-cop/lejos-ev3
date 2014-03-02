@@ -7,7 +7,7 @@ import java.rmi.server.UnicastRemoteObject;
 import lejos.hardware.Audio;
 import lejos.hardware.ev3.LocalEV3;
 
-public class RMIRemoteAudio extends UnicastRemoteObject implements RMIAudio{
+public class RMIRemoteAudio extends UnicastRemoteObject implements RMIAudio {
 	private Audio audio = LocalEV3.get().getAudio();
 	
 	private static final long serialVersionUID = -1570513073865401851L;
