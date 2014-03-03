@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <project name="snapshot" basedir="." default="all">
     
-    <target name="all" depends="subproject.ev3classes,subproject.ev3menu,subproject.ev3graphicstest,subproject.ev3bumpercar,subproject.ev3sensortest,subproject.ev3tools">
+    <target name="all" depends="subproject.ev3classes,subproject.ev3menu,subproject.ev3graphicstest,subproject.ev3bumpercar,subproject.ev3sensortest,subproject.ev3tools,subproject.ev3scripts">
 		<echo message="Done." />
 	</target>
 	
@@ -36,6 +36,18 @@
 			<fileset file="../ev3tools/dist/ev3tools.jar" />
 		</copy>
 		<echo message="*** leaving ev3tools project" />
+	</target>
+	
+    <target name="subproject.ev3scripts">
+		<echo message="*** entering ev3scripts project" />
+		<ant inheritAll="false" dir="../ev3scripts" antfile="build.xml">
+			<target name="all" />
+		</ant>
+		<copy todir="bin">
+			<fileset file="../ev3scripts/build/linux/*" />
+			<fileset file="../ev3scripts/build/windows/*" />
+		</copy>
+		<echo message="*** leaving ev3scripts project" />
 	</target>
 	
     <target name="subproject.ev3menu">

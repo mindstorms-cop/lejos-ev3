@@ -71,5 +71,4 @@ case $(uname -s) in
 	Darwin) EV3_FORCE32="-d32";;
 esac
 
-EV3_CP_PC=$(my_build_cp "$EV3_HOME/lib/pc")
-EV3_CP_EV3=$(my_build_cp "$EV3_HOME/lib/ev3")
+EV3_CP_PC=$(my_build_cp "$EV3_HOME/lib")
