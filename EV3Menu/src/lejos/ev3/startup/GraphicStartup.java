@@ -1675,6 +1675,16 @@ public class GraphicStartup implements Menu {
             	lastIp = ip;
             }
 			System.setProperty("java.rmi.server.hostname", lastIp);
+			
+            try {
+    			RMIRemoteEV3 ev3 = new RMIRemoteEV3();
+    			Naming.rebind("//localhost/RemoteEV3", ev3);
+    			RMIRemoteMenu remoteMenu = new RMIRemoteMenu(menu);
+    			Naming.rebind("//localhost/RemoteMenu", remoteMenu);
+    		} catch (Exception e) {
+    			System.err.println("RMI failed to start: " + e);
+    		}
+            
 			lcd.clear();
         	ind.resume();
 		} catch (IOException | InterruptedException e) {
