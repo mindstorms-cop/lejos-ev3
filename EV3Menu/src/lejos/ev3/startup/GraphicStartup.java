@@ -568,7 +568,7 @@ public class GraphicStartup implements Menu {
 				Process p = Runtime.getRuntime().exec("/home/root/lejos/bin/startbt");
 				int status = p.waitFor();
 				System.out.println("startbt returned " + status);
-			} catch (IOException | InterruptedException e) {
+			} catch (Exception e) {
 				System.err.println("Failed to execute startbt: " + e);
 			}
         }
@@ -1642,7 +1642,7 @@ public class GraphicStartup implements Menu {
 			Process p = Runtime.getRuntime().exec("hostname " + hostname);
 			int status = p.waitFor();
 			System.out.println("hostname returned " + status);
-		} catch (IOException | InterruptedException e) {
+		} catch (Exception e) {
 			System.err.println("Failed to execute hostname: " + e);
 		}
 		
@@ -1687,7 +1687,7 @@ public class GraphicStartup implements Menu {
             
 			lcd.clear();
         	ind.resume();
-		} catch (IOException | InterruptedException e) {
+		} catch (Exception e) {
 			System.err.println("Failed to execute startwlan: " + e);
 		}
 	}

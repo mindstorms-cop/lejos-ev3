@@ -1580,8 +1580,7 @@ public class EV3Control implements ListSelectionListener, NXTProtocol, ConsoleVi
 				cvc.connectTo(name, name, 0, true);
 				if (row >= 0) updateConnectionStatus(row, EV3ConnectionState.CONNECTED);
 				showFiles();
-			} catch (RemoteException | MalformedURLException
-					| NotBoundException e) {
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		}
