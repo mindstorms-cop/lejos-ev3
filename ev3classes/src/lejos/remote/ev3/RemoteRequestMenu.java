@@ -245,4 +245,16 @@ public class RemoteRequestMenu implements Menu, Serializable {
 			e.printStackTrace();
 		}	
 	}
+
+	@Override
+	public void stopProgram() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public String getExecutingProgramName() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

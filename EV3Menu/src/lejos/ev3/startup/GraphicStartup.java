@@ -109,7 +109,13 @@ public class GraphicStartup implements Menu {
 	
 	private static TextLCD lcd = LocalEV3.get().getTextLCD();
 	
-	private static Process program;
+	private static Process program; // the running user program, if any
+	private static String programName; // The name of the running program
+	
+	private static boolean suspend = false;
+	static EchoThread echoIn, echoErr;
+	
+	static GraphicMenu curMenu;
     
     /**
      * Main method
@@ -1052,17 +1058,18 @@ public class GraphicStartup implements Menu {
     /**
      * Execute a program and display its output to System.out and error stream to System.err
      */
-    private static void exec(String program) {
+    private static void exec(String programName) {
         try {
+        	GraphicStartup.programName = programName;
         	lcd.clear();
         	lcd.refresh();
         	lcd.setAutoRefresh(false);
-            Process p = Runtime.getRuntime().exec(program);
-            BufferedReader input = new BufferedReader(new InputStreamReader(p.getInputStream()));
-            BufferedReader err= new BufferedReader(new InputStreamReader(p.getErrorStream()));
+            program = Runtime.getRuntime().exec(programName);
+            BufferedReader input = new BufferedReader(new InputStreamReader(program.getInputStream()));
+            BufferedReader err= new BufferedReader(new InputStreamReader(program.getErrorStream()));
             
-            EchoThread echoIn = new EchoThread(input, System.out);
-            EchoThread echoErr = new EchoThread(err, System.err);
+            echoIn = new EchoThread(input, System.out);
+            echoErr = new EchoThread(err, System.err);
             
             echoIn.start();
             echoErr.start();
@@ -1071,7 +1078,7 @@ public class GraphicStartup implements Menu {
               int b = Button.getButtons(); 
               if (b == 6) {
             	  System.out.println("Killing the process");
-            	  p.destroy(); 
+            	  program.destroy(); 
             	  // reset motors after program is aborted
             	  resetMotors();
                   break;
@@ -1080,13 +1087,14 @@ public class GraphicStartup implements Menu {
               Delay.msDelay(200);
             }
             System.out.println("Waiting for process to die");;
-            p.waitFor();
+            program.waitFor();
             System.out.println("Program finished");
       	    // Turn the LED off, in case left on
       	    Button.LEDPattern(0);
             lcd.setAutoRefresh(true);
             lcd.clear();
             lcd.refresh();
+            program = null;
           }
           catch (Exception e) {
             System.err.println("Failed to execute program: " + e);
@@ -1096,8 +1104,10 @@ public class GraphicStartup implements Menu {
     /**
      * Execute a program and display its output to System.out and error stream to System.err
      */
-    private static void start(String programName) {
+    private static void startProgram(String programName) {
         try {
+        	if (program != null) return;
+        	GraphicStartup.programName = programName;
         	lcd.clear();
         	lcd.refresh();
         	lcd.setAutoRefresh(false);
@@ -1105,18 +1115,22 @@ public class GraphicStartup implements Menu {
             BufferedReader input = new BufferedReader(new InputStreamReader(program.getInputStream()));
             BufferedReader err= new BufferedReader(new InputStreamReader(program.getErrorStream()));
             
-            EchoThread echoIn = new EchoThread(input, System.out);
-            EchoThread echoErr = new EchoThread(err, System.err);
+            echoIn = new EchoThread(input, System.out);
+            echoErr = new EchoThread(err, System.err);
             
             echoIn.start();
             echoErr.start();
+            suspend = true;
+            curMenu.quit(); // Quit the current menu and go into the suspend loop
         } catch (Exception e) {
         	System.err.println("Failed to start program: " + e);
         } 
     }
     
-    private static void stopProgram() {           
+    public void stopProgram() {           
         try {  
+        	if (program == null) return;
+        	
         	program.destroy();
         
             System.out.println("Waiting for process to die");;
@@ -1128,6 +1142,9 @@ public class GraphicStartup implements Menu {
             lcd.setAutoRefresh(true);
             lcd.clear();
             lcd.refresh();
+            program = null;
+            suspend = false;
+        	ind.resume();
           }
           catch (Exception e) {
             System.err.println("Failed to stop program: " + e);
@@ -1264,15 +1281,38 @@ public class GraphicStartup implements Menu {
     private int getSelection(GraphicMenu menu, int cur)
     { 	
         int selection;
+        
+        curMenu = menu;
+        
         // If the menu is interrupted by another thread, redisplay
         do {
         	selection = menu.select(cur, timeout*60000);
+        	
+            while (suspend && program != null) {
+            	if (!echoIn.isAlive() && !echoErr.isAlive()) {
+            		stopProgram();
+            		ind.resume();
+            		break;
+            	}
+                int b = Button.getButtons(); 
+                if (b == 6) {
+                	stopProgram();
+                	ind.resume();
+                	break;
+                }
+                Delay.msDelay(200);
+            }
         } while (selection == -2);
         
         if (selection == -3)
             shutdown();
     	
         return selection;
+    }
+    
+    public String getExecutingProgramName() {
+    	if (program == null) return null;
+    	return programName;
     }
     
     /**
@@ -1421,8 +1461,7 @@ public class GraphicStartup implements Menu {
 	@Override
 	public void runProgram(String programName) {
     	ind.suspend();
-    	exec(JAVA_RUN_JAR + "/home/lejos/programs/" + programName + ".jar");
-    	ind.resume();
+    	startProgram(JAVA_RUN_JAR + "/home/lejos/programs/" + programName + ".jar");
 	}
 
 	@Override
@@ -1444,15 +1483,13 @@ public class GraphicStartup implements Menu {
 	@Override
 	public void runSample(String programName) {
     	ind.suspend();
-    	exec(JAVA_RUN_JAR + "/home/root/lejos/samples/" + programName + ".jar");
-    	ind.resume();
+    	startProgram(JAVA_RUN_JAR + "/home/root/lejos/samples/" + programName + ".jar");
 	}
 
 	@Override
 	public void debugProgram(String programName) {
     	ind.suspend();
-    	exec(JAVA_DEBUG_JAR + "/home/lejos/programs/" + programName + ".jar");
-    	ind.resume();
+    	startProgram(JAVA_DEBUG_JAR + "/home/lejos/programs/" + programName + ".jar");
 	}
 
 	@Override
