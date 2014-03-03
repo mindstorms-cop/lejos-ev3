@@ -34,6 +34,7 @@
 		</ant>
 		<copy todir="lib">
 			<fileset file="../ev3tools/dist/ev3tools.jar" />
+			<fileset file="../ev3tools/thirdparty/lib/*.jar" />
 		</copy>
 		<echo message="*** leaving ev3tools project" />
 	</target>
