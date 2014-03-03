@@ -3,11 +3,15 @@
     <property file="local.properties" />
     <property name="source.dir"     value="src"/>
     <property name="lib.dir"        value="../ev3classes"/>
+	<property name="thirdparty.dir" value="thirdparty/lib"/>
     <property name="class.dir"      value="build"/>
     <property name="jar.dir"        value="dist"/>
 
     <path id="libraries.path">    
         <fileset dir="${lib.dir}">
+            <include name="*.jar"/>
+        </fileset>
+        <fileset dir="${thirdparty.dir}">
             <include name="*.jar"/>
         </fileset>
     </path>
