@@ -88,7 +88,7 @@ public class EV3Control implements ListSelectionListener, NXTProtocol, ConsoleVi
 	private static final Dimension frameSize = new Dimension(800, 620);
 	private static final Dimension filesAreaSize = new Dimension(780, 350);
 	private static final Dimension filesPanelSize = new Dimension(500, 500);
-	private static final Dimension ev3ButtonsPanelSize = new Dimension(220, 130);
+	private static final Dimension ev3ButtonsPanelSize = new Dimension(260, 130);
 	private static final Dimension filesButtonsPanelSize = new Dimension(770,100);
 	private static final Dimension ev3TableSize = new Dimension(500, 100);	
 	private static final Dimension labelSize = new Dimension(60, 20);
@@ -154,6 +154,7 @@ public class EV3Control implements ListSelectionListener, NXTProtocol, ConsoleVi
 	private JButton[] resetButtons = new JButton[4];
 	private JButton connectButton = new JButton("Connect");
 	private JButton stopButton = new JButton("Stop Program");
+	private JButton shutdownButton = new JButton("Shutdown");
 	private JButton dataDownloadButton = new JButton("Download");
 	private TextField dataColumns = new TextField("8", 2);
 	private JButton searchButton = new JButton("Search");
@@ -257,6 +258,13 @@ public class EV3Control implements ListSelectionListener, NXTProtocol, ConsoleVi
 		stopButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
 				stopProgram();
+			}
+		});
+		
+		// Shutdown Button: Shut down the EV3
+		shutdownButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent ae) {
+				shutdown();
 			}
 		});
 
@@ -407,6 +415,7 @@ public class EV3Control implements ListSelectionListener, NXTProtocol, ConsoleVi
 		ev3ButtonPanel.add(buttonPanel);
 		JPanel stopButtonPanel = new JPanel();
 		stopButtonPanel.add(stopButton);
+		stopButtonPanel.add(shutdownButton);
 		ev3ButtonPanel.add(stopButtonPanel);
 		ev3ButtonPanel.setPreferredSize(ev3ButtonsPanelSize);
 		ev3Panel.add(ev3ButtonPanel, BorderLayout.EAST);
@@ -1941,6 +1950,16 @@ public class EV3Control implements ListSelectionListener, NXTProtocol, ConsoleVi
 				showMessage("Exception stopping program");
 			}		
 		}
+	}
+	
+	private void shutdown() {
+		try {
+			menu.shutdown();
+		} catch (RemoteException e) {
+			// Ignore
+		}
+		closeAll();
+		updateConnectionStatus(ev3Table.getSelectedRow(), EV3ConnectionState.DISCONNECTED);
 	}
 	
 	/**

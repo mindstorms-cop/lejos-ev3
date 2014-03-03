@@ -42,5 +42,7 @@ public interface RMIMenu extends Remote {
 	public void configureWifi(String ssid, String pwd) throws RemoteException;
 	
 	public String getExecutingProgramName() throws RemoteException;
+	
+	public void shutdown() throws RemoteException;
 
 }

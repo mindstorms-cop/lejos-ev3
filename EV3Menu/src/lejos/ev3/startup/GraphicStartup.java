@@ -1318,7 +1318,7 @@ public class GraphicStartup implements Menu {
     /**
      * Shut down the EV3
      */
-    void shutdown() {
+    public void shutdown() {
     	System.out.println("Shutting down the EV3");
         ind.suspend();
     	exec("init 0");
@@ -1670,6 +1670,11 @@ public class GraphicStartup implements Menu {
 			System.out.println("startwlan returned " + status);
 			// Get IP addresses again
 			ips = getIPAddresses();
+            String lastIp = null;
+            for (String ip: ips) {
+            	lastIp = ip;
+            }
+			System.setProperty("java.rmi.server.hostname", lastIp);
 			lcd.clear();
         	ind.resume();
 		} catch (IOException | InterruptedException e) {

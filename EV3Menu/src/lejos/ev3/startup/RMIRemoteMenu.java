@@ -105,11 +105,15 @@ public class RMIRemoteMenu extends UnicastRemoteObject implements RMIMenu {
 	@Override
 	public void stopProgram() throws RemoteException {
 		menu.stopProgram();
-		
 	}
 
 	@Override
 	public String getExecutingProgramName() throws RemoteException {
 		return menu.getExecutingProgramName();
+	}
+
+	@Override
+	public void shutdown() throws RemoteException {
+		menu.shutdown();
 	}
 }

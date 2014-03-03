@@ -257,4 +257,10 @@ public class RemoteRequestMenu implements Menu, Serializable {
 		// TODO Auto-generated method stub
 		return null;
 	}
+
+	@Override
+	public void shutdown() {
+		// TODO Auto-generated method stub
+		
+	}
 }
