@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <project name="snapshot" basedir="." default="all">
     
-    <target name="all" depends="subproject.ev3classes">
+    <target name="all" depends="subproject.ev3classes,subproject.ev3menu,subproject.ev3graphicstest,subproject.ev3bumpercar,subproject.ev3sensortest">
 		<echo message="Done." />
 	</target>
 	
@@ -25,5 +25,50 @@
 			<fileset file="../DBusJava/dbusjava.jar" />
 		</copy>
 		<echo message="*** leaving dbusjava project" />
+	</target>
+	
+    <target name="subproject.ev3menu">
+		<echo message="*** entering EV3Menu project" />
+		<ant inheritAll="false" dir="../EV3Menu" antfile="build.xml">
+			<target name="jar" />
+		</ant>
+		<copy todir="bin/utils">
+			<fileset file="../EV3Menu/dist/EV3Menu.jar" />
+			<fileset file="../EV3Menu/src/wpa_supplicant.txt" />
+		</copy>
+		<echo message="*** leaving EV3Menu project" />
+	</target>
+	
+    <target name="subproject.ev3graphicstest">
+		<echo message="*** entering EV3GraphicsTest project" />
+		<ant inheritAll="false" dir="../EV3GraphicsTest" antfile="build.xml">
+			<target name="jar" />
+		</ant>
+		<copy todir="samples">
+			<fileset file="../EV3GraphicsTest/dist/GraphicsTest.jar" />
+		</copy>
+		<echo message="*** leaving EV3GraphicsTest project" />
+	</target>
+	
+    <target name="subproject.ev3bumpercar">
+		<echo message="*** entering EV3BumperCar project" />
+		<ant inheritAll="false" dir="../EV3BumperCar" antfile="build.xml">
+			<target name="jar" />
+		</ant>
+		<copy todir="samples">
+			<fileset file="../EV3BumperCar/dist/BumperCar.jar" />
+		</copy>
+		<echo message="*** leaving EV3BumperCar project" />
+	</target>
+	
+    <target name="subproject.ev3sensortest">
+		<echo message="*** entering EV3SensorTest project" />
+		<ant inheritAll="false" dir="../EV3SensorTest" antfile="build.xml">
+			<target name="jar" />
+		</ant>
+		<copy todir="samples">
+			<fileset file="../EV3SensorTest/dist/SensorTest.jar" />
+		</copy>
+		<echo message="*** leaving EV3SensorTest project" />
 	</target>
 </project>
