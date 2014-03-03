@@ -11,6 +11,8 @@ public interface RMIMenu extends Remote {
 	
 	public void runSample(String programName) throws RemoteException;
 	
+	public void stopProgram() throws RemoteException;
+	
 	public boolean deleteFile(String fileName) throws RemoteException;
 	
 	public long getFileSize(String fileName) throws RemoteException;
@@ -38,5 +40,7 @@ public interface RMIMenu extends Remote {
 	public void setName(String name) throws RemoteException;
 	
 	public void configureWifi(String ssid, String pwd) throws RemoteException;
+	
+	public String getExecutingProgramName() throws RemoteException;
 
 }

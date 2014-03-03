@@ -153,6 +153,7 @@ public class EV3Control implements ListSelectionListener, NXTProtocol, ConsoleVi
 	private JTextField[] limits = new JTextField[4];
 	private JButton[] resetButtons = new JButton[4];
 	private JButton connectButton = new JButton("Connect");
+	private JButton stopButton = new JButton("Stop Program");
 	private JButton dataDownloadButton = new JButton("Download");
 	private TextField dataColumns = new TextField("8", 2);
 	private JButton searchButton = new JButton("Search");
@@ -245,10 +246,17 @@ public class EV3Control implements ListSelectionListener, NXTProtocol, ConsoleVi
 			}
 		});
 
-		// Connect Button: connect to selected EV�
+		// Connect Button: connect to selected EV3
 		connectButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
 				connect();
+			}
+		});
+		
+		// Stop Button: Stop running program
+		stopButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent ae) {
+				stopProgram();
 			}
 		});
 
@@ -397,6 +405,9 @@ public class EV3Control implements ListSelectionListener, NXTProtocol, ConsoleVi
 		buttonPanel.add(searchButton);
 		buttonPanel.add(connectButton);
 		ev3ButtonPanel.add(buttonPanel);
+		JPanel stopButtonPanel = new JPanel();
+		stopButtonPanel.add(stopButton);
+		ev3ButtonPanel.add(stopButtonPanel);
 		ev3ButtonPanel.setPreferredSize(ev3ButtonsPanelSize);
 		ev3Panel.add(ev3ButtonPanel, BorderLayout.EAST);
 	}
@@ -1907,6 +1918,28 @@ public class EV3Control implements ListSelectionListener, NXTProtocol, ConsoleVi
 			menu.setSetting(defaultProgramProperty,"/home/lejos/programs/" + fileName);
 		} catch (IOException ioe) {
 			showMessage("IO setting default program");
+		}
+	}
+	
+	private void stopProgram() {
+		if (menu == null) return;
+		String programName;
+		
+		try {
+			programName = menu.getExecutingProgramName();
+		} catch (RemoteException e) {
+			showMessage("Exeception getting program name");
+			return;
+		}
+		
+		if (programName == null) showMessage("No executing program");
+		else {
+			try {
+				menu.stopProgram();
+				showMessage("Stopped " + programName);
+			} catch (RemoteException e) {
+				showMessage("Exception stopping program");
+			}		
 		}
 	}
 	
