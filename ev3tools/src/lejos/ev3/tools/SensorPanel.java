@@ -113,7 +113,11 @@ public class SensorPanel extends JPanel implements ItemListener {
 	}
 
 	public void close() {
-		if (sensor != null) sensor.close();
+		try {
+			if (sensor != null) sensor.close();
+		} catch (Exception e) {
+			// Ignore errors
+		}
 	}
 	
 	@Override

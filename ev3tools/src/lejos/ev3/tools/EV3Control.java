@@ -65,6 +65,7 @@ import lejos.remote.ev3.RMIRegulatedMotor;
 import lejos.remote.ev3.RemoteEV3;
 import lejos.remote.ev3.RemoteI2CPort;
 import lejos.remote.nxt.NXTProtocol;
+import lejos.utility.Delay;
 
 /**
  * 
@@ -159,6 +160,7 @@ public class EV3Control implements ListSelectionListener, NXTProtocol, ConsoleVi
 	private TextField dataColumns = new TextField("8", 2);
 	private JButton searchButton = new JButton("Search");
 	private JButton monitorUpdateButton = new JButton("Update");
+	private JButton monitorContinuousButton = new JButton("Continuous");
 	private JButton forwardButton = new JButton("Forward");
 	private JButton backwardButton = new JButton("Backward");
 	private JButton leftButton = new JButton("Turn Left");
@@ -211,6 +213,8 @@ public class EV3Control implements ListSelectionListener, NXTProtocol, ConsoleVi
     private static final int DEFAULT_PORT = 3016;
     private DatagramSocket socket;
     private DatagramPacket packet;
+    
+    private UpdateSensors updateSensors;
 
 	/**
 	 * Command line entry point
@@ -273,6 +277,22 @@ public class EV3Control implements ListSelectionListener, NXTProtocol, ConsoleVi
 			public void actionPerformed(ActionEvent ae) {
 				getSensorValues();
 				updateSensors();
+			}
+		});
+		
+		// Monitor Update Button: get values being monitored
+		monitorContinuousButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent ae) {
+				if (updateSensors != null) {
+					updateSensors.setUpdate(false);
+					monitorContinuousButton.setText("Continuous");
+					updateSensors = null;
+					
+				} else {
+					updateSensors = new UpdateSensors();
+					updateSensors.start();
+					monitorContinuousButton.setText("Stop");
+				}
 			}
 		});
 
@@ -702,6 +722,7 @@ public class EV3Control implements ListSelectionListener, NXTProtocol, ConsoleVi
 		monitorPanel.add(centerPanel);
 		monitorPanel.add(rightPanel);
 		monitorPanel.add(monitorUpdateButton);
+		monitorPanel.add(monitorContinuousButton);
 	}
 	
 	public void createWirelessPanel() {
@@ -2002,5 +2023,26 @@ public class EV3Control implements ListSelectionListener, NXTProtocol, ConsoleVi
     	String val = menu.getSetting(key);
     	if (val == null) return defaultValue;
     	else return val;
+    }
+    
+    class UpdateSensors extends Thread {
+    	private boolean update = true;
+    	
+    	public UpdateSensors() {
+    		setDaemon(true);
+    	}
+    	
+    	public void setUpdate(boolean update) {
+    		this.update = update;
+    		
+    	}
+    	@Override
+    	public void run() {
+    		while(update) {
+				getSensorValues();
+				updateSensors();
+				Delay.msDelay(2000);
+    		}
+    	}
     }
 }
