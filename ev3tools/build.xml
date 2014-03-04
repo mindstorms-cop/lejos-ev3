@@ -6,6 +6,7 @@
 	<property name="thirdparty.dir" value="thirdparty/lib"/>
     <property name="class.dir"      value="build"/>
     <property name="jar.dir"        value="dist"/>
+    <property name="src.zip"        value="dist/${ant.project.name}-src.zip"/>
 
     <path id="libraries.path">    
         <fileset dir="${lib.dir}">
@@ -33,4 +34,12 @@
         <jar destfile="${jar.dir}/${ant.project.name}.jar" basedir="${class.dir}">
         </jar>  
     </target>
+    
+    <target name="src.zip" description="generate zip of sources">
+		<zip destfile="${src.zip}">
+			<fileset dir="${source.dir}" />
+		</zip>
+	</target>
+	
+    <target name="pc.files" description="Generate the pc files but do not copy to EV3" depends="jar,src.zip"/>
 </project>

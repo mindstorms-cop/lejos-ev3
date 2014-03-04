@@ -33,11 +33,13 @@
     <target name="subproject.ev3tools">
 		<echo message="*** entering ev3tools project" />
 		<ant inheritAll="false" dir="../ev3tools" antfile="build.xml">
-			<target name="jar" />
+			<target name="pc.files" />
 		</ant>
 		<copy todir="lib">
 			<fileset file="../ev3tools/dist/ev3tools.jar" />
+			<fileset file="../ev3tools/dist/ev3tools-src.zip" />
 			<fileset file="../ev3tools/thirdparty/lib/*.jar" />
+			<fileset file="../ev3tools/thirdparty/lib/*.zip" />
 		</copy>
 		<echo message="*** leaving ev3tools project" />
 	</target>
@@ -98,4 +100,20 @@
 		</copy>
 		<echo message="*** leaving EV3SensorTest project" />
 	</target>
+	
+    <target name="copy">
+    	<scp todir="root:@${ev3.host}:/home/root/lejos/lib/" trust="true">
+    	    <fileset file="lib/ev3classes.jar"/>
+    	    <fileset file="lib/dbusjava.jar"/>
+    	</scp>
+    	<scp todir="root:@${ev3.host}:/home/root/lejos/bin/util/" trust="true">
+    	    <fileset file="bin/utils/EV3Menu.jar"/>
+    	    <fileset file="bin/utils/wpa_supplicant.txt"/>
+    	</scp>
+    	<scp todir="root:@${ev3.host}:/home/root/lejos/samples/" trust="true">
+    	    <fileset file="samples/BumperCar.jar"/>
+    	    <fileset file="samples/GraphicsTest.jar"/>
+    	    <fileset file="samples/SensorTest.jar"/>
+    	</scp>
+    </target>
 </project>
