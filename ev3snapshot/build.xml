@@ -8,10 +8,12 @@
     <target name="subproject.ev3classes" depends="subproject.dbusjava">
 		<echo message="*** entering ev3classes project" />
 		<ant inheritAll="false" dir="../ev3classes" antfile="build.xml">
-			<target name="jar" />
+			<target name="pc.files" />
 		</ant>
 		<copy todir="lib">
 			<fileset file="../ev3classes/ev3classes.jar" />
+			<fileset file="../ev3classes/ev3classes-src.zip" />
+			<fileset file="../ev3classes/ev3classes-docs.zip" />
 		</copy>
 		<echo message="*** leaving ev3classes project" />
 	</target>
@@ -19,10 +21,11 @@
     <target name="subproject.dbusjava">
 		<echo message="*** entering dbusjava project" />
 		<ant inheritAll="false" dir="../DBusJava" antfile="build.xml">
-			<target name="jar" />
+			<target name="pc.files" />
 		</ant>
 		<copy todir="lib">
 			<fileset file="../DBusJava/dbusjava.jar" />
+			<fileset file="../DBusJava/dbusjava-src.zip" />
 		</copy>
 		<echo message="*** leaving dbusjava project" />
 	</target>

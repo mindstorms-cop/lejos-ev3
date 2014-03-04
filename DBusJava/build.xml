@@ -7,6 +7,7 @@
     <property name="lejos.home"     value="/home/root/lejos"/>
     <property name="ev3.host"       value="10.0.1.1"/>
     <property name="jna.dir"        value="../ev3classes/lib"/>
+    <property name="src.zip"        value="${ant.project.name}-src.zip"/>
 
     <path id="libraries.path">    
         <fileset dir="${jna.dir}">
@@ -35,4 +36,12 @@
     	    <fileset file="${jar.dir}/${ant.project.name}.jar"/>
     	</scp>
     </target>
+    
+    <target name="src.zip" description="generate zip of sources">
+		<zip destfile="${src.zip}">
+			<fileset dir="${source.dir}" />
+		</zip>
+	</target>
+	
+    	<target name="pc.files" description="Generate the pc files but do not copy to EV3" depends="jar,src.zip"/>
 </project>
