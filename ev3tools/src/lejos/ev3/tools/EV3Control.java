@@ -18,9 +18,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.net.MalformedURLException;
 import java.rmi.Naming;
-import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.text.NumberFormat;
 import java.util.Collection;
@@ -86,7 +84,7 @@ public class EV3Control implements ListSelectionListener, NXTProtocol, ConsoleVi
 	private static final String defaultProgramAutoRunProperty = "lejos.default_autoRun";
 	private static final String sleepTimeProperty = "lejos.sleep_time";
 	
-	private static final Dimension frameSize = new Dimension(800, 620);
+	private static final Dimension frameSize = new Dimension(800, 640);
 	private static final Dimension filesAreaSize = new Dimension(780, 350);
 	private static final Dimension filesPanelSize = new Dimension(500, 500);
 	private static final Dimension ev3ButtonsPanelSize = new Dimension(260, 130);
@@ -143,6 +141,7 @@ public class EV3Control implements ListSelectionListener, NXTProtocol, ConsoleVi
 	private JPanel controlPanel = new JPanel();
 	private JPanel dataPanel = new JPanel();
 	private JPanel otherPanel = new JPanel();
+	private EV3ImageMainPanel imagePanel = new EV3ImageMainPanel();
 	private JPanel wifiPanel = new JPanel();
 	private JPanel bluetoothPanel = new JPanel();
 	private JTextArea theConsoleLog = new JTextArea(16, 68);
@@ -841,6 +840,18 @@ public class EV3Control implements ListSelectionListener, NXTProtocol, ConsoleVi
 		tabbedPane.addTab("Wifi", wifiPanel);
 		tabbedPane.addTab("Bluetooth", bluetoothPanel);
 		tabbedPane.addTab("Tools", otherPanel);
+		tabbedPane.addTab("Images",imagePanel);
+		
+		tabbedPane.addChangeListener(new ChangeListener() {
+		    public void stateChanged(ChangeEvent e) {
+		        if (tabbedPane.getSelectedComponent() == imagePanel) {
+		    		frame.setJMenuBar(imagePanel.getMenuBar(imagePanel));
+		    		
+		        } else {
+		        	frame.setJMenuBar(null);
+		        }
+		    }
+		});
 	}
 	
 	/**
