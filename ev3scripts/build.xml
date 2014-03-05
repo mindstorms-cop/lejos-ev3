@@ -81,7 +81,6 @@ ${template.linux.parser}
 		
 		<linux-tool file="ev3control"       class="lejos.ev3.tools.EV3Control"/>
 		<linux-tool file="ev3console"       class="lejos.ev3.tools.EV3Console"/>
-		<linux-tool file="ev3consoleviewer" class="lejos.ev3.tools.EV3ConsoleViewer"/>
 		<linux-tool file="ev3image"         class="lejos.ev3.tools.EV3Image"/>
 		<linux-tool file="ev3mapcommand"    class="lejos.ev3.tools.EV3MapCommand"/>
 		
@@ -92,7 +91,6 @@ ${template.linux.parser}
 		
 		<win-tool file="ev3control"       class="lejos.ev3.tools.EV3Control"/>
 		<win-tool file="ev3console"       class="lejos.ev3.tools.EV3Console"/>
-		<win-tool file="ev3consoleviewer" class="lejos.ev3.tools.EV3ConsoleViewer"/>
 		<win-tool file="ev3image"         class="lejos.ev3.tools.EV3Image"/>
 		<win-tool file="ev3mapcommand"    class="lejos.ev3.tools.EV3MapCommand"/>
 	</target>
