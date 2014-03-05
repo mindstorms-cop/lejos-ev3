@@ -87,6 +87,12 @@ public class GraphicStartup implements Menu {
     static final String ICYes = "\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u000f\u0000\u0000\u0000\u000f\u0000\u0000\u00c0\u003f\u0000\u0000\u00c0\u003f\u0000\u0000\u00f0\u00ff\u0000\u0000\u00f0\u00ff\u0000\u0000\u00fc\u003f\u0000\u0000\u00fc\u003f\u0030\u0000\u00ff\u000f\u0030\u0000\u00ff\u000f\u00fc\u00c0\u00ff\u0003\u00fc\u00c0\u00ff\u0003\u00ff\u00f3\u00ff\u0000\u00ff\u00f3\u00ff\u0000\u00ff\u00ff\u003f\u0000\u00ff\u00ff\u003f\u0000\u00fc\u00ff\u000f\u0000\u00fc\u00ff\u000f\u0000\u00f0\u00ff\u0003\u0000\u00f0\u00ff\u0003\u0000\u00c0\u00ff\u0000\u0000\u00c0\u00ff\u0000\u0000\u0000\u003f\u0000\u0000\u0000\u003f\u0000\u0000\u0000\u000c\u0000\u0000\u0000\u000c\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000";
     static final String ICNo = "\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u00f0\u0000\u0000\u000f\u00f0\u0000\u0000\u000f\u00fc\u0003\u00c0\u003f\u00fc\u0003\u00c0\u003f\u00fc\u000f\u00f0\u003f\u00fc\u000f\u00f0\u003f\u00f0\u003f\u00fc\u000f\u00f0\u003f\u00fc\u000f\u00c0\u00ff\u00ff\u0003\u00c0\u00ff\u00ff\u0003\u0000\u00ff\u00ff\u0000\u0000\u00ff\u00ff\u0000\u0000\u00fc\u003f\u0000\u0000\u00fc\u003f\u0000\u0000\u00fc\u003f\u0000\u0000\u00fc\u003f\u0000\u0000\u00ff\u00ff\u0000\u0000\u00ff\u00ff\u0000\u00c0\u00ff\u00ff\u0003\u00c0\u00ff\u00ff\u0003\u00f0\u003f\u00fc\u000f\u00f0\u003f\u00fc\u000f\u00fc\u000f\u00f0\u003f\u00fc\u000f\u00f0\u003f\u00fc\u0003\u00c0\u003f\u00fc\u0003\u00c0\u003f\u00f0\u0000\u0000\u000f\u00f0\u0000\u0000\u000f\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000";
 
+    static final String PROGRAMS_DIRECTORY = "/home/lejos/programs";
+    static final String SAMPLES_DIRECTORY = "/home/root/lejos/samples";
+    static final String MENU_DIRECTORY = "/home/root/lejos/bin/utils";
+    static final String START_BLUETOOTH = "/home/root/lejos/bin/startbt";
+    static final String START_WLAN = "/home/root/lejos/bin/startwlan";
+    
     static final int defaultSleepTime = 2;
     static final int maxSleepTime = 10;
 
@@ -142,7 +148,7 @@ public class GraphicStartup implements Menu {
     		if (auto.equals("ON") && !Button.LEFT.isDown())
             {
             	System.out.println("Executing " + f.getPath());
-                exec(JAVA_RUN_JAR + f.getPath());
+                exec(JAVA_RUN_JAR + f.getPath(), PROGRAMS_DIRECTORY);
             }
     	}
         
@@ -565,7 +571,7 @@ public class GraphicStartup implements Menu {
         	try {
         		lcd.clear();
         		lcd.drawString("Restarting agent", 0, 1);
-				Process p = Runtime.getRuntime().exec("/home/root/lejos/bin/startbt");
+				Process p = Runtime.getRuntime().exec(START_BLUETOOTH);
 				int status = p.waitFor();
 				System.out.println("startbt returned " + status);
 			} catch (Exception e) {
@@ -721,7 +727,7 @@ public class GraphicStartup implements Menu {
         {
         	System.out.println("Executing " + f.getPath());
         	ind.suspend();
-            exec(JAVA_RUN_JAR + f.getPath());
+            exec(JAVA_RUN_JAR + f.getPath(), PROGRAMS_DIRECTORY);
         	ind.resume();
         }
     }
@@ -761,7 +767,7 @@ public class GraphicStartup implements Menu {
             {
                 case 0:              	
                     if (getYesNo("Delete all files?", false) == 1) {
-                    	File dir = new File("/home/lejos/programs");
+                    	File dir = new File(PROGRAMS_DIRECTORY);
                         for (String fn : dir.list()) {
                             File aFile = new File(dir,fn);
                             System.out.println("Deleting " + aFile.getPath());
@@ -981,7 +987,7 @@ public class GraphicStartup implements Menu {
      * Present the menu for a single file.
      * @param file
      */
-    private void fileMenu(File file)
+    private void fileMenu(File file, boolean sample)
     {
         String fileName = file.getName();
         String ext = Utils.getExtension(fileName);
@@ -1013,12 +1019,13 @@ public class GraphicStartup implements Menu {
         int selection = getSelection(menu, 0);
         if (selection >= 0)
         {
+        	String directory = (sample ? SAMPLES_DIRECTORY : PROGRAMS_DIRECTORY);
 	        switch(selection + selectionAdd)
 	        {
 	            case 0:
 	            	System.out.println("Running program: " + file.getPath());
 	            	ind.suspend();
-	            	exec(JAVA_RUN_JAR + file.getPath());
+	            	exec(JAVA_RUN_JAR + file.getPath(), directory);
 	            	ind.resume();
 	                break;
 	            case 1:
@@ -1028,7 +1035,7 @@ public class GraphicStartup implements Menu {
 	            	ind.suspend();
 	            	System.setOut(lcdOut);
 	            	System.setErr(lcdOut);
-	            	exec(JAVA_RUN_JAR + file.getPath());
+	            	exec(JAVA_RUN_JAR + file.getPath(), directory);
 	            	System.setOut(origOut);
 	            	System.setOut(origErr);
 	            	ind.resume();
@@ -1036,7 +1043,7 @@ public class GraphicStartup implements Menu {
 	            case 2:
 	            	System.out.println("Debugging program: " + file.getPath());
 	            	ind.suspend();
-	            	exec(JAVA_DEBUG_JAR + file.getPath());
+	            	exec(JAVA_DEBUG_JAR + file.getPath(), directory);
 	            	ind.resume();
 	                break;
 	            case 3:
@@ -1058,13 +1065,13 @@ public class GraphicStartup implements Menu {
     /**
      * Execute a program and display its output to System.out and error stream to System.err
      */
-    private static void exec(String programName) {
+    private static void exec(String programName, String directory) {
         try {
         	GraphicStartup.programName = programName;
         	lcd.clear();
         	lcd.refresh();
         	lcd.setAutoRefresh(false);
-            program = Runtime.getRuntime().exec(programName);
+            program = new ProcessBuilder(programName.split(" ")).directory(new File(directory)).start();
             BufferedReader input = new BufferedReader(new InputStreamReader(program.getInputStream()));
             BufferedReader err= new BufferedReader(new InputStreamReader(program.getErrorStream()));
             
@@ -1161,7 +1168,7 @@ public class GraphicStartup implements Menu {
     	System.out.println("Finding files ...");
         int selection = 0;
         do {
-            File[] files = (new File("/home/lejos/programs")).listFiles();
+            File[] files = (new File(PROGRAMS_DIRECTORY)).listFiles();
             int len = 0;
             for (int i = 0; i < files.length && files[i] != null; i++)
                 len++;
@@ -1186,7 +1193,7 @@ public class GraphicStartup implements Menu {
             menu.setItems(fileNames,icons);
             selection = getSelection(menu, selection);
             if (selection >= 0)
-                fileMenu(files[selection]);
+                fileMenu(files[selection], false);
         } while (selection >= 0);
     }
     
@@ -1197,10 +1204,10 @@ public class GraphicStartup implements Menu {
     private void samplesMenu()
     {
     	GraphicListMenu menu = new GraphicListMenu(null,null);
-    	System.out.println("Finding files ...");
+    	//System.out.println("Finding files ...");
         int selection = 0;
         do {
-            File[] files = (new File("/home/root/lejos/samples")).listFiles();
+            File[] files = (new File(SAMPLES_DIRECTORY)).listFiles();
             int len = 0;
             for (int i = 0; i < files.length && files[i] != null; i++)
                 len++;
@@ -1225,7 +1232,7 @@ public class GraphicStartup implements Menu {
             menu.setItems(fileNames,icons);
             selection = getSelection(menu, selection);
             if (selection >= 0)
-                fileMenu(files[selection]);
+                fileMenu(files[selection], true);
         } while (selection >= 0);
     }
     
@@ -1321,7 +1328,11 @@ public class GraphicStartup implements Menu {
     public void shutdown() {
     	System.out.println("Shutting down the EV3");
         ind.suspend();
-    	exec("init 0");
+    	try {
+			Runtime.getRuntime().exec("init 0");
+		} catch (IOException e) {
+			// Ignore
+		}
     	lcd.drawString("  Shutting down", 0, 6);
         lcd.refresh();
     }
@@ -1332,7 +1343,7 @@ public class GraphicStartup implements Menu {
 		public synchronized void run()
     	{
     		try {
-				InputStream is = new FileInputStream("/home/root/lejos/bin/utils/menufifo");
+				InputStream is = new FileInputStream(MENU_DIRECTORY + "/menufifo");
 				
 	    		while(true) {
 	    			int c = is.read();
@@ -1461,18 +1472,18 @@ public class GraphicStartup implements Menu {
 	@Override
 	public void runProgram(String programName) {
     	ind.suspend();
-    	startProgram(JAVA_RUN_JAR + "/home/lejos/programs/" + programName + ".jar");
+    	startProgram(JAVA_RUN_JAR + PROGRAMS_DIRECTORY + "/" + programName + ".jar");
 	}
 
 	@Override
 	public boolean deleteFile(String fileName) {
-		File f = new File("/home/lejos/programs/" + fileName);
+		File f = new File(PROGRAMS_DIRECTORY + fileName);
 		return f.delete();
 	}
 
 	@Override
 	public String[] getProgramNames() {
-		File[] files = (new File("/home/lejos/programs")).listFiles();
+		File[] files = (new File(PROGRAMS_DIRECTORY)).listFiles();
 		String[] fileNames = new String[files.length];
 		for(int i=0;i<files.length;i++) {
 			fileNames[i] = files[i].getName();
@@ -1483,18 +1494,18 @@ public class GraphicStartup implements Menu {
 	@Override
 	public void runSample(String programName) {
     	ind.suspend();
-    	startProgram(JAVA_RUN_JAR + "/home/root/lejos/samples/" + programName + ".jar");
+    	startProgram(JAVA_RUN_JAR + SAMPLES_DIRECTORY + "/" + programName + ".jar");
 	}
 
 	@Override
 	public void debugProgram(String programName) {
     	ind.suspend();
-    	startProgram(JAVA_DEBUG_JAR + "/home/lejos/programs/" + programName + ".jar");
+    	startProgram(JAVA_DEBUG_JAR + PROGRAMS_DIRECTORY + "/" + programName + ".jar");
 	}
 
 	@Override
 	public String[] getSampleNames() {
-		File[] files = (new File("/home/root/lejos/samples")).listFiles();
+		File[] files = (new File(SAMPLES_DIRECTORY)).listFiles();
 		String[] fileNames = new String[files.length];
 		for(int i=0;i<files.length;i++) {
 			fileNames[i] = files[i].getName();
@@ -1602,7 +1613,7 @@ public class GraphicStartup implements Menu {
 
 	@Override
 	public void deleteAllPrograms() {
-    	File dir = new File("/home/lejos/programs");
+    	File dir = new File(PROGRAMS_DIRECTORY);
         for (String fn : dir.list()) {
             File aFile = new File(dir,fn);
             System.out.println("Deleting " + aFile.getPath());
@@ -1651,7 +1662,7 @@ public class GraphicStartup implements Menu {
 	
 	private void startWlan() {
     	try {
-			Process p = Runtime.getRuntime().exec("/home/root/lejos/bin/startwlan");
+			Process p = Runtime.getRuntime().exec(START_WLAN);
             BufferedReader input = new BufferedReader(new InputStreamReader(p.getInputStream()));
             BufferedReader err= new BufferedReader(new InputStreamReader(p.getErrorStream()));
             PrintStream lcdStream = new PrintStream(new LCDOutputStream());
