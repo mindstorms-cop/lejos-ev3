@@ -4,7 +4,6 @@ import java.awt.BorderLayout;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.GridLayout;
-import java.awt.TextField;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -20,7 +19,6 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.rmi.Naming;
 import java.rmi.RemoteException;
-import java.text.NumberFormat;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -118,7 +116,7 @@ public class EV3Control implements ListSelectionListener, NXTProtocol, ConsoleVi
 	private static final String[] lengthLevels = {"100", "200", "300", "400", "500", "600", "700", "800", "900", "1000", "1100",
                                            "1200", "1300", "1400", "1500", "1600", "1700", "1800", "1900", "2000"};
 	
-	private static final int NUM_MOTORS =4;
+	private static final int NUM_MOTORS = 4;
 	
 	// GUI components
 	private Cursor hourglassCursor = new Cursor(Cursor.WAIT_CURSOR);
@@ -139,13 +137,11 @@ public class EV3Control implements ListSelectionListener, NXTProtocol, ConsoleVi
 	private JPanel consolePanel = new JPanel();
 	private JPanel monitorPanel = new JPanel();
 	private JPanel controlPanel = new JPanel();
-	private JPanel dataPanel = new JPanel();
 	private JPanel otherPanel = new JPanel();
 	private EV3ImageMainPanel imagePanel = new EV3ImageMainPanel();
 	private JPanel wifiPanel = new JPanel();
 	private JPanel bluetoothPanel = new JPanel();
 	private JTextArea theConsoleLog = new JTextArea(16, 68);
-	private JTextArea theDataLog = new JTextArea(20, 68);
 	private JSlider[] sliders = new JSlider[4];
 	private JLabel[] tachos = new JLabel[4];
 	private JCheckBox[] selectors = new JCheckBox[4];
@@ -155,8 +151,6 @@ public class EV3Control implements ListSelectionListener, NXTProtocol, ConsoleVi
 	private JButton connectButton = new JButton("Connect");
 	private JButton stopButton = new JButton("Stop Program");
 	private JButton shutdownButton = new JButton("Shutdown");
-	private JButton dataDownloadButton = new JButton("Download");
-	private TextField dataColumns = new TextField("8", 2);
 	private JButton searchButton = new JButton("Search");
 	private JButton monitorUpdateButton = new JButton("Update");
 	private JButton monitorContinuousButton = new JButton("Continuous");
@@ -165,6 +159,7 @@ public class EV3Control implements ListSelectionListener, NXTProtocol, ConsoleVi
 	private JButton leftButton = new JButton("Turn Left");
 	private JButton rightButton = new JButton("Turn Right");
 	private JButton deleteButton = new JButton("Delete Files");
+	private JButton deleteSamplesButton = new JButton("Delete Files");
 	private JButton uploadButton = new JButton("Upload file");
 	private JButton downloadButton = new JButton("Download file");
 	private JButton runButton = new JButton("Run program");
@@ -192,9 +187,7 @@ public class EV3Control implements ListSelectionListener, NXTProtocol, ConsoleVi
 	
 	// Other instance data
 	private ExtendedFileModel fmPrograms, fmSamples;
-	private int mv;
-	private int rowLength = 8; // default
-	private int recordCount;;
+	private int mv;;
 	private ConsoleViewComms cvc;
 	private LCDDisplay lcd;
 	private File directoryLastUsed;
@@ -202,9 +195,6 @@ public class EV3Control implements ListSelectionListener, NXTProtocol, ConsoleVi
 	private RMIMenu menu;
     private RemoteEV3 ev3;
     private RMIRegulatedMotor motor0, motor1, motor2, motor3;
-    
-	// Formatter
-	private static final NumberFormat FORMAT_FLOAT = NumberFormat.getNumberInstance();
 	
 	private String[] accessPoints = new String[0];
 	private RemoteBTDevice[] bluetoothDevices = new RemoteBTDevice[0];
@@ -282,6 +272,7 @@ public class EV3Control implements ListSelectionListener, NXTProtocol, ConsoleVi
 		// Monitor Update Button: get values being monitored
 		monitorContinuousButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
+				if (ev3 == null) return;
 				if (updateSensors != null) {
 					updateSensors.setUpdate(false);
 					monitorContinuousButton.setText("Continuous");
@@ -298,7 +289,6 @@ public class EV3Control implements ListSelectionListener, NXTProtocol, ConsoleVi
 		// Create the panels
 		createEV3SelectionPanel();
 		createConsolePanel();
-		createDataPanel();
 		createMonitorPanel();
 		createControlPanel();
 		createMiscellaneousPanel();
@@ -326,8 +316,8 @@ public class EV3Control implements ListSelectionListener, NXTProtocol, ConsoleVi
 	 */
 	private void showFiles() {
 		// Layout and populate files table
-		createProgramsTable("/home/root/lejos/samples/");
-		createSamplesTable("/home/root/lejos/samples/");
+		createProgramsTable(PROGRAMS_DIR);
+		createSamplesTable(SAMPLES_DIR);
 
 		// Remove current content of files panel and recreate it
 		programsFilesPanel.removeAll();
@@ -346,10 +336,17 @@ public class EV3Control implements ListSelectionListener, NXTProtocol, ConsoleVi
 		
 		// Process buttons
 
-		// Delete Button: delete a file from the EV3
+		// Delete Button: delete a file from the programs directory on the EV3
 		deleteButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
-				deleteFiles();
+				deleteFiles(true);
+			}
+		});
+		
+		// Delete Sample Button: delete a file from the samples directory on the EV3
+		deleteSamplesButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent ae) {
+				deleteFiles(false);
 			}
 		});
 		
@@ -471,7 +468,7 @@ public class EV3Control implements ListSelectionListener, NXTProtocol, ConsoleVi
         ledDropDown.addActionListener( new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
-				ev3.getLED().setPattern(ledDropDown.getSelectedIndex());
+				if (ev3 != null) ev3.getLED().setPattern(ledDropDown.getSelectedIndex());
 			}  	
         });
         
@@ -487,56 +484,41 @@ public class EV3Control implements ListSelectionListener, NXTProtocol, ConsoleVi
         
 		escapeButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
-				ev3.getKey("Escape").simulateEvent(Key.KEY_PRESSED_AND_RELEASED);
+				if (ev3 != null) ev3.getKey("Escape").simulateEvent(Key.KEY_PRESSED_AND_RELEASED);
 			}
 		});
 		
 		enterButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
-				ev3.getKey("Enter").simulateEvent(Key.KEY_PRESSED_AND_RELEASED);
+				if (ev3 != null) ev3.getKey("Enter").simulateEvent(Key.KEY_PRESSED_AND_RELEASED);
 			}
 		});
 		
 		leftButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
-				ev3.getKey("Left").simulateEvent(Key.KEY_PRESSED_AND_RELEASED);
+				if (ev3 != null) ev3.getKey("Left").simulateEvent(Key.KEY_PRESSED_AND_RELEASED);
 			}
 		});
 		
 		rightButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
-				ev3.getKey("Right").simulateEvent(Key.KEY_PRESSED_AND_RELEASED);
+				if (ev3 != null) ev3.getKey("Right").simulateEvent(Key.KEY_PRESSED_AND_RELEASED);
 			}
 		});
 		
 		upButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
-				ev3.getKey("Up").simulateEvent(Key.KEY_PRESSED_AND_RELEASED);
+				if (ev3 != null) ev3.getKey("Up").simulateEvent(Key.KEY_PRESSED_AND_RELEASED);
 			}
 		});
 		
 		downButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ae) {
-				ev3.getKey("Down").simulateEvent(Key.KEY_PRESSED_AND_RELEASED);
+				if (ev3 != null) ev3.getKey("Down").simulateEvent(Key.KEY_PRESSED_AND_RELEASED);
 			}
 		});
 		
-		consolePanel.add(buttonPanel);
-        
-	}
-
-	/**
-	 *  Lay out Data Console Panel
-	 */
-	private void createDataPanel() {
-		JLabel dataTitleLabel = new JLabel("Data Log");
-		dataPanel.add(dataTitleLabel, BorderLayout.NORTH);
-		dataPanel.add(new JScrollPane(theDataLog), BorderLayout.CENTER);
-		JPanel commandPanel = new JPanel();
-		commandPanel.add(new JLabel("Columns:"));
-		commandPanel.add(dataColumns);
-		commandPanel.add(dataDownloadButton);
-		dataPanel.add(commandPanel, BorderLayout.SOUTH);
+		consolePanel.add(buttonPanel);   
 	}
 	
 	/**
@@ -604,6 +586,7 @@ public class EV3Control implements ListSelectionListener, NXTProtocol, ConsoleVi
 		
 		setButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				if (menu == null) return;
 				try {
 					menu.setSetting(Sound.VOL_SETTING, "" + (volumeList.getSelectedIndex() * 10));
 					menu.setSetting(Button.VOL_SETTING, "" + (volumeList2.getSelectedIndex() * 10));
@@ -648,6 +631,9 @@ public class EV3Control implements ListSelectionListener, NXTProtocol, ConsoleVi
 		});
 	}
 	
+	/**
+	 * Create the default program panel
+	 */
 	private void createDefaultProgramPanel() {
 		defaultProgramPanel.setBorder(etchedBorder);
 		defaultProgramPanel.setPreferredSize(defaultProgramPanelSize);
@@ -761,6 +747,7 @@ public class EV3Control implements ListSelectionListener, NXTProtocol, ConsoleVi
 		
 		configButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				if (menu == null) return;
 				try {
 					int row= wifiTable.getSelectedRow();
 					
@@ -782,7 +769,10 @@ public class EV3Control implements ListSelectionListener, NXTProtocol, ConsoleVi
 		});
 	}
 	
-	public void createBluetoothPanel() {
+	/**
+	 * Create the Bluetooth panel
+	 */
+	private void createBluetoothPanel() {
 	    TableModel dataModel = new AbstractTableModel() {
 			private static final long serialVersionUID = 1L;
 			public int getColumnCount() { return 2; }
@@ -849,6 +839,13 @@ public class EV3Control implements ListSelectionListener, NXTProtocol, ConsoleVi
 		    		
 		        } else {
 		        	frame.setJMenuBar(null);
+		        	if (ev3 == null) return;
+		        	
+		        	if (tabbedPane.getSelectedComponent() == programsFilesPanel) {
+		        		fmPrograms.fetchFiles();
+		        	} else if (tabbedPane.getSelectedComponent() == samplesFilesPanel) {
+		        		fmSamples.fetchFiles();
+		        	}
 		        }
 		    }
 		});
@@ -878,6 +875,7 @@ public class EV3Control implements ListSelectionListener, NXTProtocol, ConsoleVi
 		samplesFilesPanel.add(samplesTablePane, BorderLayout.CENTER);
 		JPanel buttonPanel = new JPanel();
 		buttonPanel.add(runSampleButton);
+		buttonPanel.add(deleteSamplesButton);
 		buttonPanel.setPreferredSize(filesButtonsPanelSize);
 		samplesFilesPanel.add(buttonPanel, BorderLayout.SOUTH);
 	}
@@ -1053,18 +1051,8 @@ public class EV3Control implements ListSelectionListener, NXTProtocol, ConsoleVi
 	 *  Set up the files table
 	 */
 	private void createProgramsTable(String directory) {
-		fmPrograms = new ExtendedFileModel(menu, PROGRAMS_DIR, true);
-		String[] programs;
-		try {
-			programs = menu.getProgramNames();
-			long[] sizes = new long[programs.length];
-			for(int i=0;i<sizes.length;i++) {
-				sizes[i] = menu.getFileSize(directory + programs[i]);
-			}
-			fmPrograms.fetchFiles();
-		} catch (RemoteException e1) {
-			e1.printStackTrace();
-		}
+		fmPrograms = new ExtendedFileModel(menu, directory, true);
+		fmPrograms.fetchFiles();
 
 		programsTable = new JTable(fmPrograms);
 		programsTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
@@ -1094,18 +1082,8 @@ public class EV3Control implements ListSelectionListener, NXTProtocol, ConsoleVi
 	 *  Set up the files table
 	 */
 	private void createSamplesTable(String directory) {
-		fmSamples = new ExtendedFileModel(menu, SAMPLES_DIR, false);
-		String[] programs;
-		try {
-			programs = menu.getSampleNames();
-			long[] sizes = new long[programs.length];
-			for(int i=0;i<sizes.length;i++) {
-				sizes[i] = menu.getFileSize(directory + programs[i]);
-			}
-			fmSamples.fetchFiles();
-		} catch (RemoteException e1) {
-			e1.printStackTrace();
-		}
+		fmSamples = new ExtendedFileModel(menu, directory, false);
+		fmSamples.fetchFiles();
 
 		samplesTable = new JTable(fmSamples);
 		samplesTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
@@ -1418,7 +1396,7 @@ public class EV3Control implements ListSelectionListener, NXTProtocol, ConsoleVi
 		if (e.getValueIsAdjusting()) {
 			int row = ev3Table.getSelectedRow();
 			if (row < 0) return;		
-			
+			// TODO: Support for multiple EV3s
 		}
 	}
 	
@@ -1443,11 +1421,12 @@ public class EV3Control implements ListSelectionListener, NXTProtocol, ConsoleVi
 		
         try {
             socket = new DatagramSocket(DEFAULT_PORT);
+            socket.setSoTimeout(2000);
         } catch( Exception ex ) {
             showMessage("Failed to create datagram socket");
             return;
         }
-
+        
         packet = new DatagramPacket (new byte[100], 100);
 
         long start = System.currentTimeMillis();
@@ -1457,22 +1436,25 @@ public class EV3Control implements ListSelectionListener, NXTProtocol, ConsoleVi
                 socket.receive (packet);
                 String message = new String(packet.getData(), "UTF-8");
                 String ip = packet.getAddress().getHostAddress();
-                System.out.println("Adding " + ip);
+                //System.out.println("Adding " + ip);
                 ev3s.put(ip, new EV3Info(message.trim(),ip));
 
             } catch (IOException ie) {
-                showMessage("Failed to read discovery datagram");
+            	if (ev3s.size() == 0) {
+	                showMessage("No EV3s switched on");
+	                return;
+            	}
+            } finally {
+            	socket.close();
             }
         }
-        
-        if (socket != null) socket.close();
         
         EV3Info[] devices = new EV3Info[ev3s.size()];
         int i = 0;
         for(String ev3: ev3s.keySet()) {
         	EV3Info info = ev3s.get(ev3);
         	devices[i++] = info;
-        	System.out.println("Found " + info.getName() + " " + info.getIPAddress());
+        	//System.out.println("Found " + info.getName() + " " + info.getIPAddress());
         }
         
         model = new EV3ConnectionModel(devices, devices.length);
@@ -1587,7 +1569,7 @@ public class EV3Control implements ListSelectionListener, NXTProtocol, ConsoleVi
 		int row = ev3Table.getSelectedRow();
 		if (row >= 0) {
 			name =  (String) model.getValueAt(row, 2);
-			System.out.println("Name is " + name);
+			//System.out.println("Name is " + name);
 			
 			EV3ConnectionState state = (EV3ConnectionState) ev3Table.getValueAt(row, 3);
 		
@@ -1601,7 +1583,7 @@ public class EV3Control implements ListSelectionListener, NXTProtocol, ConsoleVi
 		}
 		
 		if (name != null && name.length() > 0) {
-			System.out.println("Connecting to " + name);
+			//System.out.println("Connecting to " + name);
 			try {
 				menu = (RMIMenu) Naming.lookup("//" + name + "/RemoteMenu");
 				ev3 = new RemoteEV3(name);
@@ -1619,30 +1601,24 @@ public class EV3Control implements ListSelectionListener, NXTProtocol, ConsoleVi
 	}
 	
 	/**
-	 * Append data item to the data log
-	 */
-	public void append(float x) {
-		if (0 == recordCount % rowLength) theDataLog.append("\n");
-		theDataLog.append(FORMAT_FLOAT.format(x) + "\t ");
-		recordCount++;
-	}
-	
-	/**
 	 * Delete selected files
 	 */
-	private void deleteFiles() {
+	private void deleteFiles(boolean program) {
+		if (menu == null) return;
 		frame.setCursor(hourglassCursor);
+		ExtendedFileModel fm = (program ? fmPrograms : fmSamples);
+		String directory = (program ? PROGRAMS_DIR : SAMPLES_DIR);
 		try {
-			for (int i = 0; i < fmPrograms.getRowCount(); i++) {
-				Boolean b = (Boolean) fmPrograms.getValueAt(i,ExtendedFileModel.COL_DELETE);
-				String fileName = (String) fmPrograms.getValueAt(i,ExtendedFileModel.COL_NAME);
+			for (int i = 0; i < fm.getRowCount(); i++) {
+				Boolean b = (Boolean) fm.getValueAt(i,ExtendedFileModel.COL_DELETE);
+				String fileName = (String) fm.getValueAt(i,ExtendedFileModel.COL_NAME);
 				boolean deleteIt = b.booleanValue();
 				if (deleteIt) {
 					System.out.println("Deleting " + fileName);
-					menu.deleteFile(fileName);
+					menu.deleteFile(directory + fileName);
 				}
 			}
-			fmPrograms.fetchFiles();
+			fm.fetchFiles();
 		} catch (Exception ioe) {
 			showMessage("IOException deleting files");
 		}
@@ -1653,6 +1629,7 @@ public class EV3Control implements ListSelectionListener, NXTProtocol, ConsoleVi
 	 * Choose a file and update it. Remember directory last used. 
 	 */
 	private void upload() {
+		if (menu == null) return;
 		JFileChooser fc = new JFileChooser(directoryLastUsed);
 		int returnVal = fc.showOpenDialog(frame);
 		
@@ -1667,6 +1644,7 @@ public class EV3Control implements ListSelectionListener, NXTProtocol, ConsoleVi
 	 * Upload the specified file
 	 */
 	private void uploadFile(File file) {
+		if (menu == null) return;
 		frame.setCursor(hourglassCursor);
 		try {
 			FileInputStream in = new FileInputStream(file);
@@ -1686,6 +1664,7 @@ public class EV3Control implements ListSelectionListener, NXTProtocol, ConsoleVi
 	 * Download the selected file
 	 */
 	private void download() {
+		if (menu == null) return;
 		int row = programsTable.getSelectedRow();
 		if (row < 0) {
 			noFileSelected();
@@ -1708,9 +1687,10 @@ public class EV3Control implements ListSelectionListener, NXTProtocol, ConsoleVi
 	}
 	
 	/**
-	 * Run the selected file.
+	 * Run the selected program.
 	 */
 	private void runProgram() {
+		if (menu == null) return;
 		int row = programsTable.getSelectedRow();
 		if (row < 0) {
 			noFileSelected();
@@ -1727,9 +1707,10 @@ public class EV3Control implements ListSelectionListener, NXTProtocol, ConsoleVi
 	}
 	
 	/**
-	 * Run the selected file.
+	 * Run the selected sample.
 	 */
 	private void runSample() {
+		if (menu == null) return;
 		int row = samplesTable.getSelectedRow();
 		if (row < 0) {
 			noFileSelected();
@@ -1749,6 +1730,7 @@ public class EV3Control implements ListSelectionListener, NXTProtocol, ConsoleVi
 	 * Change the friendly name of the EV3
 	 */
 	private void rename(String name) {
+		if (menu == null) return;
 		try {
 			menu.setName(name);
 		} catch (RemoteException e) {
@@ -1823,6 +1805,7 @@ public class EV3Control implements ListSelectionListener, NXTProtocol, ConsoleVi
 	 * Play a tone
 	 */
 	private void playTone() {
+		if (ev3 == null) return;
 		try {
 			ev3.getAudio().playTone((Integer) freq.getValue(), (Integer) duration.getValue());
 		} catch (NumberFormatException nfe) {
@@ -1845,6 +1828,7 @@ public class EV3Control implements ListSelectionListener, NXTProtocol, ConsoleVi
 	 * Play a sound file
 	 */
 	private void playSoundFile() {
+		if (ev3 == null) return;
 		int row = programsTable.getSelectedRow();
 		if (row < 0) {
 			noFileSelected();
@@ -1864,6 +1848,7 @@ public class EV3Control implements ListSelectionListener, NXTProtocol, ConsoleVi
 	 * Send I2C request
 	 */
 	private void i2cSend() {
+		if (ev3 ==null) return;
 		int addr= ((Number)address.getValue()).intValue(); 
 		
 		try {
@@ -1934,6 +1919,7 @@ public class EV3Control implements ListSelectionListener, NXTProtocol, ConsoleVi
 	 * Format the file system
 	 */
 	private void format() {
+		if (menu == null) return;
 		try {
 			menu.deleteAllPrograms();
 			fmPrograms.fetchFiles();
@@ -1946,7 +1932,11 @@ public class EV3Control implements ListSelectionListener, NXTProtocol, ConsoleVi
 		showMessage("No file selected");
 	}
 	
+	/**
+	 * Set the default program on the EV3
+	 */
 	private void setDefaultProgram() {
+		if (menu == null) return;
 		int row = programsTable.getSelectedRow();
 		if (row < 0) {
 			noFileSelected();
@@ -1961,6 +1951,9 @@ public class EV3Control implements ListSelectionListener, NXTProtocol, ConsoleVi
 		}
 	}
 	
+	/**
+	 * Stop the program on the EV3, if one is running
+	 */		
 	private void stopProgram() {
 		if (menu == null) return;
 		String programName;
@@ -1968,7 +1961,7 @@ public class EV3Control implements ListSelectionListener, NXTProtocol, ConsoleVi
 		try {
 			programName = menu.getExecutingProgramName();
 		} catch (RemoteException e) {
-			showMessage("Exeception getting program name");
+			showMessage("Exception getting program name");
 			return;
 		}
 		
@@ -1983,7 +1976,11 @@ public class EV3Control implements ListSelectionListener, NXTProtocol, ConsoleVi
 		}
 	}
 	
+	/**
+	 * Shut down the EV3
+	 */
 	private void shutdown() {
+		if (menu == null) return;
 		try {
 			menu.shutdown();
 		} catch (RemoteException e) {
@@ -2004,7 +2001,7 @@ public class EV3Control implements ListSelectionListener, NXTProtocol, ConsoleVi
 	 * Used by console viewer
 	 */
 	public void connectedTo(String name, String address) {
-		System.out.println("Connected to " + name + "(" + address + ")");
+		//System.out.println("Connected to " + name + "(" + address + ")");
 	}
 
 	/**
@@ -2030,12 +2027,18 @@ public class EV3Control implements ListSelectionListener, NXTProtocol, ConsoleVi
     	lcd.update(buffer);
     }
     
+    /**
+     * Get a remote system setting
+     */
     private String getSetting(String key, String defaultValue) throws RemoteException {
     	String val = menu.getSetting(key);
     	if (val == null) return defaultValue;
     	else return val;
     }
     
+    /**
+     * Thread t continuously update sensors
+     */
     class UpdateSensors extends Thread {
     	private boolean update = true;
     	
@@ -2045,8 +2048,8 @@ public class EV3Control implements ListSelectionListener, NXTProtocol, ConsoleVi
     	
     	public void setUpdate(boolean update) {
     		this.update = update;
-    		
     	}
+    	
     	@Override
     	public void run() {
     		while(update) {
