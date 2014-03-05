@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature
+      id="org.lejos.ev3.ldt.feature"
+      label="leJOS EV3 plugin"
+      version="0.1.0.qualifier"
+      provider-name="The leJOS Team"
+      plugin="org.lejos.ev3.ldt">
+
+   <description>
+      Eclipse features for leJOS EV3
+   </description>
+
+   <copyright>
+      Copyrighted to the leJOS project
+   </copyright>
+
+   <license>
+      Licensed under the GPL
+   </license>
+
+   <plugin
+         id="org.lejos.ev3.ldt"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         unpack="false"/>
+
+</feature>
