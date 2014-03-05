@@ -1477,7 +1477,7 @@ public class GraphicStartup implements Menu {
 
 	@Override
 	public boolean deleteFile(String fileName) {
-		File f = new File(PROGRAMS_DIRECTORY + fileName);
+		File f = new File(fileName);
 		return f.delete();
 	}
 
