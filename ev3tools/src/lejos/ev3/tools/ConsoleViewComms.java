@@ -4,8 +4,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.Socket;
 
+import lejos.hardware.BrickFinder;
+import lejos.hardware.BrickInfo;
+
 /**
- * Contains the logic for connecting to RConsole on the NXT and downloading data.
+ * Contains the logic for connecting to the remote console stream from the EV3.
  * Can be used by different user interfaces.
  * 
  * @author Roger Glassey, Lawrie Griffiths and Andy Shaw
@@ -59,8 +62,20 @@ public class ConsoleViewComms
      */
     public boolean connectTo(String name, String address, int protocol, boolean lcd)
     {
-
-    	return connectTo(name);
+    	if (name == null && address == null) {
+    		try {
+				BrickInfo[] bricks = BrickFinder.discover();
+				if (bricks.length == 0) {
+					System.err.println("Failed to find an EV3");
+					return false;
+				}
+				name = bricks[0].getIPAddress();
+			} catch (Exception e) {
+				System.err.println("No EV3s discovered");
+				return false;
+			}
+    	}
+    	return connectTo(name != null ? name : address);
     }
     
     private boolean connectTo(String name) {
