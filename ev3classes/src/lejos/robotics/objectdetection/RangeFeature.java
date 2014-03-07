@@ -15,11 +15,6 @@ import lejos.robotics.RangeReadings;
 import lejos.robotics.Transmittable;
 import lejos.robotics.navigation.Pose;
 
-/*
- * WARNING: THIS CLASS IS SHARED BETWEEN THE classes AND pccomms PROJECTS.
- * DO NOT EDIT THE VERSION IN pccomms AS IT WILL BE OVERWRITTEN WHEN THE PROJECT IS BUILT.
- */
-
 /**
  * <p>This class is a basic data container for information retrieved about an object detected by
  * sensors. The RangeFeature contains only the most basic range information of a detected object, which

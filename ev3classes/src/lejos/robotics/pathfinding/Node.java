@@ -4,11 +4,6 @@ import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Collection;
 
-/*
- * WARNING: THIS CLASS IS SHARED BETWEEN THE classes AND pccomms PROJECTS.
- * DO NOT EDIT THE VERSION IN pccomms AS IT WILL BE OVERWRITTEN WHEN THE PROJECT IS BUILT.
- */
-
 /**
  * This class represents a Node which can be connected to other neighboring nodes. Node sets can be searched using
  * search algorithms. Typically the search algorithm only requires one starting node and one goal node. It assumes these

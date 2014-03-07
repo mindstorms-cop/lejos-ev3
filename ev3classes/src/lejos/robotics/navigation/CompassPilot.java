@@ -4,11 +4,6 @@ import lejos.robotics.RegulatedMotor;
 import lejos.robotics.DirectionFinder;
 import lejos.utility.Delay;
 
-/*
- * WARNING: THIS CLASS IS SHARED BETWEEN THE classes AND pccomms PROJECTS.
- * DO NOT EDIT THE VERSION IN pccomms AS IT WILL BE OVERWRITTEN WHEN THE PROJECT IS BUILT.
- */
-
 /**
  * A Pilot that keeps track of direction using a DirectionFinder.
  * @deprecated  This class will disappear in NXJ version 1.0. Compass should be added to a PoseProvider. 

@@ -6,11 +6,6 @@ import lejos.robotics.RangeReadings;
 import lejos.robotics.localization.PoseProvider;
 
 /*
- * WARNING: THIS CLASS IS SHARED BETWEEN THE classes AND pccomms PROJECTS.
- * DO NOT EDIT THE VERSION IN pccomms AS IT WILL BE OVERWRITTEN WHEN THE PROJECT IS BUILT.
- */
-
-/*
  * DEVELOPER NOTES:
  * TODO: Some of these API docs might be more appropriate in FeatureDetector
  * TODO: One weakness of this class is it forces RangeFinder to use multiple readings. Might be some benefits to only

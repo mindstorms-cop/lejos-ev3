@@ -3,11 +3,6 @@ package lejos.hardware.device;
 import lejos.hardware.port.I2CPort;
 import lejos.hardware.sensor.I2CSensor;
 
-/*
- * WARNING: THIS CLASS IS SHARED BETWEEN THE classes AND pccomms PROJECTS.
- * DO NOT EDIT THE VERSION IN pccomms AS IT WILL BE OVERWRITTEN WHEN THE PROJECT IS BUILT.
- */
-
 /**
  * MServo, is a abstraction to model any RC Servo (continuous and non continuous)  plugged to
  * 

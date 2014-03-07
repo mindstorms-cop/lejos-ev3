@@ -3,8 +3,6 @@ package lejos.internal.ev3;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 
-import lejos.hardware.Sound;
-import lejos.hardware.Sounds;
 import lejos.hardware.motor.MotorRegulator;
 import lejos.hardware.port.BasicMotorPort;
 import lejos.hardware.port.TachoMotorPort;

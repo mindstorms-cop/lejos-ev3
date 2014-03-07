@@ -6,10 +6,7 @@ import lejos.robotics.RegulatedMotorListener;
 
 
 import java.util.ArrayList;
-/*
- * WARNING: THIS CLASS IS SHARED BETWEEN THE classes AND pccomms PROJECTS.
- * DO NOT EDIT THE VERSION IN pccomms AS IT WILL BE OVERWRITTEN WHEN THE PROJECT IS BUILT.
- */
+
 /**
  * The DifferentialPilot class is a software abstraction of the Pilot mechanism
  * of a NXT robot. It contains methods to control robot movements: travel

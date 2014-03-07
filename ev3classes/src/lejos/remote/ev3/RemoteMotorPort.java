@@ -4,7 +4,6 @@ import java.rmi.RemoteException;
 
 import lejos.hardware.motor.MotorRegulator;
 import lejos.hardware.port.BasicMotorPort;
-import lejos.hardware.port.MotorPort;
 import lejos.hardware.port.PortException;
 import lejos.hardware.port.TachoMotorPort;
 

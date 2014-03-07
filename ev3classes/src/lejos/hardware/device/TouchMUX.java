@@ -1,14 +1,10 @@
 package lejos.hardware.device;
+
 import lejos.robotics.Touch;
 import lejos.hardware.port.AnalogPort;
 import lejos.hardware.port.Port;
 import lejos.hardware.sensor.AnalogSensor;
 import lejos.hardware.sensor.SensorConstants;
-
-/*
- * WARNING: THIS CLASS IS SHARED BETWEEN THE classes AND pccomms PROJECTS.
- * DO NOT EDIT THE VERSION IN pccomms AS IT WILL BE OVERWRITTEN WHEN THE PROJECT IS BUILT.
- */
 
 /**
  * Interface for the Mindsensors Touch Multiplexer.
