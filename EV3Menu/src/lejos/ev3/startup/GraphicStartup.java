@@ -147,7 +147,7 @@ public class GraphicStartup implements Menu {
         	String auto = Settings.getProperty(defaultProgramAutoRunProperty, "");        	
     		if (auto.equals("ON") && !Button.LEFT.isDown())
             {
-            	System.out.println("Executing " + f.getPath());
+            	System.out.println("Auto executing default program " + f.getPath());
                 exec(JAVA_RUN_JAR + f.getPath(), PROGRAMS_DIRECTORY);
             }
     	}
@@ -725,7 +725,7 @@ public class GraphicStartup implements Menu {
         }
         else
         {
-        	System.out.println("Executing " + f.getPath());
+        	System.out.println("Executing default program " + f.getPath());
         	ind.suspend();
             exec(JAVA_RUN_JAR + f.getPath(), PROGRAMS_DIRECTORY);
         	ind.resume();
@@ -1071,6 +1071,7 @@ public class GraphicStartup implements Menu {
         	lcd.clear();
         	lcd.refresh();
         	lcd.setAutoRefresh(false);
+
             program = new ProcessBuilder(programName.split(" ")).directory(new File(directory)).start();
             BufferedReader input = new BufferedReader(new InputStreamReader(program.getInputStream()));
             BufferedReader err= new BufferedReader(new InputStreamReader(program.getErrorStream()));
@@ -1080,6 +1081,8 @@ public class GraphicStartup implements Menu {
             
             echoIn.start();
             echoErr.start();
+            
+        	System.out.println("Executing " + programName + " in " + directory);
             
             while(true) {
               int b = Button.getButtons(); 
@@ -1118,7 +1121,13 @@ public class GraphicStartup implements Menu {
         	lcd.clear();
         	lcd.refresh();
         	lcd.setAutoRefresh(false);
-            program = Runtime.getRuntime().exec(programName);
+        	
+        	String[] args = programName.split(" ");
+        	File f = new File(args[args.length-1]);
+        	File directory = f.getParentFile();
+        	
+            program = new ProcessBuilder(args).directory(directory).start();
+            
             BufferedReader input = new BufferedReader(new InputStreamReader(program.getInputStream()));
             BufferedReader err= new BufferedReader(new InputStreamReader(program.getErrorStream()));
             
@@ -1127,6 +1136,9 @@ public class GraphicStartup implements Menu {
             
             echoIn.start();
             echoErr.start();
+            
+        	System.out.println("Executing " + programName + " in " + directory);
+        	
             suspend = true;
             curMenu.quit(); // Quit the current menu and go into the suspend loop
         } catch (Exception e) {
