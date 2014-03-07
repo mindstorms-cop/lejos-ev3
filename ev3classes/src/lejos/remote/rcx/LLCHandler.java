@@ -3,11 +3,6 @@ package lejos.remote.rcx;
 import lejos.hardware.port.I2CPort;
 import lejos.utility.Delay;
 
-/*
- * WARNING: THIS CLASS IS SHARED BETWEEN THE classes AND pccomms PROJECTS.
- * DO NOT EDIT THE VERSION IN pccomms AS IT WILL BE OVERWRITTEN WHEN THE PROJECT IS BUILT.
- */
-
 /**
  * Packet handler than implement the LLC packet protocol.
  * Deals with packets and acks. 

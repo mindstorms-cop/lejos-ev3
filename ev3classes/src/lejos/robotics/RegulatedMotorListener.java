@@ -1,10 +1,5 @@
 package lejos.robotics;
 
-/*
- * WARNING: THIS CLASS IS SHARED BETWEEN THE classes AND pccomms PROJECTS.
- * DO NOT EDIT THE VERSION IN pccomms AS IT WILL BE OVERWRITTEN WHEN THE PROJECT IS BUILT.
- */
-
 /**
  * This interface defines a listener that is notified of the tachometer when the motor starts and stops rotating.
  * It doesn't matter if start/stop rotation is caused by Motor.forward() or Motor.rotateTo(), or if the rotation

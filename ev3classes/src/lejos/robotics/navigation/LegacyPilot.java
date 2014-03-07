@@ -2,11 +2,6 @@ package lejos.robotics.navigation;
 
 import lejos.robotics.RegulatedMotor;
 
-/*
- * WARNING: THIS CLASS IS SHARED BETWEEN THE classes AND pccomms PROJECTS.
- * DO NOT EDIT THE VERSION IN pccomms AS IT WILL BE OVERWRITTEN WHEN THE PROJECT IS BUILT.
- */
-
 /**
  * The LegacyPilot class is a renamed version the TachoPilot class in the 0.85 release.
  * It is a software abstraction of a NXT robot with two

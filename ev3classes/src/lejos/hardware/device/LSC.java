@@ -2,15 +2,9 @@ package lejos.hardware.device;
 
 import lejos.hardware.port.I2CPort;
 import lejos.hardware.port.Port;
-import lejos.hardware.port.SensorPort;
 import lejos.hardware.sensor.I2CSensor;
 
 import java.util.ArrayList;
-
-/*
- * WARNING: THIS CLASS IS SHARED BETWEEN THE classes AND pccomms PROJECTS.
- * DO NOT EDIT THE VERSION IN pccomms AS IT WILL BE OVERWRITTEN WHEN THE PROJECT IS BUILT.
- */
 
 /**
  * This class has been defined to manage the device

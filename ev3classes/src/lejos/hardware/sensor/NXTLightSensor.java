@@ -4,8 +4,6 @@ import lejos.hardware.port.AnalogPort;
 import lejos.hardware.port.Port;
 import lejos.robotics.Color;
 import lejos.robotics.LampController;
-import lejos.robotics.LightDetector;
-import lejos.robotics.SampleProvider;
 
 /**
  * This class is used to obtain readings from a LEGO NXT light sensor.

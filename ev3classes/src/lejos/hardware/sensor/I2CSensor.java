@@ -1,9 +1,7 @@
 package lejos.hardware.sensor;
 
-
 import java.lang.IllegalArgumentException;
 
-import lejos.hardware.Device;
 import lejos.hardware.port.I2CException;
 import lejos.hardware.port.I2CPort;
 import lejos.hardware.port.Port;

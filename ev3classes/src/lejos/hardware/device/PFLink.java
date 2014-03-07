@@ -5,11 +5,6 @@ import lejos.hardware.port.Port;
 import lejos.hardware.sensor.I2CSensor;
 import lejos.utility.Delay;
 
-/*
- * WARNING: THIS CLASS IS SHARED BETWEEN THE classes AND pccomms PROJECTS.
- * DO NOT EDIT THE VERSION IN pccomms AS IT WILL BE OVERWRITTEN WHEN THE PROJECT IS BUILT.
- */
-
 /** 
  * Class for controlling PF Motors with MindSensors NRLink-Nx 
  * 

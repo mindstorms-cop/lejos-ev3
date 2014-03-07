@@ -1,15 +1,8 @@
 package lejos.hardware.sensor;
 
-import lejos.hardware.port.AnalogPort;
-import lejos.hardware.port.LegacySensorPort;
 import lejos.hardware.port.Port;
 import lejos.robotics.Tachometer;
 import lejos.utility.Delay;
-
-/*
- * WARNING: THIS CLASS IS SHARED BETWEEN THE classes AND pccomms PROJECTS.
- * DO NOT EDIT THE VERSION IN pccomms AS IT WILL BE OVERWRITTEN WHEN THE PROJECT IS BUILT.
- */
 
 /**
  * Provide access to the Lego RCX Rotation Sensor.

@@ -5,7 +5,6 @@ import lejos.hardware.port.UARTPort;
 import lejos.robotics.Color;
 import lejos.robotics.ColorIdentifier;
 import lejos.robotics.LampController;
-import lejos.robotics.SampleProvider;
 
 /**
  * Basic sensor driver for the Lego EV3 color sensor <BR>
