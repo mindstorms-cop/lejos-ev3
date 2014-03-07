@@ -6,13 +6,13 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.rmi.Naming;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import lejos.remote.ev3.RMIMenu;
 import lejos.remote.nxt.FileInfo;
 import lejos.remote.nxt.NXTCommConnector;
-import lejos.remote.nxt.NXTCommRequest;
-import lejos.remote.nxt.NXTCommand;
 import lejos.remote.nxt.NXTConnection;
 import lejos.remote.nxt.SocketConnector;
 import lejos.robotics.RangeReading;
@@ -33,12 +33,13 @@ import lejos.robotics.pathfinding.NodePathFinder;
 import lejos.robotics.pathfinding.PathFinder;
 import lejos.robotics.pathfinding.RandomPathFinder;
 import lejos.robotics.pathfinding.ShortestPathFinder;
+import lejos.utility.Delay;
 
 /**
  * The PCNavigationModel holds all the navigation data that is transmitted as events,
- * to and from a NXT brick.
+ * to and from an EV3 brick.
  * 
- * It has methods to generate events, and a Receiver thread to receive events from the NXT.
+ * It has methods to generate events, and a Receiver thread to receive events from the EV3.
  * 
  * There is a NavigationPanel associated with the model. Whenever data in the model is updated,
  * the NavigationPanel is repainted with the new data.
@@ -64,11 +65,12 @@ public class PCNavigationModel extends NavigationModel {
 	protected ArrayList<Point> features = new ArrayList<Point>();
 	protected ArrayList<Waypoint> waypoints = new ArrayList<Waypoint>();
 	protected Waypoint reached;
-	protected NXTCommand nxtCommand;
 	protected float voltage = 0;
 	
 	private Thread receiver = new Thread(new Receiver());
 	private boolean running = true;
+	
+	private RMIMenu menu;
 	
 	/**
 	 * Create the model and associate the navigation panel with it
@@ -145,7 +147,7 @@ public class PCNavigationModel extends NavigationModel {
 	}
 	
 	/**
-	 * Get the sequence of poses of the robot from moves sent from the NXT,
+	 * Get the sequence of poses of the robot from moves sent from the EV3,
 	 * since the last call of setPose
 	 * 
 	 * @return an ArrayList of Pose objects
@@ -155,126 +157,56 @@ public class PCNavigationModel extends NavigationModel {
 	}
 	
 	/**
-	 * Make an LCP connection to the NXT
+	 * Connect to the EV3, upload a program, and run it
 	 * 
-	 * @param nxtName the name of the NXT
-	 * @return true iff the connection was successful
-	 */
-	public boolean lcpConnect(String nxtName) {
-		// TODO: Implement this
-		return true;
-	}
-	
-	/**
-	 * Close the LCP connection to the NXT
-	 */
-	public void lcpClose() {
-		try {
-			nxtCommand.close();
-		} catch (IOException ioe) {
-			// Ignore
-		}
-	}
-	
-	/**
-	 * Upload the specified file
-	 */
-	private void uploadFile(File file) {
-		if (file.getName().length() > 20) {
-			panel.error("File name is more than 20 characters");
-		} else {
-			try {
-				nxtCommand.uploadFile(file, file.getName());
-			} catch (IOException ioe) {
-				panel.log("IOException uploading file");
-			}
-		}
-	}
-	
-	/**
-	 * Run the specified program on the NXT
-	 * 
-	 * @param fileName the program file name
-	 */
-	private void runFile(String fileName) {
-		try {
-			nxtCommand.startProgram(fileName);
-		} catch (IOException ioe) {
-			// Ignore as NXT disconnects
-		}
-	}
-	
-	/**
-	 * Connect to the NXT, upload a program, and run it
-	 * 
-	 * @param nxtName the name of the NXT
+	 * @param ev3Name the name of the EV3
 	 * @param file the name of the program file
 	 */
-	public void connectAndUpload(String nxtName, File file) throws FileNotFoundException {
+	public void connectAndUpload(String ev3Name, File file) throws FileNotFoundException {
+		try {
+			menu = (RMIMenu) Naming.lookup("//" + ev3Name + "/RemoteMenu");
+		} catch (Exception e) {
+			panel.error("EV3 not found");
+			return;
+		}
+		System.out.println("Connect and upload: " + file.getPath());
 		if (!file.exists()) {
 			panel.error(file.getAbsolutePath() + " not found");
 			throw(new FileNotFoundException());
 		}
-		boolean open = lcpConnect(nxtName);
-		if (open) {
-			if (!checkFile(file)) uploadFile(file);
-			if (nxtCommand != null) runFile(file.getName());
-			lcpClose();
-			try {
-				Thread.sleep(2000); // Wait 2 seconds for program to start 
-			} catch (InterruptedException ioe) {
-				// Ignore
-			}
+		
+		FileInputStream in = new FileInputStream(file);
+		byte[] data = new byte[(int)file.length()];
+	    try {
+			in.read(data);
+		    in.close();
+		    System.out.println("Uploading " + file.getName());
+		    menu.uploadFile("/home/lejos/programs/" + file.getName(), data);
+		    System.out.println("Starting " + file.getName());
+		    menu.runProgram(file.getName().replace(".jar",""));
+		    Delay.msDelay(10000);
+		} catch (IOException e) {
+			panel.error("Failed to upload program to EV3");
 		}
 	}
 	
 	/**
-	 * Check that the file exists on the NXT with the right size
+	 * Check that the file exists on the EV3 with the right size
 	 */
 	protected boolean checkFile(File f) {
-		long size = f.length();
-		FileInfo info;
-		
-		panel.log("Size on PC is " + size);
-		if (nxtCommand == null) return false;
-		try {
-			info = getFile(f.getName());
-		} catch (IOException e) {
-			panel.error("IOException in checkFile");
-			return false;
-		}
-		if (info == null) {
-			panel.log(f.getName() + " not found on the NXT");
-			return false;
-		}
-		
-		panel.log("Size on NXT is " + info.fileSize);
-		
-		if ((int) size != info.fileSize) {
-			panel.log("Sizes differ");
-			return false;
-		}
+		System.out.println("Checking file " + f.getName());
 		return true;
 	}
 	
 	/**
-	 * Get information for a file on the NXTon
+	 * Get information for a file on the EV3
 	 */
 	private FileInfo getFile(String name) throws IOException {
-		FileInfo info = nxtCommand.findFirst(name);
-		while (info != null) {
-			if (info.fileName.equals(name))
-			{
-				nxtCommand.closeFile(info.fileHandle);
-				break;
-			}
-			info = nxtCommand.findNext(info.fileHandle);
-		}
-		return info;
+		return null;
 	}
 	
 	/**
-	 * Set the parameters for a DifferentialPilot, send them to the NXT, and write
+	 * Set the parameters for a DifferentialPilot, send them to the EV3, and write
 	 * them to the pilot.props file.
 	 * 
 	 * @param wheelDiameter the wheel diameter
@@ -374,14 +306,14 @@ public class PCNavigationModel extends NavigationModel {
 	}
 	
 	/**
-	 * Send a GET_PARTICLES event to the NXT
+	 * Send a GET_PARTICLES event to the EV3
 	 */
 	public void getRemoteParticles() {
 		sendEvent(NavEvent.GET_PARTICLES);		
 	}
 	
 	/**
-	 * Send a FIND_CLOSEST event to the NXT
+	 * Send a FIND_CLOSEST event to the EV3
 	 */
 	public void findClosest(float x, float y) {
 		if (!connected) return;
@@ -398,7 +330,7 @@ public class PCNavigationModel extends NavigationModel {
 	}
 	
 	/**
-	 * Add a waypoint and send it to the NXT
+	 * Add a waypoint and send it to the EV3
 	 * 
 	 * @param wp the waypoint
 	 */
@@ -409,7 +341,7 @@ public class PCNavigationModel extends NavigationModel {
 	}
 	
 	/**
-	 * Generate particles for the MCLPoseProvider and send them to the NXT
+	 * Generate particles for the MCLPoseProvider and send them to the EV3
 	 */
 	public void generateParticles() {
 		mcl.generateParticles();
@@ -427,21 +359,21 @@ public class PCNavigationModel extends NavigationModel {
 	}
 	
 	/**
-	 * Connect to the NXT
+	 * Connect to the EV3
 	 */
-	public void connect(String nxtName) {
+	public void connect(String ev3Name) {
 		if (connected) panel.error("Already connected");
 		NXTCommConnector connector = new SocketConnector();
-		System.out.println("Connecting to " + nxtName);
-		NXTConnection conn = connector.connect(nxtName, NXTConnection.RAW);
+		System.out.println("Connecting to " + ev3Name);
+		NXTConnection conn = connector.connect(ev3Name, NXTConnection.RAW);
 
 		if (conn == null) {
 		
-			panel.error("NO NXT found");
+			panel.error("NO EV3 found");
 			return;
 		}
   
-		if (debug) panel.log("Connected to " + nxtName);
+		if (debug) panel.log("Connected to " + ev3Name);
   
 		dis = new DataInputStream(conn.openInputStream());
 		dos = new DataOutputStream(conn.openOutputStream());
@@ -465,9 +397,9 @@ public class PCNavigationModel extends NavigationModel {
 	}
 	
 	/**
-	 * Test if a NXT brick is currently connected
+	 * Test if a EV3 brick is currently connected
 	 * 
-	 * @return true iff a NXT brick is connected
+	 * @return true iff a EV3 brick is connected
 	 */
 	public boolean isConnected() {
 		return connected;
@@ -518,7 +450,7 @@ public class PCNavigationModel extends NavigationModel {
 	}
 	
 	/**
-	 * Send the map to the NXT
+	 * Send the map to the EV3
 	 */
 	public void sendMap() {
 		if (!connected) return;
@@ -554,7 +486,7 @@ public class PCNavigationModel extends NavigationModel {
 	}
 	
 	/**
-	 * Send a GOTO event to the NXT
+	 * Send a GOTO event to the EV3
 	 * 
 	 * @param wp the Waypoint to go to
 	 */
@@ -564,7 +496,7 @@ public class PCNavigationModel extends NavigationModel {
 	}
 	
 	/**
-	 * Send a travel event to the NXT
+	 * Send a travel event to the EV3
 	 * 
 	 * @param distance the distance to travel
 	 */
@@ -573,7 +505,7 @@ public class PCNavigationModel extends NavigationModel {
 	}
 	
 	/**
-	 * Send a ROTATE event to the NXT
+	 * Send a ROTATE event to the EV3
 	 * 
 	 * @param angle the angle to rotate
 	 */
@@ -582,7 +514,7 @@ public class PCNavigationModel extends NavigationModel {
 	}
 	
 	/**
-	 * Send an ARC event to the NXT
+	 * Send an ARC event to the EV3
 	 * 
 	 * @param radius the radius of the arc
 	 * @param angle the angle to rotate
@@ -602,7 +534,7 @@ public class PCNavigationModel extends NavigationModel {
 	}
 	
 	/**
-	 * Send a ROTATE_TO event to the NXT
+	 * Send a ROTATE_TO event to the EV3
 	 * 
 	 * @param angle the angle to rotate
 	 */
@@ -611,28 +543,28 @@ public class PCNavigationModel extends NavigationModel {
 	}
 	
 	/**
-	 * Send a GET_POSE event to the NXT
+	 * Send a GET_POSE event to the EV3
 	 */
 	public void getPose() {
 		sendEvent(NavEvent.GET_POSE);
 	}
 	
 	/**
-	 * Send a GET_ESTIMATED_POSE event to the NXT
+	 * Send a GET_ESTIMATED_POSE event to the EV3
 	 */
 	public void getEstimatedPose() {
 		sendEvent(NavEvent.GET_ESTIMATED_POSE);
 	}
 	
 	/**
-	 * Send a GET_READINGS event to the NXT
+	 * Send a GET_READINGS event to the EV3
 	 */
 	public void getRemoteReadings() {
 		sendEvent(NavEvent.GET_READINGS);
 	}
 	
 	/**
-	 * Send a SET_POSE event to the NXT
+	 * Send a SET_POSE event to the EV3
 	 * 
 	 * @param p the robot pose
 	 */
@@ -678,35 +610,35 @@ public class PCNavigationModel extends NavigationModel {
 	}
 	
 	/**
-	 * Send a STOP event to the NXT
+	 * Send a STOP event to the EV3
 	 */
 	public void stop() {
 		sendEvent(NavEvent.STOP);
 	}
 	
 	/**
-	 * Send a RANDOM_MOVE event to the NXT
+	 * Send a RANDOM_MOVE event to the EV3
 	 */
 	public void randomMove() {
 		sendEvent(NavEvent.RANDOM_MOVE);
 	}
 	
 	/**
-	 * Tell the NXT to keep making random moves until the robot is localized
+	 * Tell the EV3 to keep making random moves until the robot is localized
 	 */
 	public void localize() {
 		sendEvent(NavEvent.LOCALIZE);
 	}
 	
 	/**
-	 * Send a TAKE_READINGS event to the NXT
+	 * Send a TAKE_READINGS event to the EV3
 	 */
 	public void takeReadings() {
 		sendEvent(NavEvent.TAKE_READINGS);
 	}
 	
 	/**
-	 * Send Random Move parameters to the NXT
+	 * Send Random Move parameters to the EV3
 	 */
 	public void sendRandomMoveParams(float maxDistance, float clearance) {
 		if (!connected) return;
@@ -723,7 +655,7 @@ public class PCNavigationModel extends NavigationModel {
 	}
 	
 	/**
-	 * Send a route to the NXT and follow it
+	 * Send a route to the EV3 and follow it
 	 */
 	public void followPath() {
 		if (path == null) return;
@@ -753,7 +685,7 @@ public class PCNavigationModel extends NavigationModel {
 	}
 	
 	/**
-	 * Send a FIND_PATH event to the NXT
+	 * Send a FIND_PATH event to the EV3
 	 */
 	public void findPath(Waypoint wp) {
 		sendWaypoint(NavEvent.FIND_PATH, wp);
@@ -772,14 +704,15 @@ public class PCNavigationModel extends NavigationModel {
 	}
 	
 	/**
-	 * Send a CLEAR_PATH event to the NXT
+	 * Send a CLEAR_PATH event to the EV3
 	 */
 	public void clearPath() {
 		sendEvent(NavEvent.CLEAR_PATH);
 	}
 	
 	/**
-	 * Send an EXITevent to the NXT
+	 * Send an EXITevent to the EV3
+	 * 
 	 */
 	public void sendExit() {
 		sendEvent(NavEvent.EXIT);
@@ -864,7 +797,7 @@ public class PCNavigationModel extends NavigationModel {
 	}
 	
 	/**
-	 * Runnable class to receive events from the NXT
+	 * Runnable class to receive events from the EV3
 	 * 
 	 * @author Lawrie Griffiths
 	 *
@@ -887,16 +820,16 @@ public class PCNavigationModel extends NavigationModel {
 							lastMove.loadObject(dis);
 							moves.add(lastMove);
 							break;
-						case SET_POSE: // Get a new pose from the NXT
+						case SET_POSE: // Get a new pose from the EV3
 							currentPose.loadObject(dis);
 							if (debug) panel.log(currentPose.toString());
 							poses.add(new Pose(currentPose.getX(), currentPose.getY(), currentPose.getHeading()));
 							break;
-						case PARTICLE_SET: // Get a particle set from the NXT
+						case PARTICLE_SET: // Get a particle set from the EV3
 							particles.loadObject(dis);
 							if (mcl != null) mcl.estimatePose();
 							break;
-						case RANGE_READINGS: // Get the range readings from the NXT
+						case RANGE_READINGS: // Get the range readings from the EV3
 							readings.loadObject(dis);
 							break;
 						case WAYPOINT_REACHED: // Get the waypoint reached
@@ -931,7 +864,7 @@ public class PCNavigationModel extends NavigationModel {
 							if (debug) panel.log("Point = " + p);
 							features.add(p);
 							break;
-						case PATH: // Get a path generated on the NXT
+						case PATH: // Get a path generated on the EV3
 							path.loadObject(dis);
 							break;
 						case BATTERY:
