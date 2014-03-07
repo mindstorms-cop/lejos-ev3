@@ -14,11 +14,6 @@ import lejos.robotics.localization.PoseProvider;
 import java.io.*;
 import java.util.ArrayList;
 
-/*
- * WARNING: THIS CLASS IS SHARED BETWEEN THE classes AND pccomms PROJECTS.
- * DO NOT EDIT THE VERSION IN pccomms AS IT WILL BE OVERWRITTEN WHEN THE PROJECT IS BUILT.
- */
-
 /**
  * Maintains an estimate of the robot pose using sensor data.  It uses Monte Carlo
  * Localization  (See section 8.3 of "Probabilistic Robotics" by Thrun et al. <br>

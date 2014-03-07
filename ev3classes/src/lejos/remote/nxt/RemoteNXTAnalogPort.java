@@ -3,7 +3,6 @@ package lejos.remote.nxt;
 import java.io.IOException;
 
 import lejos.hardware.port.AnalogPort;
-import lejos.hardware.port.LegacySensorPort;
 import lejos.hardware.port.PortException;
 import lejos.hardware.sensor.EV3SensorConstants;
 import lejos.hardware.sensor.SensorConstants;

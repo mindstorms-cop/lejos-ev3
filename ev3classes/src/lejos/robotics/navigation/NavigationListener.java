@@ -1,12 +1,7 @@
 package lejos.robotics.navigation;
 
-
 import lejos.robotics.navigation.Pose;
 import lejos.robotics.navigation.Waypoint;
-/*
- * WARNING: THIS CLASS IS SHARED BETWEEN THE classes AND pccomms PROJECTS.
- * DO NOT EDIT THE VERSION IN pccomms AS IT WILL BE OVERWRITTEN WHEN THE PROJECT IS BUILT.
- */
 
 /**
  * Interface for informing listeners that a way point has been reached.

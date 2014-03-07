@@ -9,11 +9,6 @@ import lejos.hardware.sensor.I2CSensor;
 import lejos.hardware.sensor.MindsensorsAccelerometer;
 import lejos.hardware.sensor.SensorMode;
 
-/*
- * WARNING: THIS CLASS IS SHARED BETWEEN THE classes AND pccomms PROJECTS.
- * DO NOT EDIT THE VERSION IN pccomms AS IT WILL BE OVERWRITTEN WHEN THE PROJECT IS BUILT.
- */
-
 /**
  * Factory for I2C sensor implementations.
  * Tests what make of sensor is connected to a port and creates 

@@ -1,12 +1,7 @@
 package lejos.hardware.sensor;
+
 import lejos.hardware.port.AnalogPort;
 import lejos.hardware.port.Port;
-import lejos.robotics.Touch;
-
-/*
- * WARNING: THIS CLASS IS SHARED BETWEEN THE classes AND pccomms PROJECTS.
- * DO NOT EDIT THE VERSION IN pccomms AS IT WILL BE OVERWRITTEN WHEN THE PROJECT IS BUILT.
- */
 
 /**
  * Abstraction for a NXT touch sensor.

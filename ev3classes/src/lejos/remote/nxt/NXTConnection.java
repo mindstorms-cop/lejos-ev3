@@ -1,10 +1,10 @@
 package lejos.remote.nxt;
+
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-
 
 public abstract class NXTConnection implements StreamConnection {
 

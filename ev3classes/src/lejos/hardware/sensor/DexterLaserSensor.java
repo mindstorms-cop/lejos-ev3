@@ -3,11 +3,6 @@ package lejos.hardware.sensor;
 import lejos.hardware.port.AnalogPort;
 import lejos.hardware.port.Port;
 
-/*
- * WARNING: THIS CLASS IS SHARED BETWEEN THE classes AND pccomms PROJECTS.
- * DO NOT EDIT THE VERSION IN pccomms AS IT WILL BE OVERWRITTEN WHEN THE PROJECT IS BUILT.
- */
-
 /**
  * <p>
  * This class represents a Dexter Industries Laser Sensor. The sensor contains a

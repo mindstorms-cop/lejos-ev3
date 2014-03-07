@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import lejos.hardware.Battery;
-import lejos.hardware.Bluetooth;
 import lejos.hardware.Sound;
 import lejos.hardware.motor.Motor;
 import lejos.remote.nxt.NXTCommConnector;
@@ -98,7 +97,6 @@ public class EV3NavigationModel extends NavigationModel implements MoveListener,
 	 * 
 	 * @param navigator the path controller
 	 */
-	@SuppressWarnings("hiding")
 	public void addNavigator(Navigator navigator) {
 		this.navigator = navigator;
 		navigator.addNavigationListener(this);
@@ -111,7 +109,6 @@ public class EV3NavigationModel extends NavigationModel implements MoveListener,
 	 * 
 	 * @param pilot the move controller
 	 */
-	@SuppressWarnings("hiding")
 	public void addPilot(MoveController pilot) {
 		this.pilot = pilot;
 		pilot.addMoveListener(this);
@@ -122,7 +119,6 @@ public class EV3NavigationModel extends NavigationModel implements MoveListener,
 	 * 
 	 * @param pp the pose provider
 	 */
-	@SuppressWarnings("hiding")
 	public void addPoseProvider(PoseProvider pp) {
 		this.pp = pp;
 		if (pp instanceof MCLPoseProvider) {
@@ -136,7 +132,6 @@ public class EV3NavigationModel extends NavigationModel implements MoveListener,
 	 * 
 	 * @param scanner the range scanner
 	 */
-	@SuppressWarnings("hiding")
 	public void addRangeScanner(RangeScanner scanner) {
 		this.scanner = scanner;
 	}
@@ -197,7 +192,6 @@ public class EV3NavigationModel extends NavigationModel implements MoveListener,
 		running = false;
 	}
 	
-	@SuppressWarnings("hiding")
 	public void addListener(NavEventListener listener) {
 		this.listener = listener;
 	}
@@ -528,7 +522,6 @@ public class EV3NavigationModel extends NavigationModel implements MoveListener,
 	 * Called when a feature is detected.
 	 * Only range features currently supported
 	 */
-	@SuppressWarnings("hiding")
 	public void featureDetected(Feature feature, FeatureDetector detector) {
 		if (dos == null) return;
 		if (!(feature instanceof RangeFeature)) return;

@@ -5,7 +5,6 @@ import java.io.*;
 import lejos.hardware.Power;
 import lejos.hardware.port.PortException;
 
-
 /**
  * Battery readings from a remote NXT.
  */

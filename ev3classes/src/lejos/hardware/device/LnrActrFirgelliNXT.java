@@ -2,15 +2,8 @@ package lejos.hardware.device;
 
 import lejos.hardware.motor.NXTMotor;
 import lejos.hardware.port.Port;
-import lejos.hardware.port.TachoMotorPort;
 import lejos.robotics.EncoderMotor;
 import lejos.robotics.LinearActuator;
-
-
-/*
- * WARNING: THIS CLASS IS SHARED BETWEEN THE classes AND pccomms PROJECTS.
- * DO NOT EDIT THE VERSION IN pccomms AS IT WILL BE OVERWRITTEN WHEN THE PROJECT IS BUILT.
- */
 
 /** A Linear Actuator class that provides blocking and non-blocking move actions with stall detection. Developed for the 
  * Firgelli L12-NXT-50 and L12-NXT-100
