@@ -3,10 +3,6 @@ package lejos.robotics.mapping;
 import lejos.robotics.geometry.*;
 import lejos.robotics.navigation.Pose;
 
-/*
- * WARNING: THIS CLASS IS SHARED BETWEEN THE classes AND pccomms PROJECTS.
- * DO NOT EDIT THE VERSION IN pccomms AS IT WILL BE OVERWRITTEN WHEN THE PROJECT IS BUILT.
- */
 
 /**
  * The RangeMap interface supports determining the range to a feature on the map

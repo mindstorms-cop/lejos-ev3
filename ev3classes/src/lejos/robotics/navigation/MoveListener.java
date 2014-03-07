@@ -2,11 +2,6 @@ package lejos.robotics.navigation;
 
 import lejos.robotics.navigation.Move;
 
-/*
- * WARNING: THIS CLASS IS SHARED BETWEEN THE classes AND pccomms PROJECTS.
- * DO NOT EDIT THE VERSION IN pccomms AS IT WILL BE OVERWRITTEN WHEN THE PROJECT IS BUILT.
- */
-
 /**
  * <p>Any class that wants to be updated automatically by a MoveProvider should
  * implement this interface. Both movementStarted() and movementStopped() also return 

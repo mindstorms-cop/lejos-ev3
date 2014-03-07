@@ -6,11 +6,6 @@ import java.io.OutputStream;
 
 import lejos.utility.Delay;
 
-/*
- * WARNING: THIS CLASS IS SHARED BETWEEN THE classes AND pccomms PROJECTS.
- * DO NOT EDIT THE VERSION IN pccomms AS IT WILL BE OVERWRITTEN WHEN THE PROJECT IS BUILT.
- */
-
 /** 
  * RCXAbstractPort provides an interface similar to java.net.Socket
  * Adapted from original code created by the LEGO3 Team at DTU-IAU

@@ -2,8 +2,6 @@ package lejos.hardware.sensor;
 
 import lejos.hardware.port.AnalogPort;
 import lejos.hardware.port.Port;
-import lejos.hardware.sensor.NXTSoundSensor.DBMode;
-import lejos.robotics.Touch;
 
 /**
  * Basic sensor driver for the Lego EV3 Touch sensor

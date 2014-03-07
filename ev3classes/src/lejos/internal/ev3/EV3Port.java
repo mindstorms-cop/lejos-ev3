@@ -1,4 +1,5 @@
 package lejos.internal.ev3;
+
 import lejos.hardware.DeviceException;
 import lejos.hardware.port.AnalogPort;
 import lejos.hardware.port.BasicMotorPort;

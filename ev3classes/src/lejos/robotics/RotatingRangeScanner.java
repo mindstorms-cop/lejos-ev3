@@ -2,11 +2,6 @@ package lejos.robotics;
 
 import lejos.utility.Delay;
 
-/*
- * WARNING: THIS CLASS IS SHARED BETWEEN THE classes AND pccomms PROJECTS.
- * DO NOT EDIT THE VERSION IN pccomms AS IT WILL BE OVERWRITTEN WHEN THE PROJECT IS BUILT.
- */
-
 /**
  * Implementation of RangeScanner with a rotating ultrasonic sensor or other range finder
  * @author Roger Glassey

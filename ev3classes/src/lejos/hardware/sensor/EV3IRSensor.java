@@ -2,8 +2,6 @@ package lejos.hardware.sensor;
 
 import lejos.hardware.port.Port;
 import lejos.hardware.port.UARTPort;
-import lejos.robotics.RangeFinder;
-import lejos.robotics.SampleProvider;
 
 /**
  * Basic sensor driver for the Lego EV3 Infra Red sensor.<br>

@@ -4,11 +4,6 @@ import lejos.hardware.port.I2CPort;
 import lejos.hardware.port.Port;
 import lejos.hardware.sensor.I2CSensor;
 
-/*
- * WARNING: THIS CLASS IS SHARED BETWEEN THE classes AND pccomms PROJECTS.
- * DO NOT EDIT THE VERSION IN pccomms AS IT WILL BE OVERWRITTEN WHEN THE PROJECT IS BUILT.
- */
-
 /**
  * This class has been designed to manage the device
  * MSC8, Mindsensors NXT Servo which manages up to 8 RC Servos.

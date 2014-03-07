@@ -6,11 +6,6 @@ import java.io.IOException;
 
 import lejos.robotics.Transmittable;
 
-/*
- * WARNING: THIS CLASS IS SHARED BETWEEN THE classes AND pccomms PROJECTS.
- * DO NOT EDIT THE VERSION IN pccomms AS IT WILL BE OVERWRITTEN WHEN THE PROJECT IS BUILT.
- */
-
 /**
  * Models a movement performed by a pilot
  * 
