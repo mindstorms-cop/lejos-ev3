@@ -3,8 +3,6 @@ import java.io.IOException;
 import lejos.hardware.Button;
 import lejos.hardware.port.SensorPort;
 import lejos.hardware.sensor.EV3IRSensor;
-import lejos.hardware.sensor.NXTUltrasonicSensor;
-import lejos.robotics.RangeFinder;
 import lejos.robotics.RangeFinderAdaptor;
 import lejos.robotics.RegulatedMotor;
 import lejos.robotics.mapping.EV3NavigationModel;
