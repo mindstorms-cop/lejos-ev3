@@ -249,6 +249,15 @@
                menubarPath="org.lejos.ev3.ldt.leJOSEV3PopupMenu/leJOSEV3Group"
                tooltip="Converts the project to a leJOS EV3 project">
          </action>
+         <action
+               class="org.lejos.ev3.ldt.actions.UploadAction"
+               enablesFor="+"
+               icon="icons/ev3_16x16.png"
+               id="org.lejos.ev3.ldt.actions.LeJOSEV3UploadAction"
+               label="Upload File to the EV3 Brick"
+               menubarPath="org.lejos.ev3.ldt.leJOSEV3PopupMenu/leJOSEV3Group"
+               tooltip="Uploads the selected file to the EV3 brick">
+         </action>
       </objectContribution>
    </extension>
    
