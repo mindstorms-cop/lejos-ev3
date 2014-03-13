@@ -441,15 +441,19 @@ public class DifferentialPilot implements RegulatedMotorListener,
 	/**
 	 * Stops the NXT robot. side effect: inform listeners of end of movement
 	 */
-	public void stop()
-	{
-		_left.stop(true);
-		_right.stop(true);
-		waitComplete();
-		movementStop();
-		setMotorAccel(_acceleration); 
-
-	}
+	   public void stop()
+	   {
+	       _suspendListeners = true;
+	       try {
+	          _left.stop(true);
+	          _right.stop(true);
+	          waitComplete();
+	       } finally {
+	            _suspendListeners = false;
+	       }
+	      movementStop();
+	      setMotorAccel(_acceleration); 
+	   }
 
 	/**
 	 * Stops the robot almost immediately. Use this method if the normal
@@ -1007,13 +1011,14 @@ public class DifferentialPilot implements RegulatedMotorListener,
 	 * called by Arc() ,travel(),rotate(),stop() rotationStopped() calls
 	 * moveStopped on listener
 	 */
-	private synchronized void movementStop()
-	{
-		for (MoveListener ml : _listeners)
-			ml.moveStopped(new Move(_type, getMovementIncrement(),
-					getAngleIncrement(), _robotTravelSpeed, _robotRotateSpeed,
-					isMoving()), this);
-	}
+	   private synchronized void movementStop()
+	   {
+	      if (_suspendListeners) return ;
+	      for (MoveListener ml : _listeners)
+	         ml.moveStopped(new Move(_type, getMovementIncrement(),
+	               getAngleIncrement(), _robotTravelSpeed, _robotRotateSpeed,
+	               isMoving()), this);
+	   }
 
 	/**
 	 * @return true if the NXT robot is moving.
@@ -1205,6 +1210,8 @@ public class DifferentialPilot implements RegulatedMotorListener,
 	 * direction of rotation of right motor +1 or -1
 	 */
 	private byte _rightDirection;
+	
+	private boolean _suspendListeners = false;
 	
 
 }
