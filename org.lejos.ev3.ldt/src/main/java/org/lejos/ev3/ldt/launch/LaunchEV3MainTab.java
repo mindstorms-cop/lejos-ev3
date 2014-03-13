@@ -44,7 +44,6 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.dialogs.ElementListSelectionDialog;
 import org.lejos.ev3.ldt.LeJOSEV3Nature;
-import org.lejos.ev3.ldt.preferences.PreferenceConstants;
 import org.lejos.ev3.ldt.util.LeJOSEV3Util;
 
 public class LaunchEV3MainTab extends JavaLaunchTab {
@@ -77,14 +76,6 @@ public class LaunchEV3MainTab extends JavaLaunchTab {
 			textBackground = text.getBackground();
 		}
 		
-		String getText() {
-			return this.text.getText();
-		}
-		
-		void setText(String s) {
-			this.text.setText(s);
-		}
-		
 		void setEnabled(boolean b) {
 			this.label.setEnabled(b);
 			this.text.setEditable(b);
@@ -99,22 +90,12 @@ public class LaunchEV3MainTab extends JavaLaunchTab {
 	
 	private Button normalUseDefaults;
 	private Button normalRun;
-	private Button normalVerbose;
-	private Button normalConsole;
 	private Button debugUseDefaults;
 	private Button debugRun;
-	private Button debugVerbose;
-	private Button debugConsole;
 	private Button debugMonitorNormal;
-	private Button debugMonitorRConsole;
 	private Button targetUseDefaults;
-	private Button targetBusBoth;
-	private Button targetBusUSB;
-	private Button targetBusBT;
 	private Button targetConnectByName;
-	private Button targetConnectByAddr;
 	private LabelText targetBrickName;
-	private LabelText targetBrickAddr;
 	private Button debugMonitorJdwp;
 	
 	private static IWorkspaceRoot getRoot()
@@ -308,25 +289,15 @@ public class LaunchEV3MainTab extends JavaLaunchTab {
 	
 	private void updateEnabledDisabled() {
 		boolean e = !this.targetUseDefaults.getSelection();
-		this.targetBusBoth.setEnabled(e);
-		this.targetBusUSB.setEnabled(e);
-		this.targetBusBT.setEnabled(e);
-		this.targetConnectByAddr.setEnabled(e);
 		this.targetConnectByName.setEnabled(e);
-		this.targetBrickAddr.setEnabled(e);
 		this.targetBrickName.setEnabled(e);
 		
 		e = !this.normalUseDefaults.getSelection();
 		this.normalRun.setEnabled(e);
-		this.normalConsole.setEnabled(e);
-		this.normalVerbose.setEnabled(e);
 		
 		e = !this.debugUseDefaults.getSelection();
 		this.debugRun.setEnabled(e);
-		this.debugConsole.setEnabled(e);
-		this.debugVerbose.setEnabled(e);
 		this.debugMonitorNormal.setEnabled(e);
-		this.debugMonitorRConsole.setEnabled(e);
 		this.debugMonitorJdwp.setEnabled(e);
 	}
 
@@ -351,19 +322,10 @@ public class LaunchEV3MainTab extends JavaLaunchTab {
 		Composite c = new Composite(g, SWT.NONE);
 		c.setLayout(new GridLayout(3, false));
 		c.setLayoutData(gd);
-		this.targetBusBoth = createRadioButton(c, "Both");
-		this.targetBusUSB = createRadioButton(c, "USB");
-		this.targetBusBT = createRadioButton(c, "Bluetooth");
-		this.targetConnectByAddr = createCheckButton(g, "Connect to address");
-		this.targetBrickAddr = new LabelText(g, "Address", updater2);
 		this.targetConnectByName = createCheckButton(g, "Connect to name");
 		this.targetBrickName = new LabelText(g, "Name", updater2);
 		
 		this.targetUseDefaults.addSelectionListener(updater);
-		this.targetBusBoth.addSelectionListener(updater);
-		this.targetBusUSB.addSelectionListener(updater);
-		this.targetBusBT.addSelectionListener(updater);
-		this.targetConnectByAddr.addSelectionListener(updater);
 		this.targetConnectByName.addSelectionListener(updater);
 		this.targetUseDefaults.setLayoutData(gd);
 
@@ -372,36 +334,26 @@ public class LaunchEV3MainTab extends JavaLaunchTab {
 
 		this.normalUseDefaults = createCheckButton(g, "Use &defaults from Preferences");
 		this.normalRun = createCheckButton(g, "&Run program after upload");
-		this.normalVerbose = createCheckButton(g, "Link &verbose");
 		
 		this.normalUseDefaults.addSelectionListener(updater);
 		this.normalRun.addSelectionListener(updater);
-		this.normalVerbose.addSelectionListener(updater);
-		this.normalConsole.addSelectionListener(updater);
 		this.normalUseDefaults.setLayoutData(gd);
-		this.normalConsole.setLayoutData(gd);
 		
 		createVerticalSpacer(parent, 1);
 		g = newGroup(parent, 2, "When in debug mode:");
 
 		this.debugUseDefaults = createCheckButton(g, "Use &defaults from Preferences");
 		this.debugRun = createCheckButton(g, "&Run program after upload");
-		this.debugVerbose = createCheckButton(g, "Link &verbose");
 
 		this.debugUseDefaults.addSelectionListener(updater);
 		this.debugRun.addSelectionListener(updater);
-		this.debugVerbose.addSelectionListener(updater);
-		this.debugConsole.addSelectionListener(updater);
 		this.debugUseDefaults.setLayoutData(gd);
-		this.debugConsole.setLayoutData(gd);
 		
 		this.debugMonitorNormal = createRadioButton(g, "Normal Debug Monitor");
-		this.debugMonitorRConsole = createRadioButton(g, "RConsole Debug Monitor");
 		this.debugMonitorJdwp = createRadioButton(g, "Remote Debug Monitor (will start eclipse debugger)");
 		this.debugMonitorJdwp.setLayoutData(gd);
 		
 		this.debugMonitorNormal.addSelectionListener(updater);
-		this.debugMonitorRConsole.addSelectionListener(updater);
 		this.debugMonitorJdwp.addSelectionListener(updater);
 	}
 
