@@ -3,9 +3,9 @@ package org.lejos.ev3.graphicstest;
 import java.io.File;
 import java.io.FileInputStream;
 
+import lejos.hardware.BrickFinder;
 import lejos.hardware.Button;
 import lejos.hardware.Sound;
-import lejos.hardware.ev3.LocalEV3;
 import lejos.hardware.lcd.Font;
 import lejos.hardware.lcd.GraphicsLCD;
 import lejos.hardware.lcd.Image;
@@ -20,7 +20,7 @@ import lejos.utility.Delay;
 public class GraphicsSample extends Thread
 {
 
-    GraphicsLCD g = LocalEV3.get().getGraphicsLCD();
+    GraphicsLCD g = BrickFinder.getDefault().getGraphicsLCD();
     final int SW = g.getWidth();
     final int SH = g.getHeight();
     final int DELAY = 2000;
