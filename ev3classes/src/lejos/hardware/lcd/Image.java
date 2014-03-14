@@ -3,6 +3,7 @@ package lejos.hardware.lcd;
 import java.io.InputStream;
 import java.io.IOException;
 import java.io.DataInputStream;
+import java.io.Serializable;
 
 import lejos.internal.ev3.EV3GraphicsLCD;
 
@@ -10,7 +11,7 @@ import lejos.internal.ev3.EV3GraphicsLCD;
 /**
  * Provides support for in memory images.
  * The format of the bitmap is in standard leJOS format (so aligned for use on
- * NXT LCD display). There is one bit per pixel. The pixels are packed into bytes
+ * EV3 LCD display). There is one bit per pixel. The pixels are packed into bytes
  * with each byte spanning 8 scan lines. The least significant bit of each byte
  * is the pixel for the top most scan line, the most significant bit is the
  * 8th scan line. Values of 1 represent black. 0 white. This class implements a
@@ -20,8 +21,10 @@ import lejos.internal.ev3.EV3GraphicsLCD;
  * TODO: This file needs to be updated to match the EV3 image format.
  * @author Andre Nijholt & Andy Shaw
  */
-public class Image
+public class Image implements Serializable
 {
+	private static final long serialVersionUID = -3934835136206856658L;
+
 	// header is LNI0 => 0x4c4e4930 (big endian)
 	private static final int LNI0_HEADER = 0x4c4e4930;
 	
@@ -95,7 +98,7 @@ public class Image
      * was read, this method will return an object which is equivalent to
      * <div style="margin-left:4em;"><code>new Image(3, 5, new byte[] {(byte)0x00, (byte)0x02, (byte)0x1f})</code></div>
      * @param s The input stream for the image file.
-     * @return an nxt image object.
+     * @return an ev3 image object.
      * @throws IOException if an input or output error occurs or file format is not correct.
      * @see Image
      * @see Image#Image(int, int, byte[])
