@@ -65,6 +65,18 @@
             android:layout_width="wrap_content"
             android:id="@+id/setDefaultButton"
             android:text="Set Default" />
+            
+        <Button
+           	android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:id="@+id/stopProgramButton"
+            android:text="Stop Program" />
+            
+        <Button
+           	android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:id="@+id/shutdownButton"
+            android:text="Shut down" />
 
   </LinearLayout>
 </LinearLayout>
