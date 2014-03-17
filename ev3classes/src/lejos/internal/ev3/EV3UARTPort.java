@@ -115,7 +115,15 @@ public class EV3UARTPort extends EV3IOPort implements UARTPort
      */
     protected byte getStatus()
     {
-        return devStatus.get(port);
+        synchronized(devStatus)
+        {
+            return devStatus.get(port);
+        }
+    }
+    
+    protected void setStatus(int newStatus)
+    {
+        devStatus.put(port, (byte)newStatus);
     }
 
     /**
@@ -177,7 +185,18 @@ public class EV3UARTPort extends EV3IOPort implements UARTPort
      */
     protected void setOperatingMode(int mode)
     {
-        uart.ioctl(UART_SET_CONN, devCon(port, CONN_INPUT_UART, 0, mode));        
+        int serial = actual.getShort(0);
+        //setStatus(getStatus() & ~(UART_DATA_READY));
+        //System.out.println("Status is " + getStatus());
+        uart.ioctl(UART_SET_CONN, devCon(port, CONN_INPUT_UART, 0, mode));
+        if (actual.getShort(0) == serial)
+        {
+            //System.out.println("not in sync");
+            while (actual.getShort(0) == serial)
+                Thread.yield();
+            //System.out.println("sync");
+        }
+        //System.out.println("Status is " + getStatus());
     }
 
     /**
@@ -231,7 +250,7 @@ public class EV3UARTPort extends EV3IOPort implements UARTPort
      */
     protected boolean readModeInfo()
     {
-        long base = System.currentTimeMillis();
+        //long base = System.currentTimeMillis();
         modeCnt = 0;
         for(int i = 0; i < UART_MAX_MODES; i++)
         {
@@ -356,29 +375,23 @@ public class EV3UARTPort extends EV3IOPort implements UARTPort
             return initialiseSensor(mode);
         if (modeInfo[mode] == null)
             return false;
+        //long s = System.currentTimeMillis();
         //System.out.println("Mode is " + getModeName(mode));
         setOperatingMode(mode);
+        //System.out.println("status is " + getStatus());
         int status = waitNonZeroStatus(TIMEOUT);
-        //System.out.println("status is " + status);
         boolean ret;
         if ((status & UART_DATA_READY) != 0 && (status & UART_PORT_CHANGED) == 0)
-        {
             ret = super.setMode(mode);
-        }
         else
         {
             // Sensor may have reset try and initialise it in the new mode.
             ret =  initialiseSensor(mode);
-            System.out.println("reset");
+            //System.out.println("reset");
         }
         if (ret)
         {
-            // wait for new data to be available to ensure we do not return stale values.
-            // TODO: Understand why this delay is needed. Some sort of race condition
-            // or possibly a delay in the shared memory state being updated.
-            Delay.msDelay(20);
-            //long s = System.currentTimeMillis();
-            ret = waitDataUpdate(TIMEOUT);
+            //ret = waitDataUpdate(TIMEOUT);
             //System.out.println("time " + (System.currentTimeMillis() - s));
         }
         return ret;
@@ -394,7 +407,8 @@ public class EV3UARTPort extends EV3IOPort implements UARTPort
     {
         synchronized (actual)
         {
-            return port*DEV_RAW_SIZE1 + actual.getShort(port*2)*DEV_RAW_SIZE2;
+            int ret = port*DEV_RAW_SIZE1 + actual.getShort(port*2)*DEV_RAW_SIZE2;
+            return ret;
         }
     }
     
@@ -409,10 +423,14 @@ public class EV3UARTPort extends EV3IOPort implements UARTPort
     {
         int cnt = timeout/TIMEOUT_DELTA;
         int offset = calcRawOffset();
+        //System.out.println("offset1 " + actual.getShort(port*2));
         while (cnt-- > 0)
         {
             if (calcRawOffset() != offset)
+            {
+                //System.out.println("offset " + actual.getShort(port*2));
                 return true;
+            }
             Delay.msDelay(TIMEOUT_DELTA);
         }
         return false;       
