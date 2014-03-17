@@ -1,6 +1,5 @@
 package lejos.robotics.mapping;
 
-
 import java.io.*;
 
 import lejos.robotics.Transmittable;
@@ -8,10 +7,6 @@ import lejos.robotics.geometry.*;
 import lejos.robotics.mapping.RangeMap;
 import lejos.robotics.navigation.Pose;
 
-/*
- * WARNING: THIS CLASS IS SHARED BETWEEN THE classes AND pccomms PROJECTS.
- * DO NOT EDIT THE VERSION IN pccomms AS IT WILL BE OVERWRITTEN WHEN THE PROJECT IS BUILT.
- */
 
 /**
  * A map of a room or other closed environment, represented by line segments

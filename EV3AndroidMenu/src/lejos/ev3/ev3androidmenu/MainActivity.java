@@ -229,7 +229,27 @@ public class MainActivity extends FragmentActivity implements EditSettingDialog.
 						refreshTable(ll, context, rootView);
 					}
 				});
-			}			
+			}
+			
+			Button stopProgramButton = (Button) rootView.findViewById(R.id.stopProgramButton);
+			if (stopProgramButton != null) {
+				stopProgramButton.setOnClickListener(new OnClickListener() {
+					@Override
+					public void onClick(View v) {
+						menu.stopProgram();
+					}
+				});
+			}
+			
+			Button shutdownButton = (Button) rootView.findViewById(R.id.shutdownButton);
+			if (shutdownButton != null) {
+				shutdownButton.setOnClickListener(new OnClickListener() {
+					@Override
+					public void onClick(View v) {
+						menu.shutdown();
+					}
+				});
+			}
 		}
 	}
 	

@@ -2,13 +2,13 @@ package lejos.ev3.tools;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.Socket;
-import java.net.UnknownHostException;
 
+import lejos.hardware.BrickFinder;
+import lejos.hardware.BrickInfo;
 
 /**
- * Contains the logic for connecting to RConsole on the NXT and downloading data.
+ * Contains the logic for connecting to the remote console stream from the EV3.
  * Can be used by different user interfaces.
  * 
  * @author Roger Glassey, Lawrie Griffiths and Andy Shaw
@@ -18,14 +18,10 @@ public class ConsoleViewComms
 {
     private static final int MODE_SWITCH = 0xff;
     private static final int MODE_LCD = 0x0;
-    private static final int MODE_EVENT = 0x1;
-    private static final int OPT_LCD = 1;
-    private static final int OPT_EVENT = 2;
     
     private static final int PORT = 8001;
     
     private InputStream is = null;
-    private OutputStream os = null;
 
     private ConsoleViewerUI viewer;
     private Reader reader;
@@ -66,17 +62,28 @@ public class ConsoleViewComms
      */
     public boolean connectTo(String name, String address, int protocol, boolean lcd)
     {
-
-    	return connectTo(name);
+    	if (name == null && address == null) {
+    		try {
+				BrickInfo[] bricks = BrickFinder.discover();
+				if (bricks.length == 0) {
+					System.err.println("Failed to find an EV3");
+					return false;
+				}
+				name = bricks[0].getIPAddress();
+			} catch (Exception e) {
+				System.err.println("No EV3s discovered");
+				return false;
+			}
+    	}
+    	return connectTo(name != null ? name : address);
     }
     
     private boolean connectTo(String name) {
     	try {
 			sock = new Socket(name,PORT);
 			is = sock.getInputStream();
-			os = sock.getOutputStream();
 	        viewer.connectedTo(name, name);
-	        viewer.logMessage("Connected to " + name + " " + name);
+	        viewer.logMessage("Connected to " + name);
 	    	reader.setConnected(true);
 			return true;
 		} catch (IOException e) {
@@ -89,7 +96,7 @@ public class ConsoleViewComms
      * Close the connection
      */
     public void close() {
-    	System.out.println("Closing the connection");;
+    	//System.out.println("Closing the connection");;
     	try {
 			if (sock != null) sock.close();
 		} catch (IOException e) {

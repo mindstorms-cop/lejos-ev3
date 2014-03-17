@@ -4,11 +4,6 @@ import lejos.robotics.RegulatedMotor;
 import lejos.robotics.RegulatedMotorListener;
 
 /*
- * WARNING: THIS CLASS IS SHARED BETWEEN THE classes AND pccomms PROJECTS.
- * DO NOT EDIT THE VERSION IN pccomms AS IT WILL BE OVERWRITTEN WHEN THE PROJECT IS BUILT.
- */
-
-/*
  * DEV NOTES: Should add an optional method to auto-calibrate the steering. With low power, rotate steering all 
  * the way to the left and record tacho limit, then all the way to the right and record tacho limit. Assumes
  * symmetrical steering values and estimates straight tacho value as average of two tacho counts. Make alternate

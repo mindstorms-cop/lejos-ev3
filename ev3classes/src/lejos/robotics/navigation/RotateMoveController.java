@@ -1,10 +1,5 @@
 package lejos.robotics.navigation;
 
-/*
- * WARNING: THIS CLASS IS SHARED BETWEEN THE classes AND pccomms PROJECTS.
- * DO NOT EDIT THE VERSION IN pccomms AS IT WILL BE OVERWRITTEN WHEN THE PROJECT IS BUILT.
- */
-
 public interface RotateMoveController extends MoveController {
   /**
    * Rotates the NXT robot the specified number of degrees; direction determined by the sign of the parameter.

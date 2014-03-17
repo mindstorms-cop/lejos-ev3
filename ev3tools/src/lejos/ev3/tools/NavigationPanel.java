@@ -63,7 +63,7 @@ import lejos.robotics.mapping.NavigationModel.NavEvent;
 public abstract class NavigationPanel extends JPanel implements MapApplicationUI, MouseListener, MouseMotionListener, ActionListener {
 	private static final long serialVersionUID = 1L;
 	
-	protected final static String KEY_DEFAULT_NXT = "DEFAULT_NXT";
+	protected final static String KEY_DEFAULT_EV3 = "DEFAULT_EV3";
 	protected final static String KEY_DEFAULT_MAP = "DEFAULT_MAP";
 	protected final static String KEY_DIFF_PILOT_WHEEL_DIAMETER = "DIFFERENTIAL_PILOT_WHEEL_DIAMETER";
 	protected final static String KEY_DIFF_PILOT_TRACK_WIDTH = "DIFFERENTIAL_PILOT_TRACK_WIDTH";
@@ -121,8 +121,8 @@ public abstract class NavigationPanel extends JPanel implements MapApplicationUI
 	protected JSlider zoomSlider;
 	
 	// Connect Panel
-	protected JLabel nxtLabel = new JLabel("EV3 name:");
-	protected JTextField nxtName = new JTextField(10);
+	protected JLabel ev3Label = new JLabel("EV3 name:");
+	protected JTextField ev3Name = new JTextField(10);
 	protected JButton connectButton = new JButton("Connect");
 	
 	// Control of features displayed
@@ -712,9 +712,9 @@ public abstract class NavigationPanel extends JPanel implements MapApplicationUI
 	 * Create the Connect panel to allow connection to a EV3 brick
 	 */
 	protected void createConnectPanel() {
-		connectPanel.add(nxtLabel);
-		connectPanel.add(nxtName);
-		nxtName.setText(props.getProperty(KEY_DEFAULT_NXT,""));
+		connectPanel.add(ev3Label);
+		connectPanel.add(ev3Name);
+		ev3Name.setText(props.getProperty(KEY_DEFAULT_EV3,""));
 		connectPanel.add(connectButton);
 		connectPanel.add(uploadBox);
 		uploadBox.setSelected(true);
@@ -725,13 +725,13 @@ public abstract class NavigationPanel extends JPanel implements MapApplicationUI
 			public void actionPerformed(ActionEvent event) {
 				if (uploadBox.isSelected()) {
 					try {
-						model.connectAndUpload(nxtName.getText(), new File(program));
+						model.connectAndUpload(ev3Name.getText(), new File(program));
 					} catch (FileNotFoundException e) {
 						return;
 					}
 				}
-				model.connect(nxtName.getText());
-				props.setProperty(KEY_DEFAULT_NXT, nxtName.getText());
+				model.connect(ev3Name.getText());
+				props.setProperty(KEY_DEFAULT_EV3, ev3Name.getText());
 				saveProperties();
 			}
 		});
@@ -1287,7 +1287,7 @@ public abstract class NavigationPanel extends JPanel implements MapApplicationUI
 			model.clear();
 			repaint();
 		} else if (e.getSource() == connect) {
-			String nxtName = (String)JOptionPane.showInputDialog(
+			String ev3Name = (String)JOptionPane.showInputDialog(
                     this,
                     "Name:",
                     "Connect to EV3", 
@@ -1295,13 +1295,13 @@ public abstract class NavigationPanel extends JPanel implements MapApplicationUI
                     null,
                     null,
                     "");
-			if (nxtName != null) {
+			if (ev3Name != null) {
 				try {
-					model.connectAndUpload(nxtName, new File(program));
+					model.connectAndUpload(ev3Name, new File(program));
 				} catch (FileNotFoundException e1) {
 					return;
 				}
-				model.connect(nxtName);
+				model.connect(ev3Name);
 			}
 		} else if (e.getSource() == gridColor) {
 			chooseColor("Grid", MapPanel.GRID_COLOR_INDEX);

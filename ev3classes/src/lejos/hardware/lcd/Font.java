@@ -1,5 +1,7 @@
 package lejos.hardware.lcd;
 
+import java.io.Serializable;
+
 /**
  * Provides access to fonts for use with the display or images. The actual font
  * data is held as a series of glyphs with all inter character spacing removed.
@@ -10,10 +12,10 @@ package lejos.hardware.lcd;
  * 8th scan line. Values of 1 represent black. 0 white.
  * @author Andy
  */
-public class Font
+public class Font implements Serializable
 {
-
-    public final int width;
+	private static final long serialVersionUID = 1550412879619616244L;
+	public final int width;
     public final int height;
     public final int glyphWidth;
     public final int glyphCount;
@@ -35,7 +37,12 @@ public class Font
     static class TinyFont extends Font
     {
 
-        TinyFont()
+        /**
+		 * 
+		 */
+		private static final long serialVersionUID = 1938158022862726819L;
+
+		TinyFont()
         {
             super(
                 new byte[] {(byte) 0x40, (byte) 0xaa, (byte) 0x24, (byte) 0x64, (byte) 0x24, 
@@ -107,7 +114,12 @@ public class Font
     static class SmallFont extends Font
     {
 
-        SmallFont()
+        /**
+		 * 
+		 */
+		private static final long serialVersionUID = -7778038990105368925L;
+
+		SmallFont()
         {
             super(
                 new byte[] {(byte) 0x00, (byte) 0x62, (byte) 0x03, (byte) 0x84, (byte) 0x49, 
@@ -236,7 +248,12 @@ public class Font
     static class MediumFont extends Font
     {
 
-        MediumFont()
+        /**
+		 * 
+		 */
+		private static final long serialVersionUID = -1916404682626635141L;
+
+		MediumFont()
         {
             super (
                 new byte[] {(byte) 0x00, (byte) 0xc0, (byte) 0xc0, (byte) 0x0c, (byte) 0x00, 
@@ -633,7 +650,12 @@ public class Font
     static class LargeFont extends Font
     {
 
-        LargeFont()
+        /**
+		 * 
+		 */
+		private static final long serialVersionUID = -6556678445133835612L;
+
+		LargeFont()
         {
             super (
                     new byte[] {(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0xf0, (byte) 0x00, 

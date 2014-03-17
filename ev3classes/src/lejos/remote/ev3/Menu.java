@@ -10,6 +10,8 @@ public interface Menu {
 	
 	public boolean deleteFile(String fileName);
 	
+	public void stopProgram();
+	
 	public long getFileSize(String filename);
 	
 	public String[] getProgramNames();
@@ -33,4 +35,8 @@ public interface Menu {
 	public String getName();
 	
 	public void setName(String name);
+	
+	public String getExecutingProgramName();
+	
+	public void shutdown();
 }

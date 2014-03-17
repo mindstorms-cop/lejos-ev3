@@ -2,11 +2,6 @@ package lejos.robotics;
 
 import lejos.robotics.RangeReadings;
 
-/*
- * WARNING: THIS CLASS IS SHARED BETWEEN THE classes AND pccomms PROJECTS.
- * DO NOT EDIT THE VERSION IN pccomms AS IT WILL BE OVERWRITTEN WHEN THE PROJECT IS BUILT.
- */
-
 /**
  * Abstraction for a single range scanning sensor, rotating platform with a range finder,
  * or a complete robot, that obtains a set of range readings at a set of angles to#

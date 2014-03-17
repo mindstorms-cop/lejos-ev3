@@ -1,4 +1,5 @@
 package lejos.remote.nxt;
+
 import lejos.internal.io.SystemSettings;
 
 /**

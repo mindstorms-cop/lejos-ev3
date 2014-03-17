@@ -3,15 +3,9 @@ package lejos.hardware.device;
 import lejos.hardware.port.I2CException;
 import lejos.hardware.port.I2CPort;
 import lejos.hardware.port.Port;
-import lejos.hardware.port.SensorPort;
 import lejos.hardware.sensor.I2CSensor;
 import lejos.utility.Delay;
 import lejos.utility.EndianTools;
-
-/*
- * WARNING: THIS CLASS IS SHARED BETWEEN THE classes AND pccomms PROJECTS.
- * DO NOT EDIT THE VERSION IN pccomms AS IT WILL BE OVERWRITTEN WHEN THE PROJECT IS BUILT.
- */
 
 /**
  * Supports the Mindsensors NXTMMX motor multiplexor. This device allows you to connect two 

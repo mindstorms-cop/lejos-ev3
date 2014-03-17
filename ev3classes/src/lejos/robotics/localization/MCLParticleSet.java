@@ -1,6 +1,5 @@
 package lejos.robotics.localization;
 
-
 import java.io.*;
 import lejos.robotics.*;
 import lejos.robotics.mapping.RangeMap;
@@ -10,10 +9,6 @@ import java.util.Random;
 
 import lejos.robotics.geometry.*;
 import lejos.robotics.localization.MCLParticle;
-/*
- * WARNING: THIS CLASS IS SHARED BETWEEN THE classes AND pccomms PROJECTS.
- * DO NOT EDIT THE VERSION IN pccomms AS IT WILL BE OVERWRITTEN WHEN THE PROJECT IS BUILT.
- */
 
 /**
  * Represents a particle set for the particle filtering algorithm.

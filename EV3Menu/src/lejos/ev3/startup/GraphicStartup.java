@@ -87,6 +87,12 @@ public class GraphicStartup implements Menu {
     static final String ICYes = "\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u000f\u0000\u0000\u0000\u000f\u0000\u0000\u00c0\u003f\u0000\u0000\u00c0\u003f\u0000\u0000\u00f0\u00ff\u0000\u0000\u00f0\u00ff\u0000\u0000\u00fc\u003f\u0000\u0000\u00fc\u003f\u0030\u0000\u00ff\u000f\u0030\u0000\u00ff\u000f\u00fc\u00c0\u00ff\u0003\u00fc\u00c0\u00ff\u0003\u00ff\u00f3\u00ff\u0000\u00ff\u00f3\u00ff\u0000\u00ff\u00ff\u003f\u0000\u00ff\u00ff\u003f\u0000\u00fc\u00ff\u000f\u0000\u00fc\u00ff\u000f\u0000\u00f0\u00ff\u0003\u0000\u00f0\u00ff\u0003\u0000\u00c0\u00ff\u0000\u0000\u00c0\u00ff\u0000\u0000\u0000\u003f\u0000\u0000\u0000\u003f\u0000\u0000\u0000\u000c\u0000\u0000\u0000\u000c\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000";
     static final String ICNo = "\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u00f0\u0000\u0000\u000f\u00f0\u0000\u0000\u000f\u00fc\u0003\u00c0\u003f\u00fc\u0003\u00c0\u003f\u00fc\u000f\u00f0\u003f\u00fc\u000f\u00f0\u003f\u00f0\u003f\u00fc\u000f\u00f0\u003f\u00fc\u000f\u00c0\u00ff\u00ff\u0003\u00c0\u00ff\u00ff\u0003\u0000\u00ff\u00ff\u0000\u0000\u00ff\u00ff\u0000\u0000\u00fc\u003f\u0000\u0000\u00fc\u003f\u0000\u0000\u00fc\u003f\u0000\u0000\u00fc\u003f\u0000\u0000\u00ff\u00ff\u0000\u0000\u00ff\u00ff\u0000\u00c0\u00ff\u00ff\u0003\u00c0\u00ff\u00ff\u0003\u00f0\u003f\u00fc\u000f\u00f0\u003f\u00fc\u000f\u00fc\u000f\u00f0\u003f\u00fc\u000f\u00f0\u003f\u00fc\u0003\u00c0\u003f\u00fc\u0003\u00c0\u003f\u00f0\u0000\u0000\u000f\u00f0\u0000\u0000\u000f\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000";
 
+    static final String PROGRAMS_DIRECTORY = "/home/lejos/programs";
+    static final String SAMPLES_DIRECTORY = "/home/root/lejos/samples";
+    static final String MENU_DIRECTORY = "/home/root/lejos/bin/utils";
+    static final String START_BLUETOOTH = "/home/root/lejos/bin/startbt";
+    static final String START_WLAN = "/home/root/lejos/bin/startwlan";
+    
     static final int defaultSleepTime = 2;
     static final int maxSleepTime = 10;
 
@@ -109,7 +115,13 @@ public class GraphicStartup implements Menu {
 	
 	private static TextLCD lcd = LocalEV3.get().getTextLCD();
 	
-	private static Process program;
+	private static Process program; // the running user program, if any
+	private static String programName; // The name of the running program
+	
+	private static boolean suspend = false;
+	static EchoThread echoIn, echoErr;
+	
+	static GraphicMenu curMenu;
     
     /**
      * Main method
@@ -135,8 +147,8 @@ public class GraphicStartup implements Menu {
         	String auto = Settings.getProperty(defaultProgramAutoRunProperty, "");        	
     		if (auto.equals("ON") && !Button.LEFT.isDown())
             {
-            	System.out.println("Executing " + f.getPath());
-                exec(JAVA_RUN_JAR + f.getPath());
+            	System.out.println("Auto executing default program " + f.getPath());
+                exec(JAVA_RUN_JAR + f.getPath(), PROGRAMS_DIRECTORY);
             }
     	}
         
@@ -384,7 +396,17 @@ public class GraphicStartup implements Menu {
 							case UPLOAD_FILE:
 								reply.result = uploadFile(request.name, request.contents);
 								os.writeObject(reply);
-								break;     			
+								break;  
+							case STOP_PROGRAM:
+								stopProgram();
+								break;
+							case SHUT_DOWN:
+								shutdown();
+								break;
+							case GET_EXECUTING_PROGRAM_NAME:
+								reply.value = programName;
+								os.writeObject(reply);
+								break;
 		            		}
 	            		}
             		
@@ -559,10 +581,10 @@ public class GraphicStartup implements Menu {
         	try {
         		lcd.clear();
         		lcd.drawString("Restarting agent", 0, 1);
-				Process p = Runtime.getRuntime().exec("/home/root/lejos/bin/startbt");
+				Process p = Runtime.getRuntime().exec(START_BLUETOOTH);
 				int status = p.waitFor();
 				System.out.println("startbt returned " + status);
-			} catch (IOException | InterruptedException e) {
+			} catch (Exception e) {
 				System.err.println("Failed to execute startbt: " + e);
 			}
         }
@@ -713,9 +735,9 @@ public class GraphicStartup implements Menu {
         }
         else
         {
-        	System.out.println("Executing " + f.getPath());
+        	System.out.println("Executing default program " + f.getPath());
         	ind.suspend();
-            exec(JAVA_RUN_JAR + f.getPath());
+            exec(JAVA_RUN_JAR + f.getPath(), PROGRAMS_DIRECTORY);
         	ind.resume();
         }
     }
@@ -755,7 +777,7 @@ public class GraphicStartup implements Menu {
             {
                 case 0:              	
                     if (getYesNo("Delete all files?", false) == 1) {
-                    	File dir = new File("/home/lejos/programs");
+                    	File dir = new File(PROGRAMS_DIRECTORY);
                         for (String fn : dir.list()) {
                             File aFile = new File(dir,fn);
                             System.out.println("Deleting " + aFile.getPath());
@@ -975,7 +997,7 @@ public class GraphicStartup implements Menu {
      * Present the menu for a single file.
      * @param file
      */
-    private void fileMenu(File file)
+    private void fileMenu(File file, boolean sample)
     {
         String fileName = file.getName();
         String ext = Utils.getExtension(fileName);
@@ -1007,12 +1029,13 @@ public class GraphicStartup implements Menu {
         int selection = getSelection(menu, 0);
         if (selection >= 0)
         {
+        	String directory = (sample ? SAMPLES_DIRECTORY : PROGRAMS_DIRECTORY);
 	        switch(selection + selectionAdd)
 	        {
 	            case 0:
 	            	System.out.println("Running program: " + file.getPath());
 	            	ind.suspend();
-	            	exec(JAVA_RUN_JAR + file.getPath());
+	            	exec(JAVA_RUN_JAR + file.getPath(), directory);
 	            	ind.resume();
 	                break;
 	            case 1:
@@ -1022,7 +1045,7 @@ public class GraphicStartup implements Menu {
 	            	ind.suspend();
 	            	System.setOut(lcdOut);
 	            	System.setErr(lcdOut);
-	            	exec(JAVA_RUN_JAR + file.getPath());
+	            	exec(JAVA_RUN_JAR + file.getPath(), directory);
 	            	System.setOut(origOut);
 	            	System.setOut(origErr);
 	            	ind.resume();
@@ -1030,7 +1053,7 @@ public class GraphicStartup implements Menu {
 	            case 2:
 	            	System.out.println("Debugging program: " + file.getPath());
 	            	ind.suspend();
-	            	exec(JAVA_DEBUG_JAR + file.getPath());
+	            	exec(JAVA_DEBUG_JAR + file.getPath(), directory);
 	            	ind.resume();
 	                break;
 	            case 3:
@@ -1052,26 +1075,30 @@ public class GraphicStartup implements Menu {
     /**
      * Execute a program and display its output to System.out and error stream to System.err
      */
-    private static void exec(String program) {
+    private static void exec(String programName, String directory) {
         try {
+        	GraphicStartup.programName = programName;
         	lcd.clear();
         	lcd.refresh();
         	lcd.setAutoRefresh(false);
-            Process p = Runtime.getRuntime().exec(program);
-            BufferedReader input = new BufferedReader(new InputStreamReader(p.getInputStream()));
-            BufferedReader err= new BufferedReader(new InputStreamReader(p.getErrorStream()));
+
+            program = new ProcessBuilder(programName.split(" ")).directory(new File(directory)).start();
+            BufferedReader input = new BufferedReader(new InputStreamReader(program.getInputStream()));
+            BufferedReader err= new BufferedReader(new InputStreamReader(program.getErrorStream()));
             
-            EchoThread echoIn = new EchoThread(input, System.out);
-            EchoThread echoErr = new EchoThread(err, System.err);
+            echoIn = new EchoThread(input, System.out);
+            echoErr = new EchoThread(err, System.err);
             
             echoIn.start();
             echoErr.start();
+            
+        	System.out.println("Executing " + programName + " in " + directory);
             
             while(true) {
               int b = Button.getButtons(); 
               if (b == 6) {
             	  System.out.println("Killing the process");
-            	  p.destroy(); 
+            	  program.destroy(); 
             	  // reset motors after program is aborted
             	  resetMotors();
                   break;
@@ -1080,13 +1107,14 @@ public class GraphicStartup implements Menu {
               Delay.msDelay(200);
             }
             System.out.println("Waiting for process to die");;
-            p.waitFor();
+            program.waitFor();
             System.out.println("Program finished");
       	    // Turn the LED off, in case left on
       	    Button.LEDPattern(0);
             lcd.setAutoRefresh(true);
             lcd.clear();
             lcd.refresh();
+            program = null;
           }
           catch (Exception e) {
             System.err.println("Failed to execute program: " + e);
@@ -1096,27 +1124,42 @@ public class GraphicStartup implements Menu {
     /**
      * Execute a program and display its output to System.out and error stream to System.err
      */
-    private static void start(String programName) {
+    private static void startProgram(String programName) {
         try {
+        	if (program != null) return;
+        	GraphicStartup.programName = programName;
         	lcd.clear();
         	lcd.refresh();
         	lcd.setAutoRefresh(false);
-            program = Runtime.getRuntime().exec(programName);
+        	
+        	String[] args = programName.split(" ");
+        	File f = new File(args[args.length-1]);
+        	File directory = f.getParentFile();
+        	
+            program = new ProcessBuilder(args).directory(directory).start();
+            
             BufferedReader input = new BufferedReader(new InputStreamReader(program.getInputStream()));
             BufferedReader err= new BufferedReader(new InputStreamReader(program.getErrorStream()));
             
-            EchoThread echoIn = new EchoThread(input, System.out);
-            EchoThread echoErr = new EchoThread(err, System.err);
+            echoIn = new EchoThread(input, System.out);
+            echoErr = new EchoThread(err, System.err);
             
             echoIn.start();
             echoErr.start();
+            
+        	System.out.println("Executing " + programName + " in " + directory);
+        	
+            suspend = true;
+            curMenu.quit(); // Quit the current menu and go into the suspend loop
         } catch (Exception e) {
         	System.err.println("Failed to start program: " + e);
         } 
     }
     
-    private static void stopProgram() {           
+    public void stopProgram() {           
         try {  
+        	if (program == null) return;
+        	
         	program.destroy();
         
             System.out.println("Waiting for process to die");;
@@ -1128,6 +1171,9 @@ public class GraphicStartup implements Menu {
             lcd.setAutoRefresh(true);
             lcd.clear();
             lcd.refresh();
+            program = null;
+            suspend = false;
+        	ind.resume();
           }
           catch (Exception e) {
             System.err.println("Failed to stop program: " + e);
@@ -1144,7 +1190,7 @@ public class GraphicStartup implements Menu {
     	System.out.println("Finding files ...");
         int selection = 0;
         do {
-            File[] files = (new File("/home/lejos/programs")).listFiles();
+            File[] files = (new File(PROGRAMS_DIRECTORY)).listFiles();
             int len = 0;
             for (int i = 0; i < files.length && files[i] != null; i++)
                 len++;
@@ -1169,7 +1215,7 @@ public class GraphicStartup implements Menu {
             menu.setItems(fileNames,icons);
             selection = getSelection(menu, selection);
             if (selection >= 0)
-                fileMenu(files[selection]);
+                fileMenu(files[selection], false);
         } while (selection >= 0);
     }
     
@@ -1180,10 +1226,10 @@ public class GraphicStartup implements Menu {
     private void samplesMenu()
     {
     	GraphicListMenu menu = new GraphicListMenu(null,null);
-    	System.out.println("Finding files ...");
+    	//System.out.println("Finding files ...");
         int selection = 0;
         do {
-            File[] files = (new File("/home/root/lejos/samples")).listFiles();
+            File[] files = (new File(SAMPLES_DIRECTORY)).listFiles();
             int len = 0;
             for (int i = 0; i < files.length && files[i] != null; i++)
                 len++;
@@ -1208,7 +1254,7 @@ public class GraphicStartup implements Menu {
             menu.setItems(fileNames,icons);
             selection = getSelection(menu, selection);
             if (selection >= 0)
-                fileMenu(files[selection]);
+                fileMenu(files[selection], true);
         } while (selection >= 0);
     }
     
@@ -1264,9 +1310,27 @@ public class GraphicStartup implements Menu {
     private int getSelection(GraphicMenu menu, int cur)
     { 	
         int selection;
+        
+        curMenu = menu;
+        
         // If the menu is interrupted by another thread, redisplay
         do {
         	selection = menu.select(cur, timeout*60000);
+        	
+            while (suspend && program != null) {
+            	if (!echoIn.isAlive() && !echoErr.isAlive()) {
+            		stopProgram();
+            		ind.resume();
+            		break;
+            	}
+                int b = Button.getButtons(); 
+                if (b == 6) {
+                	stopProgram();
+                	ind.resume();
+                	break;
+                }
+                Delay.msDelay(200);
+            }
         } while (selection == -2);
         
         if (selection == -3)
@@ -1275,13 +1339,22 @@ public class GraphicStartup implements Menu {
         return selection;
     }
     
+    public String getExecutingProgramName() {
+    	if (program == null) return null;
+    	return programName;
+    }
+    
     /**
      * Shut down the EV3
      */
-    void shutdown() {
+    public void shutdown() {
     	System.out.println("Shutting down the EV3");
         ind.suspend();
-    	exec("init 0");
+    	try {
+			Runtime.getRuntime().exec("init 0");
+		} catch (IOException e) {
+			// Ignore
+		}
     	lcd.drawString("  Shutting down", 0, 6);
         lcd.refresh();
     }
@@ -1292,7 +1365,7 @@ public class GraphicStartup implements Menu {
 		public synchronized void run()
     	{
     		try {
-				InputStream is = new FileInputStream("/home/root/lejos/bin/utils/menufifo");
+				InputStream is = new FileInputStream(MENU_DIRECTORY + "/menufifo");
 				
 	    		while(true) {
 	    			int c = is.read();
@@ -1421,19 +1494,18 @@ public class GraphicStartup implements Menu {
 	@Override
 	public void runProgram(String programName) {
     	ind.suspend();
-    	exec(JAVA_RUN_JAR + "/home/lejos/programs/" + programName + ".jar");
-    	ind.resume();
+    	startProgram(JAVA_RUN_JAR + PROGRAMS_DIRECTORY + "/" + programName + ".jar");
 	}
 
 	@Override
 	public boolean deleteFile(String fileName) {
-		File f = new File("/home/lejos/programs/" + fileName);
+		File f = new File(fileName);
 		return f.delete();
 	}
 
 	@Override
 	public String[] getProgramNames() {
-		File[] files = (new File("/home/lejos/programs")).listFiles();
+		File[] files = (new File(PROGRAMS_DIRECTORY)).listFiles();
 		String[] fileNames = new String[files.length];
 		for(int i=0;i<files.length;i++) {
 			fileNames[i] = files[i].getName();
@@ -1444,20 +1516,18 @@ public class GraphicStartup implements Menu {
 	@Override
 	public void runSample(String programName) {
     	ind.suspend();
-    	exec(JAVA_RUN_JAR + "/home/root/lejos/samples/" + programName + ".jar");
-    	ind.resume();
+    	startProgram(JAVA_RUN_JAR + SAMPLES_DIRECTORY + "/" + programName + ".jar");
 	}
 
 	@Override
 	public void debugProgram(String programName) {
     	ind.suspend();
-    	exec(JAVA_DEBUG_JAR + "/home/lejos/programs/" + programName + ".jar");
-    	ind.resume();
+    	startProgram(JAVA_DEBUG_JAR + PROGRAMS_DIRECTORY + "/" + programName + ".jar");
 	}
 
 	@Override
 	public String[] getSampleNames() {
-		File[] files = (new File("/home/root/lejos/samples")).listFiles();
+		File[] files = (new File(SAMPLES_DIRECTORY)).listFiles();
 		String[] fileNames = new String[files.length];
 		for(int i=0;i<files.length;i++) {
 			fileNames[i] = files[i].getName();
@@ -1565,7 +1635,7 @@ public class GraphicStartup implements Menu {
 
 	@Override
 	public void deleteAllPrograms() {
-    	File dir = new File("/home/lejos/programs");
+    	File dir = new File(PROGRAMS_DIRECTORY);
         for (String fn : dir.list()) {
             File aFile = new File(dir,fn);
             System.out.println("Deleting " + aFile.getPath());
@@ -1605,7 +1675,7 @@ public class GraphicStartup implements Menu {
 			Process p = Runtime.getRuntime().exec("hostname " + hostname);
 			int status = p.waitFor();
 			System.out.println("hostname returned " + status);
-		} catch (IOException | InterruptedException e) {
+		} catch (Exception e) {
 			System.err.println("Failed to execute hostname: " + e);
 		}
 		
@@ -1614,7 +1684,7 @@ public class GraphicStartup implements Menu {
 	
 	private void startWlan() {
     	try {
-			Process p = Runtime.getRuntime().exec("/home/root/lejos/bin/startwlan");
+			Process p = Runtime.getRuntime().exec(START_WLAN);
             BufferedReader input = new BufferedReader(new InputStreamReader(p.getInputStream()));
             BufferedReader err= new BufferedReader(new InputStreamReader(p.getErrorStream()));
             PrintStream lcdStream = new PrintStream(new LCDOutputStream());
@@ -1633,9 +1703,24 @@ public class GraphicStartup implements Menu {
 			System.out.println("startwlan returned " + status);
 			// Get IP addresses again
 			ips = getIPAddresses();
+            String lastIp = null;
+            for (String ip: ips) {
+            	lastIp = ip;
+            }
+			System.setProperty("java.rmi.server.hostname", lastIp);
+			
+            try {
+    			RMIRemoteEV3 ev3 = new RMIRemoteEV3();
+    			Naming.rebind("//localhost/RemoteEV3", ev3);
+    			RMIRemoteMenu remoteMenu = new RMIRemoteMenu(menu);
+    			Naming.rebind("//localhost/RemoteMenu", remoteMenu);
+    		} catch (Exception e) {
+    			System.err.println("RMI failed to start: " + e);
+    		}
+            
 			lcd.clear();
         	ind.resume();
-		} catch (IOException | InterruptedException e) {
+		} catch (Exception e) {
 			System.err.println("Failed to execute startwlan: " + e);
 		}
 	}

@@ -1,12 +1,5 @@
 package lejos.robotics;
 
-// TODO: This is wrong to have a lejos.robotics class using a lejos.nxt class.
-
-/*
- * WARNING: THIS CLASS IS SHARED BETWEEN THE classes AND pccomms PROJECTS.
- * DO NOT EDIT THE VERSION IN pccomms AS IT WILL BE OVERWRITTEN WHEN THE PROJECT IS BUILT.
- */
-
 /**
  * Interface for a light sensor that also includes a lamp (usually LED) to provide illumination.
  * @author BB

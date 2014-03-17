@@ -2,8 +2,6 @@ package lejos.hardware.sensor;
 
 import java.util.ArrayList;
 
-import lejos.robotics.SampleProvider;
-
 /**
  * Provide access to the modes supported by a sensor
  * @author andy

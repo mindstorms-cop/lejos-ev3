@@ -66,8 +66,8 @@ public class BarChart extends JFrame {
 	        public void windowClosing(WindowEvent e) {
 	        	try {
 					if (sp != null) sp.close();
-				} catch (RemoteException e1) {
-					e1.printStackTrace();
+				} catch (Exception e1) {
+					System.err.println("Exception closing sample provider");
 				}
 	        }
 	    });

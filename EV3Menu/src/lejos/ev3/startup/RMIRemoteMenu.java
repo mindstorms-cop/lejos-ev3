@@ -102,4 +102,18 @@ public class RMIRemoteMenu extends UnicastRemoteObject implements RMIMenu {
 		WPASupplicant.writeConfiguration("wpa_supplicant.txt",  "wpa_supplicant.conf", ssid, pwd);	
 	}
 
+	@Override
+	public void stopProgram() throws RemoteException {
+		menu.stopProgram();
+	}
+
+	@Override
+	public String getExecutingProgramName() throws RemoteException {
+		return menu.getExecutingProgramName();
+	}
+
+	@Override
+	public void shutdown() throws RemoteException {
+		menu.shutdown();
+	}
 }
