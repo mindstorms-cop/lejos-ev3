@@ -12,7 +12,6 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.DirectoryFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
-import org.eclipse.jface.preference.RadioGroupFieldEditor;
 import org.eclipse.jface.preference.StringFieldEditor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
@@ -93,6 +92,9 @@ public class PreferencePage extends FieldEditorPreferencePage implements
 		Composite p2 = newParent(parent, 3);
 		addField(new BooleanFieldEditor(PreferenceConstants.KEY_SEPARATE_JVM,
 				"&Run Tools in separate JVM", p2));
+		
+		addField(new BooleanFieldEditor(PreferenceConstants.KEY_SSH_SCP,
+				"&Use ssh and scp", p2));
 		
 		Group g = createGroup(parent, 2, "Defaults for run configurations:");
 

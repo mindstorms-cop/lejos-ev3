@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.rmi.Naming;
+import java.util.ArrayList;
 
 import lejos.remote.ev3.RMIMenu;
 
@@ -17,11 +18,13 @@ import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.launching.AbstractJavaLaunchConfigurationDelegate;
 import org.lejos.ev3.ldt.LeJOSEV3Plugin;
+import org.lejos.ev3.ldt.preferences.PreferenceConstants;
 import org.lejos.ev3.ldt.util.BrickInfo;
 import org.lejos.ev3.ldt.util.Discover;
 import org.lejos.ev3.ldt.util.JarCreator;
 import org.lejos.ev3.ldt.util.LeJOSEV3Util;
 import org.lejos.ev3.ldt.util.PrefsResolver;
+import org.lejos.ev3.ldt.util.ToolStarter;
 
 public class LaunchEV3ConfigDelegate extends AbstractJavaLaunchConfigurationDelegate {
 	public static final String ID_TYPE = "org.lejos.ev3.ldt.LaunchType";
@@ -32,6 +35,14 @@ public class LaunchEV3ConfigDelegate extends AbstractJavaLaunchConfigurationDele
 			String defSwitch, String suffix, boolean def) throws CoreException {
 		if (config.getAttribute(defSwitch, true))
 			return p.getBoolean(suffix, def);
+		else
+			return config.getAttribute(LaunchConstants.PREFIX+suffix, def);
+	}
+	
+	private String resolve(PrefsResolver p, ILaunchConfiguration config,
+			String defSwitch, String suffix, String def) throws CoreException {
+		if (config.getAttribute(defSwitch, true))
+			return p.getString(suffix, def);
 		else
 			return config.getAttribute(LaunchConstants.PREFIX+suffix, def);
 	}
@@ -47,6 +58,8 @@ public class LaunchEV3ConfigDelegate extends AbstractJavaLaunchConfigurationDele
 		PrefsResolver p = new PrefsResolver(LeJOSEV3Plugin.ID, null);
 		
 		boolean run = resolve(p, config, "", mode+LaunchConstants.SUFFIX_RUN_AFTER_UPLOAD, true);
+		
+		boolean useSsh = p.getBoolean(org.lejos.ev3.ldt.preferences.PreferenceConstants.KEY_SSH_SCP, false);
 		
 		if (monitor.isCanceled())
 			return;
@@ -89,25 +102,53 @@ public class LaunchEV3ConfigDelegate extends AbstractJavaLaunchConfigurationDele
 			LeJOSEV3Util.message("Jar file has been created successfully");
 				
 			LeJOSEV3Util.message("Uploading ...");
-			monitor.subTask("Uploading ...");					
+			monitor.subTask("Uploading ...");	
 			
-			BrickInfo[] bricks = Discover.discover();
-			
-			if (bricks.length ==  0) {
-				LeJOSEV3Util.error("No EV3 Found");					
-			} else {			
-				RMIMenu menu = (RMIMenu)Naming.lookup("//" + bricks[0].getIPAddress() + "/RemoteMenu");
-				File f = new File(binaryPath);
-				FileInputStream in = new FileInputStream(f);
-				byte[] data = new byte[(int)f.length()];
-			    in.read(data);
-			    in.close();
-			    menu.uploadFile("/home/lejos/programs/" + binary.getProjectRelativePath().toPortableString(), data);
-			    
-			    if (run) menu.runProgram(binary.getProjectRelativePath().toPortableString().replace(".jar", ""));
-				LeJOSEV3Util.message("Program has been uploaded");
+			if (useSsh) {
+				LeJOSEV3Util.message("Using scp for upload and ssh to execute program");
+				
+				String brickName = resolve(p, config, LaunchConstants.KEY_TARGET_USE_DEFAULTS,
+						PreferenceConstants.KEY_TARGET_BRICK_NAME, "");
+				
+				// start EV3ScpUpload
+				ToolStarter starter = LeJOSEV3Util.getCachedExternalStarter();
+				
+				ArrayList<String> args = new ArrayList<String>();
+				
+				if (run) args.add("-r");
+				
+				args.add(brickName);
+				
+				args.add(binaryPath);
+				
+				args.add("/home/lejos/programs/" + binary.getProjectRelativePath().toPortableString());
+				
+				int r = starter.invokeTool(LeJOSEV3Util.TOOL_EV3SCPUPLOAD, args);
+				
+				if (r == 0)
+					LeJOSEV3Util.message("EV3ScpUpload has been started successfully");
+				else
+					LeJOSEV3Util.error("Starting EV3ScpUpload failed with exit status "+r);
+			} else {
+				LeJOSEV3Util.message("Using the EV3 menu for upload and to execute program");
+				
+				BrickInfo[] bricks = Discover.discover();
+				
+				if (bricks.length ==  0) {
+					LeJOSEV3Util.error("No EV3 Found");					
+				} else {			
+					RMIMenu menu = (RMIMenu)Naming.lookup("//" + bricks[0].getIPAddress() + "/RemoteMenu");
+					File f = new File(binaryPath);
+					FileInputStream in = new FileInputStream(f);
+					byte[] data = new byte[(int)f.length()];
+				    in.read(data);
+				    in.close();
+				    menu.uploadFile("/home/lejos/programs/" + binary.getProjectRelativePath().toPortableString(), data);
+				    
+				    if (run) menu.runProgram(binary.getProjectRelativePath().toPortableString().replace(".jar", ""));
+					LeJOSEV3Util.message("Program has been uploaded");
+				}
 			}
-
 		}
 		catch (Exception t)
 		{

@@ -5,7 +5,7 @@
 -->
 <project name="leJOS EV3 plugin update site" default="publish" basedir=".">
 
-	<!-- Need to set "Run in same JRE as workspace" in Ant Buld JRE tab for eclipse.home to be set  -->
+	<!-- Need to set "Run in same JRE as workspace" in Ant Build JRE tab for eclipse.home to be set  -->
 	<property name="dist" value="${basedir}/dist" />
 	
 	<property name="eclipse.equinox.main" value="org.eclipse.equinox.launcher.Main" />
