@@ -41,6 +41,15 @@
                toolbarPath="org.lejos.ev3.ldt/StartEV3Control"
                id="org.lejos.ev3.ldt.actions.StartEV3ControlAction">
          </action>
+         <action
+               label="Start EV3MapCommand"
+               icon="icons/ev3_16x16.png"
+               class="org.lejos.ev3.ldt.actions.StartEV3MapCommandAction"
+               tooltip="Starts the EV3MapCommand GUI tool"
+               menubarPath="leJOSEV3Menu/leJOSEV3Group"
+               toolbarPath="org.lejos.ev3.ldt/StartEV3MapCommand"
+               id="org.lejos.ev3.ldt.actions.StartEV3MapCommandAction">
+         </action>
       </actionSet>
    </extension>
    
