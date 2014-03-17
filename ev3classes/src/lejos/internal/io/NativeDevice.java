@@ -1,4 +1,5 @@
 package lejos.internal.io;
+
 import java.io.IOError;
 import com.sun.jna.Pointer;
 

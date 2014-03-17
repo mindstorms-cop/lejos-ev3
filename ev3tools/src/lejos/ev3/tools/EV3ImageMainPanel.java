@@ -295,7 +295,7 @@ public class EV3ImageMainPanel extends JPanel {
 		menu.addSeparator();
 
 		// Open lni (LeJOS NXT Image) file
-		Action openFileAction = new AbstractAction("Open LeJOS NXT Image File...") {
+		Action openFileAction = new AbstractAction("Open LeJOS EV3 Image File...") {
 			/**SN*/
 			private static final long serialVersionUID = 3458676330985853465L;
 
@@ -305,7 +305,7 @@ public class EV3ImageMainPanel extends JPanel {
 		};
 
 		// Export
-		final Action saveFileAction = new AbstractAction("Export LeJOS NXT Image File...") {
+		final Action saveFileAction = new AbstractAction("Export LeJOS EV3 Image File...") {
 			/**SN*/
 			private static final long serialVersionUID = 3458676330985853465L;
 

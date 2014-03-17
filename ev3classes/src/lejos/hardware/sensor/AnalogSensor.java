@@ -1,6 +1,5 @@
 package lejos.hardware.sensor;
 
-import lejos.hardware.Device;
 import lejos.hardware.port.AnalogPort;
 import lejos.hardware.port.Port;
 import lejos.utility.Delay;

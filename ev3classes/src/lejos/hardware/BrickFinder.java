@@ -9,7 +9,6 @@ import java.util.Map;
 import lejos.hardware.ev3.LocalEV3;
 import lejos.internal.ev3.EV3DeviceManager;
 import lejos.remote.ev3.RemoteEV3;
-import lejos.remote.nxt.RemoteNXT;
 
 public class BrickFinder {
 	private static final int DISCOVERY_PORT = 3016;
@@ -36,18 +35,8 @@ public class BrickFinder {
 				if (bricks.length > 0) {
 					defaultBrick = new RemoteEV3(bricks[0].getIPAddress());
 					return defaultBrick;
-				} else throw new Exception("No EV3 brick found");
+				} else throw new DeviceException("No EV3 brick found");
 			} catch (Exception e1) {
-				// No EV3s, look for a NXT
-			    BrickInfo[] bricks = discoverNXT();
-			    if (bricks.length > 0) {
-					try {
-						defaultBrick = new RemoteNXT(bricks[0].getName(), Bluetooth.getNXTCommConnector());
-						return defaultBrick;
-					} catch (Exception e2) {
-						// Fall through
-					}
-			    }
 			    throw new DeviceException("No brick found");
 			}
 		}

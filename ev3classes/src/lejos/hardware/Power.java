@@ -1,7 +1,5 @@
 package lejos.hardware;
 
-//import lejos.pc.comm.*;
-
 /**
  * Interface used to access information about the EV3 battery and current usage.
  * @author Brian Bagnall, Lawrie Griffiths Andy Shaw

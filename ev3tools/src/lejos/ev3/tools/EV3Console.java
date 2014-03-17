@@ -46,15 +46,11 @@ public class EV3Console implements ConsoleViewerUI {
 			return 0;
 		}
 		
-		int protocols = 0;
-		boolean blueTooth = commandLine.hasOption("b");
-		boolean usb = commandLine.hasOption("u");
 		String name = AbstractCommandLineParser.getLastOptVal(commandLine, "n");
 		String address = AbstractCommandLineParser.getLastOptVal(commandLine, "d");
-        String debugFile = AbstractCommandLineParser.getLastOptVal(commandLine, "di");
 
 		ConsoleViewComms comm = new ConsoleViewComms(this, false);
-		boolean connected = comm.connectTo(name, address, protocols, false);
+		boolean connected = comm.connectTo(name, address, 0, false);
 		if (!connected) {
 			logMessage("Failed to connect to EV3");
 			return 1;

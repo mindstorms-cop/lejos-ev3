@@ -1,0 +1,299 @@
+<!--
+  ==================================================
+  Buildfile for release of leJOS EV3
+  ==================================================
+-->
+<project name="leJOS EV3 release" default="release" basedir=".">
+
+	<!-- Setting up the global properties for the build -->
+	<property file="build.properties" />
+	<property prefix="vars.ev3classes"  file="${project.ev3classes}/build.properties" />
+	<property prefix="vars.ev3tools"   file="${project.ev3tools}/build.properties" />
+	<property prefix="vars.dbusjava"  file="${project.dbusjava}/build.properties" />
+	<property prefix="vars.ev3scripts"  file="${project.ev3scripts}/build.properties" />
+
+	<property prefix="vars.ev3samples"   file="${project.ev3samples}/build.properties" />
+	<property prefix="vars.ev3pcsamples" file="${project.ev3pcsamples}/build.properties" />
+
+	<!-- for consistency reasons -->
+	<property prefix="vars.release" file="build.properties" />
+	<property name="project.release" location="." />
+	
+	<echoproperties/>
+
+	<path id="pc.3rdparty">
+		<fileset dir="${project.jtools}/3rdparty">
+			<include name="**/*.jar"/>
+		</fileset>
+		<fileset dir="${project.pccomms}/3rdparty">
+			<include name="**/*.jar"/>
+		</fileset>
+		<fileset dir="${project.pctools}/3rdparty">
+			<include name="**/*.jar"/>
+		</fileset>
+		<fileset dir="${project.charting}/3rdparty">
+			<include name="**/*.jar"/>
+		</fileset>
+	</path>
+
+	<macrodef name="copy-project">
+		<attribute name="project" />
+		<attribute name="todir" />
+		<sequential>
+			<copy todir="@{todir}">
+				<fileset file="${project.@{project}}/${vars.@{project}.ev3classes.jar}" />
+			</copy>
+			<basename file="${project.@{project}}/${vars.@{project}.classes.src.zip}" property="tmp.copy-project.@{project}" />
+			<zip destfile="@{todir}/${tmp.copy-project.@{project}}">
+				<zipfileset src="${project.@{project}}/${vars.@{project}.classes.src.zip}" />
+				<zipfileset file="README-src.txt" fullpath="README.txt" />
+			</zip>
+		</sequential>
+	</macrodef>
+	
+	<macrodef name="buildcopy-project">
+		<attribute name="project" />
+		<attribute name="type" />
+		<sequential>
+			<echo message="*** entering @{project} project" />
+			<ant inheritAll="false" dir="${project.@{project}}" antfile="build.xml">
+				<target name="pc.files" />
+			</ant>
+			<echo message="*** copying JARs and sources" />
+			<copy-project project="@{project}" todir="${shared.dir}/lib/@{type}" />
+			<echo message="*** leaving @{project} project" />
+		</sequential>
+	</macrodef>
+	
+	<macrodef name="buildcopy-project2">
+		<attribute name="project" />
+		<attribute name="type" />
+		<sequential>
+			<buildcopy-project project="@{project}" type="@{type}" />
+			<copy todir="${shared.dir}/lib/@{type}/3rdparty">
+				<fileset dir="${project.@{project}}/thirdparty/lib">
+					<include name="*.jar" />
+					<include name="*-src.zip" />
+				</fileset>
+			</copy>
+		</sequential>
+	</macrodef>
+	
+	<macrodef name="copyfile-linereplace">
+		<attribute name="from" />
+		<attribute name="to" />
+		<attribute name="replace" />
+		<attribute name="with" />
+		<attribute name="ignore" />
+		<sequential>
+			<loadfile property="tmp.copyfile.@{from}" srcfile="@{from}">
+				<filterchain>
+					<linecontainsregexp>
+						<regexp pattern="@{replace}"/>
+					</linecontainsregexp>	
+				</filterchain>
+			</loadfile>
+			<fail unless="tmp.copyfile.@{from}" message="File @{from} does not contain given regexp @{replace}." />
+			<copy file="@{from}" tofile="@{to}" overwrite="true">
+				<filterchain>
+					<tokenfilter>
+						<linetokenizer/>
+						<replaceregex pattern="@{replace}" replace="@{with}"/>
+					</tokenfilter>
+					<linecontainsregexp negate="true">
+						<regexp pattern="@{ignore}"/>
+					</linecontainsregexp>
+				</filterchain>
+			</copy>
+		</sequential>
+	</macrodef>
+	
+	<macrodef name="copy-ev3project">
+		<attribute name="id"/>
+		<attribute name="todir"/>
+		<sequential>
+			<copy todir="@{todir}">
+				<fileset dir="${project.@{id}}"
+					includes="${vars.@{id}.dist.include}"
+					excludes="build.properties,.classpath,${vars.@{id}.dist.exclude}"
+				/>
+			</copy>
+			<copyfile-linereplace from="${project.@{id}}/.classpath" to="@{todir}/.classpath"
+				replace="&lt;classpathentry\s.*kind=&quot;src&quot;\s.*path=&quot;/ev3classes.*&gt;"
+				with="&lt;classpathentry kind=&quot;con&quot; path=&quot;org.lejos.ev3.ldt.LEJOS_EV3_LIBRARY_CONTAINER&quot;/&gt;"
+				ignore="classpathentry\s.*kind=&quot;src&quot;\s.*path=&quot;/"
+			/>
+		</sequential>
+	</macrodef>
+	
+	<macrodef name="copy-pcproject">
+		<attribute name="id"/>
+		<attribute name="todir"/>
+		<sequential>
+			<copy todir="@{todir}">
+				<fileset dir="${project.@{id}}"
+					includes="${vars.@{id}.dist.include}"
+					excludes="build.properties,.classpath,${vars.@{id}.dist.exclude}"
+				/>
+			</copy>
+			<copyfile-linereplace from="${project.@{id}}/.classpath" to="@{todir}/.classpath"
+				replace="&lt;classpathentry\s.*kind=&quot;src&quot;\s.*path=&quot;/pccomms.*&gt;"
+				with="&lt;classpathentry kind=&quot;con&quot; path=&quot;org.lejos.ev3.ldt.LEJOS_EV3_LIBRARY_CONTAINER&quot;/&gt;"
+				ignore="classpathentry\s.*kind=&quot;src&quot;\s.*path=&quot;/"
+			/>
+			<copyfile-linereplace from="${project.@{id}}/build.properties" to="@{todir}/build.properties"
+				replace="^\s*ev3.home\s*=.*" with="ev3.home=${env.EV3_HOME}"
+				ignore="don't match anything please"
+			/>
+		</sequential>
+	</macrodef>
+	
+	<macrodef name="copy-source">
+		<attribute name="id" />
+		<attribute name="todir" />
+		<sequential>
+			<basename file="${project.@{id}}" property="tmp.copy-source.@{id}" />
+			<copy todir="@{todir}/${tmp.copy-source.@{id}}">
+				<fileset
+					dir="${project.@{id}}"
+					includes="${vars.@{id}.dist.include}"
+					excludes="${vars.@{id}.dist.exclude}"
+				/>
+			</copy>
+		</sequential>
+	</macrodef>
+
+	<!-- release leJOS EV3 -->
+	<target name="release" description="releases leJOS EV3" depends="clean, dist.unix, dist.win, dist.source, dist.samples">
+		<!-- notify -->
+		<echo message="The packed distribution can be found in ${dist.dir} now." />
+	</target>
+
+	<!-- cleans the distribution -->
+	<target name="clean" description="clean up all generated files">
+		<!-- delete transient release folders -->
+		<delete dir="${build.dir}" />
+		<delete dir="${dist.dir}" />
+	</target>
+
+	<target name="subproject.ev3scripts">
+		<echo message="*** entering ev3scripts project" />
+		<ant inheritAll="false" dir="${project.ev3scripts}" antfile="build.xml">
+			<target name="clean" />
+			<target name="all" />
+		</ant>
+		<copy todir="${unix.dir}/bin">
+			<fileset dir="${project.ev3scripts}/${vars.ev3scripts.linux.dir}" />
+		</copy>
+		<copy todir="${windows.dir}/bin">
+			<fileset dir="${project.ev3scripts}/${vars.ev3scripts.windows.dir}" />
+		</copy>
+		<echo message="*** leaving ev3scripts project" />
+	</target>
+
+	<target name="subproject.ev3classes">
+		<buildcopy-project project="ev3classes" type="ev3" />
+		<ant inheritAll="false" dir="${project.ev3classes}" antfile="build.xml">
+			<target name="docs" />
+		</ant>
+		<copy todir="${shared.dir}/docs/ev3">
+			<fileset dir="${project.ev3classes}/${vars.ev3classes.docs.dir}" />
+		</copy>
+	</target>
+
+	<target name="subproject.ev3tools">
+		<buildcopy-project2 project="ev3tools" type="pc" />
+	</target>
+	
+	<target name="subproject.ev3samples">
+		<echo message="*** entering ev3samples project" />
+		<copy-ev3project id="ev3samples" todir="${samples.dir}/ev3samples" />
+		<echo message="*** leaving ev3samples project" />
+	</target>
+	
+	<target name="subproject.ev3pcsamples">
+		<copy-pcproject id="ev3pcsamples" todir="${samples.dir}/ev3pcsamples" />
+	</target>
+
+	<target name="shared" depends="subproject.ev3classes, subproject.ev3tools, subproject.ev3samples">
+		<zip destfile="${shared.dir}/samples.zip">
+			<fileset dir="${samples.dir}" />
+		</zip>
+	</target>
+
+	<!-- copies the lejos sources -->
+	<target name="dist.source" description="copies the lejos sources">
+
+		<copy-source todir="${source.dir}" id="ev3classes" />
+		<copy-source todir="${source.dir}" id="ev3tools" />
+		<copy-source todir="${source.dir}" id="dbusjava" />
+		<copy-source todir="${source.dir}" id="ev3scripts" />
+		
+		<copy-source todir="${source.dir}" id="ev3samples" />
+		
+		<!-- last but not least -->
+		<copy-source todir="${source.dir}" id="release" />
+		
+		<mkdir dir="${dist.dir}" />
+		<tar destfile="${dist.dir}/${lejos.source.version}.tar.gz" compression="gzip" longfile="gnu">
+			<tarfileset dir="${source.dir}" prefix="${lejos.source.version}" />
+		</tar>
+	</target>
+
+	<!-- copies the lejos sources -->
+	<target name="dist.samples" description="copies the lejos samples" depends="subproject.ev3samples">
+		<mkdir dir="${dist.dir}" />
+		<zip destfile="${dist.dir}/${lejos.samples.version}.zip">
+			<zipfileset dir="${samples.dir}" prefix="${lejos.samples.version}" />
+		</zip>
+	</target>
+
+	<!-- packages the linux distribution -->
+	<target name="dist.unix" description="packages the linux distribution" depends="shared, subproject.ev3scripts">
+		<copy todir="${unix.dir}">
+			<fileset dir="${shared.dir}" />
+			<fileset dir="${sup.dir}" />
+		</copy>
+		<fixcrlf srcdir="${unix.dir}" eol="lf">
+			<include name="**/*.bat" />
+			<include name="**/*.txt" />
+			<include name="**/*.xml" />
+			<include name="**/*.htm" />
+			<include name="**/*.html" />
+		</fixcrlf>
+		<!-- tar & gzip leJOS Unix distribution -->
+		<mkdir dir="${dist.dir}" />
+		<tar destfile="${dist.dir}/${lejos.unix.version}.tar.gz" compression="gzip" longfile="gnu">
+			<tarfileset dir="${unix.dir}" prefix="${lejos.unix.version}" filemode="755">
+				<include name="bin/ev3*" />
+			</tarfileset>
+			<tarfileset dir="${unix.dir}" prefix="${lejos.unix.version}">
+				<exclude name="bin/ev3*" />
+			</tarfileset>
+		</tar>
+	</target>
+
+	<!-- packages the windows distribution -->
+	<target name="dist.win" description="packages the windows distribution" depends="shared, subproject.ev3scripts">
+		<copy todir="${windows.dir}">
+			<fileset dir="${shared.dir}" />
+			<fileset dir="${sup.dir}">
+				<!-- TODO include or not to include? -->
+				<exclude name="build/**" />
+			</fileset>
+		</copy>
+		<fixcrlf srcdir="${windows.dir}" eol="crlf">
+			<include name="**/*.bat" />
+			<include name="**/*.txt" />
+			<include name="**/*.xml" />
+			<include name="**/*.htm" />
+			<include name="**/*.html" />
+		</fixcrlf>
+		<!-- zip leJOS windows distribution -->
+		<mkdir dir="${dist.dir}" />
+		<zip destfile="${dist.dir}/${lejos.windows.version}.zip">
+			<zipfileset dir="${windows.dir}" prefix="${lejos.windows.version}" />
+		</zip>
+	</target>
+
+</project>

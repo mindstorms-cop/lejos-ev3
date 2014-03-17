@@ -1,8 +1,5 @@
 package lejos.hardware.motor;
 
-import lejos.hardware.port.TachoMotorPort;
-import lejos.hardware.sensor.EV3SensorConstants;
-import lejos.internal.ev3.EV3MotorPort;
 import lejos.robotics.RegulatedMotor;
 import lejos.robotics.RegulatedMotorListener;
 

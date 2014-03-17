@@ -384,6 +384,7 @@ public class Navigator implements WaypointListener
   			{
   				((ArcMoveController) _pilot).travelArc(moves[i].getArcRadius(),
                             moves[i].getDistanceTraveled());
+  				if (!_keepGoing) break;
   			}
             while (_pilot.isMoving() && _keepGoing)Thread.yield();
           }  // Arc direction change complete

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site>
+   <description name="leJOS EV3">
+      leJOS EV3 features for Eclipse
+   </description>
+   <feature url="features/org.lejos.ev3.ldt.feature_0.1.0.201403171505.jar" id="org.lejos.ev3.ldt.feature" version="0.1.0.201403171505">
+      <category name="org.lejos.ev3"/>
+   </feature>
+   <category-def name="org.lejos.ev3" label="leJOS EV3 Support">
+      <description>
+         leJOS EV3 features
+      </description>
+   </category-def>
+</site>

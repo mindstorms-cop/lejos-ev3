@@ -20,7 +20,6 @@ import lejos.hardware.lcd.GraphicsLCD;
 import lejos.hardware.lcd.TextLCD;
 import lejos.hardware.port.Port;
 import lejos.hardware.port.PortException;
-import lejos.internal.ev3.EV3Key;
 
 public class RemoteEV3 implements EV3 {
 	private String host;

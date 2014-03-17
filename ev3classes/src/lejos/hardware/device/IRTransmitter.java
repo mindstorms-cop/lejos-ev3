@@ -1,10 +1,5 @@
 package lejos.hardware.device;
 
-/*
- * WARNING: THIS CLASS IS SHARED BETWEEN THE classes AND pccomms PROJECTS.
- * DO NOT EDIT THE VERSION IN pccomms AS IT WILL BE OVERWRITTEN WHEN THE PROJECT IS BUILT.
- */
-
 /**
  * Interface for infra-red transmitters that can send bytes to an RCX
  * 

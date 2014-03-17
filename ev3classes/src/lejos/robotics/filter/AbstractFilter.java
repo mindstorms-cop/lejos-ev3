@@ -2,7 +2,7 @@ package lejos.robotics.filter;
 
 import lejos.robotics.SampleProvider;
 
-/** Baase class for Sample filters
+/** Base class for Sample filters
  * @author Kirk, Aswin
  *
  */

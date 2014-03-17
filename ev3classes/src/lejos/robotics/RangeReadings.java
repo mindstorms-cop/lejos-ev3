@@ -3,11 +3,6 @@ package lejos.robotics;
 import java.io.*;
 import java.util.ArrayList;
 
-/*
- * WARNING: THIS CLASS IS SHARED BETWEEN THE classes AND pccomms PROJECTS.
- * DO NOT EDIT THE VERSION IN pccomms AS IT WILL BE OVERWRITTEN WHEN THE PROJECT IS BUILT.
- */
-
 /**
  * Represents a set of range readings.
  * 
