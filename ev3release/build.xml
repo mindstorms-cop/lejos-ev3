@@ -18,6 +18,8 @@
 	<!-- for consistency reasons -->
 	<property prefix="vars.release" file="build.properties" />
 	<property name="project.release" location="." />
+	
+	<echoproperties/>
 
 	<path id="pc.3rdparty">
 		<fileset dir="${project.jtools}/3rdparty">
@@ -41,9 +43,9 @@
 			<copy todir="@{todir}">
 				<fileset file="${project.@{project}}/${vars.@{project}.ev3classes.jar}" />
 			</copy>
-			<basename file="${project.@{project}}/${vars.@{project}.ev3classes-src.zip}" property="tmp.copy-project.@{project}" />
+			<basename file="${project.@{project}}/${vars.@{project}.classes.src.zip}" property="tmp.copy-project.@{project}" />
 			<zip destfile="@{todir}/${tmp.copy-project.@{project}}">
-				<zipfileset src="${project.@{project}}/${vars.@{project}.ev3classes.src.zip}" />
+				<zipfileset src="${project.@{project}}/${vars.@{project}.classes.src.zip}" />
 				<zipfileset file="README-src.txt" fullpath="README.txt" />
 			</zip>
 		</sequential>
@@ -69,7 +71,7 @@
 		<sequential>
 			<buildcopy-project project="@{project}" type="@{type}" />
 			<copy todir="${shared.dir}/lib/@{type}/3rdparty">
-				<fileset dir="${project.@{project}}/3rdparty/lib">
+				<fileset dir="${project.@{project}}/thirdparty/lib">
 					<include name="*.jar" />
 					<include name="*-src.zip" />
 				</fileset>
@@ -91,7 +93,7 @@
 					</linecontainsregexp>	
 				</filterchain>
 			</loadfile>
-			<fail unless="tmp.copyfile.@{from}" message="File @{from} does not contain given regexp." />
+			<fail unless="tmp.copyfile.@{from}" message="File @{from} does not contain given regexp @{replace}." />
 			<copy file="@{from}" tofile="@{to}" overwrite="true">
 				<filterchain>
 					<tokenfilter>
@@ -117,13 +119,9 @@
 				/>
 			</copy>
 			<copyfile-linereplace from="${project.@{id}}/.classpath" to="@{todir}/.classpath"
-				replace="&lt;classpathentry\s.*kind=&quot;src&quot;\s.*path=&quot;/classes.*&gt;"
+				replace="&lt;classpathentry\s.*kind=&quot;src&quot;\s.*path=&quot;/ev3classes.*&gt;"
 				with="&lt;classpathentry kind=&quot;con&quot; path=&quot;org.lejos.ev3.ldt.LEJOS_EV3_LIBRARY_CONTAINER&quot;/&gt;"
 				ignore="classpathentry\s.*kind=&quot;src&quot;\s.*path=&quot;/"
-			/>
-			<copyfile-linereplace from="${project.@{id}}/build.properties" to="@{todir}/build.properties"
-				replace="^\s*ev3.home\s*=.*" with="ev3.home=${env.EV3_HOME}"
-				ignore="don't match anything please"
 			/>
 		</sequential>
 	</macrodef>
@@ -185,10 +183,10 @@
 			<target name="all" />
 		</ant>
 		<copy todir="${unix.dir}/bin">
-			<fileset dir="${project.ev3scripts}/${vars.scripts.linux.dir}" />
+			<fileset dir="${project.ev3scripts}/${vars.ev3scripts.linux.dir}" />
 		</copy>
 		<copy todir="${windows.dir}/bin">
-			<fileset dir="${project.ev3scripts}/${vars.scripts.windows.dir}" />
+			<fileset dir="${project.ev3scripts}/${vars.ev3scripts.windows.dir}" />
 		</copy>
 		<echo message="*** leaving ev3scripts project" />
 	</target>
@@ -199,7 +197,7 @@
 			<target name="docs" />
 		</ant>
 		<copy todir="${shared.dir}/docs/ev3">
-			<fileset dir="${project.ev3classes}/${vars.classes.docs.dir}" />
+			<fileset dir="${project.ev3classes}/${vars.ev3classes.docs.dir}" />
 		</copy>
 	</target>
 
@@ -209,13 +207,7 @@
 	
 	<target name="subproject.ev3samples">
 		<echo message="*** entering ev3samples project" />
-		<ant inheritAll="false" dir="${project.ev3samples}" antfile="build.xml">
-			<property name="ev3.home.internal" location="${shared.dir}"/>
-			<property name="sample.id" value="map"/>
-			<target name="clean" />
-			<target name="link" />
-		</ant>
-		<copy-ev3project id="samples" todir="${samples.dir}/samples" />
+		<copy-ev3project id="ev3samples" todir="${samples.dir}/ev3samples" />
 		<echo message="*** leaving ev3samples project" />
 	</target>
 	
@@ -223,7 +215,7 @@
 		<copy-pcproject id="ev3pcsamples" todir="${samples.dir}/ev3pcsamples" />
 	</target>
 
-	<target name="shared" depends="subproject.ev3classes, subproject.ev3tools, subproject.ev3samples, subproject.ev3pcsamples">
+	<target name="shared" depends="subproject.ev3classes, subproject.ev3tools, subproject.ev3samples">
 		<zip destfile="${shared.dir}/samples.zip">
 			<fileset dir="${samples.dir}" />
 		</zip>
@@ -238,7 +230,6 @@
 		<copy-source todir="${source.dir}" id="ev3scripts" />
 		
 		<copy-source todir="${source.dir}" id="ev3samples" />
-		<copy-source todir="${source.dir}" id="ev3pcsamples" />
 		
 		<!-- last but not least -->
 		<copy-source todir="${source.dir}" id="release" />
@@ -250,7 +241,7 @@
 	</target>
 
 	<!-- copies the lejos sources -->
-	<target name="dist.samples" description="copies the lejos samples" depends="subproject.ev3samples, subproject.ev3pcsamples">
+	<target name="dist.samples" description="copies the lejos samples" depends="subproject.ev3samples">
 		<mkdir dir="${dist.dir}" />
 		<zip destfile="${dist.dir}/${lejos.samples.version}.zip">
 			<zipfileset dir="${samples.dir}" prefix="${lejos.samples.version}" />
