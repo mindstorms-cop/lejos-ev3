@@ -362,6 +362,7 @@ public class LeJOSEV3Util {
 	}
 
 	public static final String TOOL_EV3CONTROL = "lejos.ev3.tools.EV3Control";
+	public static final String TOOL_EV3MAPCOMMAND = "lejos.ev3.tools.EV3MapCommand";
 	
 	public static ProcessBuilder createProcessBuilder(List<String> args2) throws IOException
 	{
