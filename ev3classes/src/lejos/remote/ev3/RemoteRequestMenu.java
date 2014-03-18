@@ -248,19 +248,38 @@ public class RemoteRequestMenu implements Menu, Serializable {
 
 	@Override
 	public void stopProgram() {
-		// TODO Auto-generated method stub
-		
+		MenuRequest req = new MenuRequest();
+		req.request = MenuRequest.Request.STOP_PROGRAM;
+		try {
+			os.writeObject(req);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}	
 	}
 
 	@Override
 	public String getExecutingProgramName() {
-		// TODO Auto-generated method stub
-		return null;
+		MenuRequest req = new MenuRequest();
+		req.request = MenuRequest.Request.GET_EXECUTING_PROGRAM_NAME;
+		req.replyRequired = true;
+		try {
+			os.writeObject(req);
+			MenuReply reply = (MenuReply) is.readObject();
+			return reply.value;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
 	}
 
 	@Override
 	public void shutdown() {
-		// TODO Auto-generated method stub
-		
+		MenuRequest req = new MenuRequest();
+		req.request = MenuRequest.Request.SHUT_DOWN;
+		try {
+			os.writeObject(req);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 }

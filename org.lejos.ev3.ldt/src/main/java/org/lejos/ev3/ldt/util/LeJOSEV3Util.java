@@ -361,12 +361,9 @@ public class LeJOSEV3Util {
 		return currentStarter;
 	}
 
-	public static final String TOOL_DEBUG_PROXY = "";
-	public static final String TOOL_UPLOAD = "";
-	public static final String TOOL_FLASH = "";
-	public static final String TOOL_FLASHG = "";
-	public static final String TOOL_LINK_AND_UPLOAD = "";
-	public static final String TOOL_LINK = "";
+	public static final String TOOL_EV3CONTROL = "lejos.ev3.tools.EV3Control";
+	public static final String TOOL_EV3MAPCOMMAND = "lejos.ev3.tools.EV3MapCommand";
+	public static final String TOOL_EV3SCPUPLOAD = "lejos.ev3.tools.EV3ScpUpload";
 	
 	public static ProcessBuilder createProcessBuilder(List<String> args2) throws IOException
 	{

@@ -51,6 +51,12 @@ public class ExternalJVMToolStarter implements ToolStarter {
 		args2.addAll(args);
 		
 		try {
+			StringBuilder sb = new StringBuilder();
+			for(String arg: args2) {
+				sb.append(arg + " ");
+			}
+			LeJOSEV3Util.message("Command line: " + sb.toString());
+			
 			return LeJOSEV3Util.createProcessBuilder(args2).start();
 		} catch (IOException e) {
 			throw new LeJOSEV3Exception("Failed to start external JVM", e);

@@ -9,7 +9,6 @@
 	<loadfile property="template.linux.parser" srcFile="templates/linux-parser.sh"/>
 	<loadfile property="template.windows" srcFile="templates/windows-base.bat"/>
 	
-	
 	<!--
 		Linux macros
 	-->
@@ -84,6 +83,7 @@ ${template.linux.parser}
 		<linux-tool file="ev3image"         class="lejos.ev3.tools.EV3Image"/>
 		<linux-tool file="ev3mapcommand"    class="lejos.ev3.tools.EV3MapCommand"/>
 		<linux-tool file="ev3mclcommand"    class="lejos.ev3.tools.EV3MCLCommand"/>
+		<linux-tool file="ev3scpupload"     class="lejos.ev3.tools.EV3ScpUpload"/>
 		
 	</target>
 	
@@ -94,6 +94,7 @@ ${template.linux.parser}
 		<win-tool file="ev3console"       class="lejos.ev3.tools.EV3Console"/>
 		<win-tool file="ev3image"         class="lejos.ev3.tools.EV3Image"/>
 		<win-tool file="ev3mclcommand"    class="lejos.ev3.tools.EV3MCLCommand"/>
+		<win-tool file="ev3scpupload"     class="lejos.ev3.tools.EV3ScpUpload"/>
 	</target>
 	
 	<target name="clean">

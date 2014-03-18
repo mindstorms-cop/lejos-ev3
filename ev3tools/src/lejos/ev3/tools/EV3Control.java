@@ -405,8 +405,6 @@ public class EV3Control implements ListSelectionListener, NXTProtocol, ConsoleVi
 				format();
 			}
 		});
-
-		frame.revalidate();
 	}
 
 	/**

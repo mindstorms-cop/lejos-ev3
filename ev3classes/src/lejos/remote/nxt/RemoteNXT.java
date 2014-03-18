@@ -151,4 +151,8 @@ public class RemoteNXT implements NXT {
 		// TODO Auto-generated method stub
 		return null;
 	}
+	
+	public NXTCommand getNXTCommand() {
+		return nxtCommand;
+	}
 }

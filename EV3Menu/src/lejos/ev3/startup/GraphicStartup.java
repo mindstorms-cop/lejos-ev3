@@ -396,7 +396,17 @@ public class GraphicStartup implements Menu {
 							case UPLOAD_FILE:
 								reply.result = uploadFile(request.name, request.contents);
 								os.writeObject(reply);
-								break;     			
+								break;  
+							case STOP_PROGRAM:
+								stopProgram();
+								break;
+							case SHUT_DOWN:
+								shutdown();
+								break;
+							case GET_EXECUTING_PROGRAM_NAME:
+								reply.value = programName;
+								os.writeObject(reply);
+								break;
 		            		}
 	            		}
             		
