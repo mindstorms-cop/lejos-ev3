@@ -117,6 +117,7 @@ public class LaunchEV3ConfigDelegate extends AbstractJavaLaunchConfigurationDele
 				
 				if (run) args.add("-r");
 				
+				args.add("-n");				
 				args.add(brickName);
 				
 				args.add(binaryPath);
