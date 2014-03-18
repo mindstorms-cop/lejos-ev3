@@ -3,7 +3,7 @@
    <description name="leJOS EV3">
       leJOS EV3 features for Eclipse
    </description>
-   <feature url="features/org.lejos.ev3.ldt.feature_0.1.0.201403180945.jar" id="org.lejos.ev3.ldt.feature" version="0.1.0.201403180945">
+   <feature url="features/org.lejos.ev3.ldt.feature_0.1.0.201403181541.jar" id="org.lejos.ev3.ldt.feature" version="0.1.0.201403181541">
       <category name="org.lejos.ev3"/>
    </feature>
    <category-def name="org.lejos.ev3" label="leJOS EV3 Support">
