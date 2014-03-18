@@ -5,6 +5,9 @@ import java.io.FileInputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.rmi.Naming;
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 import lejos.remote.ev3.RMIMenu;
 
@@ -15,7 +18,10 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
+import org.eclipse.debug.core.ILaunchManager;
+import org.eclipse.jdi.Bootstrap;
 import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.debug.core.JDIDebugModel;
 import org.eclipse.jdt.launching.AbstractJavaLaunchConfigurationDelegate;
 import org.lejos.ev3.ldt.LeJOSEV3Plugin;
 import org.lejos.ev3.ldt.preferences.PreferenceConstants;
@@ -25,6 +31,14 @@ import org.lejos.ev3.ldt.util.JarCreator;
 import org.lejos.ev3.ldt.util.LeJOSEV3Util;
 import org.lejos.ev3.ldt.util.PrefsResolver;
 import org.lejos.ev3.ldt.util.ToolStarter;
+
+import com.sun.jdi.VirtualMachine;
+import com.sun.jdi.VirtualMachineManager;
+import com.sun.jdi.connect.AttachingConnector;
+import com.sun.jdi.connect.Connector;
+import com.sun.jdi.connect.Connector.Argument;
+import com.sun.jdi.connect.Connector.IntegerArgument;
+import com.sun.jdi.connect.Connector.StringArgument;
 
 public class LaunchEV3ConfigDelegate extends AbstractJavaLaunchConfigurationDelegate {
 	public static final String ID_TYPE = "org.lejos.ev3.ldt.LaunchType";
@@ -146,8 +160,60 @@ public class LaunchEV3ConfigDelegate extends AbstractJavaLaunchConfigurationDele
 				    in.close();
 				    menu.uploadFile("/home/lejos/programs/" + binary.getProjectRelativePath().toPortableString(), data);
 				    
-				    if (run) menu.runProgram(binary.getProjectRelativePath().toPortableString().replace(".jar", ""));
-					LeJOSEV3Util.message("Program has been uploaded");
+				    LeJOSEV3Util.message("Program has been uploaded");
+				    
+				    if (run) {
+				    	if (ILaunchManager.DEBUG_MODE.equals(mode)) {
+				    		LeJOSEV3Util.message("Starting program in debug mode ...");
+				    		menu.debugProgram(binary.getProjectRelativePath().toPortableString().replace(".jar", ""));
+				    		
+				    		Thread.sleep(5000);
+				    		
+							LeJOSEV3Util.message("Starting debugger ...");
+							monitor.subTask("Starting debugger ...");
+							
+							// Find the socket attach connector
+							VirtualMachineManager mgr=Bootstrap.virtualMachineManager();
+							
+							List<?> connectors = mgr.attachingConnectors();
+							
+							AttachingConnector chosen=null;
+							for (Iterator<?> iterator = connectors.iterator(); iterator
+									.hasNext();) {
+								AttachingConnector conn = (AttachingConnector) iterator.next();
+								if(conn.name().contains("SocketAttach")) {
+									chosen=conn;
+									break;
+								}
+							}
+							
+							if(chosen == null) {
+								LeJOSEV3Util.error("No suitable connector");
+								menu.stopProgram();
+							} else {
+								Map<String, Argument> connectorArgs = chosen.defaultArguments();
+								
+								//for(String arg: connectorArgs.keySet()) {
+								//	LeJOSEV3Util.message("arg name  is " + arg);
+								//}
+								Connector.IntegerArgument portArg = (IntegerArgument) connectorArgs.get("port");
+								Connector.StringArgument hostArg = (StringArgument) connectorArgs.get("hostname");
+								portArg.setValue(8000);
+								
+								//LeJOSEV3Util.message("hostArg is " + hostArg);
+								hostArg.setValue(bricks[0].getIPAddress());
+							
+								VirtualMachine vm = chosen.attach(connectorArgs);
+								LeJOSEV3Util.message("Connection established");
+								
+								JDIDebugModel.newDebugTarget(launch, vm, simpleName, null, true, true, true);
+							}
+				    	}
+				    	else {
+				    		LeJOSEV3Util.message("Running program ...");
+				    		menu.runProgram(binary.getProjectRelativePath().toPortableString().replace(".jar", ""));
+				    	}	
+				    }
 				}
 			}
 		}
