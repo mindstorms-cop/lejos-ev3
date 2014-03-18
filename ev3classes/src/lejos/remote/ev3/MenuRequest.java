@@ -21,7 +21,10 @@ public class MenuRequest implements Serializable {
 		GET_VERSION,
 		GET_MENU_VERSION,
 		GET_NAME,
-		SET_NAME
+		SET_NAME,
+		STOP_PROGRAM,
+		GET_EXECUTING_PROGRAM_NAME,
+		SHUT_DOWN
 	}
 	
 	public Request request;
