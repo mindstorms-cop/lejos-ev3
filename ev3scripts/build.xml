@@ -84,7 +84,7 @@ ${template.linux.parser}
 		<linux-tool file="ev3mapcommand"    class="lejos.ev3.tools.EV3MapCommand"/>
 		<linux-tool file="ev3mclcommand"    class="lejos.ev3.tools.EV3MCLCommand"/>
 		<linux-tool file="ev3scpupload"     class="lejos.ev3.tools.EV3ScpUpload"/>
-		
+		<linux-tool file="ev3sdcard"        class="lejos.ev3.tools.EV3SDCard"/>		
 	</target>
 	
 	<target name="windows" description="generated batch scripts">
@@ -95,6 +95,7 @@ ${template.linux.parser}
 		<win-tool file="ev3image"         class="lejos.ev3.tools.EV3Image"/>
 		<win-tool file="ev3mclcommand"    class="lejos.ev3.tools.EV3MCLCommand"/>
 		<win-tool file="ev3scpupload"     class="lejos.ev3.tools.EV3ScpUpload"/>
+		<win-tool file="ev3sdcard"        class="lejos.ev3.tools.EV3SDCard"/>
 	</target>
 	
 	<target name="clean">
