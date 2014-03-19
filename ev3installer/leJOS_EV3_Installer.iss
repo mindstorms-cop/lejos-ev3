@@ -64,6 +64,7 @@ Name: "extras\sources"; Description: "Sources of leJOS EV3 Development Kit"; Typ
 [Files]
 ; Extract helper script to {app}, since {tmp} refers to the temp folder of the admin, and might
 ; not even be accessible by the original user when using postinstall/runasoriginaluser in [Run]
+Source: "..\ev3release\build\bin_windows\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs; Components: main
 Source: "..\ev3release\build\bin_windows\docs\ev3\*"; DestDir: "{app}\docs\ev3"; Flags: ignoreversion recursesubdirs createallsubdirs; Components: docs\apiev3
 Source: "..\ev3release\build\samples\*"; DestDir: "{code:ExtrasDirPage_GetSamplesFolder}"; Flags: ignoreversion recursesubdirs createallsubdirs; Components: extras\samples
 Source: "..\ev3release\build\source\*"; DestDir: "{code:ExtrasDirPage_GetSourcesFolder}"; Flags: ignoreversion recursesubdirs createallsubdirs; Components: extras\sources
