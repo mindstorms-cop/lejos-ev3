@@ -102,7 +102,7 @@ public class EV3ScpUpload {
 				int len = fis.read(buf, 0, buf.length);
 				if (len <= 0)
 					break;
-				System.out.println("Sending " + len + " bytes");
+				//System.out.println("Sending " + len + " bytes");
 				out.write(buf, 0, len); // out.flush();
 			}
 
