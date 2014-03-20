@@ -16,6 +16,7 @@ class ScpUploadCommandLineParser extends AbstractCommandLineParser
 	private String host;
 	private boolean run;
 	private boolean help;
+	private boolean debug;
 	
 	public ScpUploadCommandLineParser(Class<?> caller, String params)
 	{
@@ -26,6 +27,10 @@ class ScpUploadCommandLineParser extends AbstractCommandLineParser
 		Option runOption = new Option("r", "run", false, "run program after upload");
 		runOption.setArgName("run");
 		options.addOption(runOption);
+		
+		Option debugOption = new Option("d", "debug", false, "run program in debug mode after upload");
+		debugOption.setArgName("debug");
+		options.addOption(debugOption);
 
 		Option nameOption = new Option("n", "name", true, "connect to EV3 with this hostname");
 		nameOption.setArgName("name");
@@ -48,6 +53,7 @@ class ScpUploadCommandLineParser extends AbstractCommandLineParser
 			return;
 
 		this.run = result.hasOption("r");
+		this.debug = result.hasOption("d");
 		this.host = result.getOptionValue("n");
 		
 		if (host == null) 
@@ -82,6 +88,11 @@ class ScpUploadCommandLineParser extends AbstractCommandLineParser
 	public boolean isRun()
 	{
 		return run;
+	}
+	
+	public boolean isDebug()
+	{
+		return debug;
 	}
 	
 	public String getHost() {

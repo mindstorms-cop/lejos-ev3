@@ -16,6 +16,9 @@ import com.jcraft.jsch.Session;
 import com.jcraft.jsch.UserInfo;
 
 public class EV3ScpUpload {
+	
+	private static final String JAVA_RUN_JAR = "cd /home/lejos/programs;jrun -jar ";
+	private static final String JAVA_DEBUG_JAR = "cd /home/lejos/programs;jrun -Xdebug -Xrunjdwp:transport=dt_socket,server=y,address=8000,suspend=y -jar ";
 
 	public static void main(String[] args) {
 		ToolStarter.startTool(EV3ScpUpload.class, args);
@@ -44,10 +47,10 @@ public class EV3ScpUpload {
 		String to = fParser.getTo();
 		String from = fParser.getFrom();
 		boolean run = fParser.isRun();
-		;
+		boolean debug = fParser.isDebug();
 
 		System.out.println("Copying to host " + host + " from " + from + " to "
-				+ to + " run = " + run);
+				+ to + " run = " + run + " and debug = " + debug);
 
 		JSch jsch = new JSch();
 		try {
@@ -120,8 +123,8 @@ public class EV3ScpUpload {
 
 			System.out.println("Copied OK");
 
-			if (run) {
-				command = "cd /home/lejos/programs;jrun -jar " + to;
+			if (run || debug) {
+				command = (debug ? JAVA_DEBUG_JAR : JAVA_RUN_JAR) + to;
 
 				System.out.println("Running program: " + command);
 

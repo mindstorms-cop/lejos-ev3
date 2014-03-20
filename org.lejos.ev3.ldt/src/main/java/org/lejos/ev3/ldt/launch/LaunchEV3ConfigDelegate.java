@@ -75,6 +75,8 @@ public class LaunchEV3ConfigDelegate extends AbstractJavaLaunchConfigurationDele
 		
 		boolean useSsh = p.getBoolean(org.lejos.ev3.ldt.preferences.PreferenceConstants.KEY_SSH_SCP, false);
 		
+		boolean debugMode = (ILaunchManager.DEBUG_MODE.equals(mode));
+		
 		if (monitor.isCanceled())
 			return;
 		
@@ -103,7 +105,7 @@ public class LaunchEV3ConfigDelegate extends AbstractJavaLaunchConfigurationDele
 			String binDirectory = binary.getLocation().toPortableString().substring(0,i+1) + "bin";
 			
 			monitor.worked(1);			
-			monitor.beginTask("Creating jar file and uploading " + binaryPath + " to the brick...", IProgressMonitor.UNKNOWN);
+			monitor.subTask("Creating jar file and uploading " + binaryPath + " to the brick...");
 			
 			LeJOSEV3Util.message("Binary path is " + binaryPath);
 			LeJOSEV3Util.message("Main type name is " + mainTypeName);
@@ -116,13 +118,13 @@ public class LaunchEV3ConfigDelegate extends AbstractJavaLaunchConfigurationDele
 			LeJOSEV3Util.message("Jar file has been created successfully");
 				
 			LeJOSEV3Util.message("Uploading ...");
-			monitor.subTask("Uploading ...");	
+			monitor.subTask("Uploading ...");
+			
+			String brickName = resolve(p, config, LaunchConstants.KEY_TARGET_USE_DEFAULTS,
+					PreferenceConstants.KEY_TARGET_BRICK_NAME, "");
 			
 			if (useSsh) {
 				LeJOSEV3Util.message("Using scp for upload and ssh to execute program");
-				
-				String brickName = resolve(p, config, LaunchConstants.KEY_TARGET_USE_DEFAULTS,
-						PreferenceConstants.KEY_TARGET_BRICK_NAME, "");
 				
 				// start EV3ScpUpload
 				ToolStarter starter = LeJOSEV3Util.getCachedExternalStarter();
@@ -131,28 +133,37 @@ public class LaunchEV3ConfigDelegate extends AbstractJavaLaunchConfigurationDele
 				
 				if (run) args.add("-r");
 				
-				args.add("-n");				
-				args.add(brickName);
+				if (debugMode) args.add("-d");
+				
+				args.add("-n");	
+				
+				// TODO: case where brick name not specified
+				args.add(brickName); 
 				
 				args.add(binaryPath);
 				
 				args.add("/home/lejos/programs/" + binary.getProjectRelativePath().toPortableString());
 				
+				if (debugMode) {
+					new Thread(new DebugStarter(launch, brickName, simpleName)).start();
+				}
 				int r = starter.invokeTool(LeJOSEV3Util.TOOL_EV3SCPUPLOAD, args);
-				
+					
 				if (r == 0)
-					LeJOSEV3Util.message("EV3ScpUpload has been started successfully");
+					LeJOSEV3Util.message("EV3ScpUpload has finished");
 				else
 					LeJOSEV3Util.error("Starting EV3ScpUpload failed with exit status "+r);
 			} else {
 				LeJOSEV3Util.message("Using the EV3 menu for upload and to execute program");
 				
+				// TODO : case where a specific brick is specified
 				BrickInfo[] bricks = Discover.discover();
 				
 				if (bricks.length ==  0) {
 					LeJOSEV3Util.error("No EV3 Found");					
-				} else {			
-					RMIMenu menu = (RMIMenu)Naming.lookup("//" + bricks[0].getIPAddress() + "/RemoteMenu");
+				} else {	
+					brickName = bricks[0].getIPAddress();
+					RMIMenu menu = (RMIMenu)Naming.lookup("//" + brickName + "/RemoteMenu");
 					File f = new File(binaryPath);
 					FileInputStream in = new FileInputStream(f);
 					byte[] data = new byte[(int)f.length()];
@@ -163,51 +174,10 @@ public class LaunchEV3ConfigDelegate extends AbstractJavaLaunchConfigurationDele
 				    LeJOSEV3Util.message("Program has been uploaded");
 				    
 				    if (run) {
-				    	if (ILaunchManager.DEBUG_MODE.equals(mode)) {
+				    	if (debugMode) {
 				    		LeJOSEV3Util.message("Starting program in debug mode ...");
+				    		new Thread(new DebugStarter(launch, brickName, simpleName)).start();
 				    		menu.debugProgram(binary.getProjectRelativePath().toPortableString().replace(".jar", ""));
-				    		
-				    		Thread.sleep(5000);
-				    		
-							LeJOSEV3Util.message("Starting debugger ...");
-							monitor.subTask("Starting debugger ...");
-							
-							// Find the socket attach connector
-							VirtualMachineManager mgr=Bootstrap.virtualMachineManager();
-							
-							List<?> connectors = mgr.attachingConnectors();
-							
-							AttachingConnector chosen=null;
-							for (Iterator<?> iterator = connectors.iterator(); iterator
-									.hasNext();) {
-								AttachingConnector conn = (AttachingConnector) iterator.next();
-								if(conn.name().contains("SocketAttach")) {
-									chosen=conn;
-									break;
-								}
-							}
-							
-							if(chosen == null) {
-								LeJOSEV3Util.error("No suitable connector");
-								menu.stopProgram();
-							} else {
-								Map<String, Argument> connectorArgs = chosen.defaultArguments();
-								
-								//for(String arg: connectorArgs.keySet()) {
-								//	LeJOSEV3Util.message("arg name  is " + arg);
-								//}
-								Connector.IntegerArgument portArg = (IntegerArgument) connectorArgs.get("port");
-								Connector.StringArgument hostArg = (StringArgument) connectorArgs.get("hostname");
-								portArg.setValue(8000);
-								
-								//LeJOSEV3Util.message("hostArg is " + hostArg);
-								hostArg.setValue(bricks[0].getIPAddress());
-							
-								VirtualMachine vm = chosen.attach(connectorArgs);
-								LeJOSEV3Util.message("Connection established");
-								
-								JDIDebugModel.newDebugTarget(launch, vm, simpleName, null, true, true, true);
-							}
 				    	}
 				    	else {
 				    		LeJOSEV3Util.message("Running program ...");
@@ -216,6 +186,8 @@ public class LaunchEV3ConfigDelegate extends AbstractJavaLaunchConfigurationDele
 				    }
 				}
 			}
+			
+			LeJOSEV3Util.message("leJOS EV3 plugin launch complete");
 		}
 		catch (Exception t)
 		{
@@ -229,6 +201,76 @@ public class LaunchEV3ConfigDelegate extends AbstractJavaLaunchConfigurationDele
 		finally
 		{
 			monitor.done();
+		}
+	}
+	
+	class DebugStarter implements Runnable {
+		private String brickName, simpleName;
+		private ILaunch launch;
+		
+		public DebugStarter(ILaunch launch, String brickName, String simpleName) {
+			this.launch = launch;
+			this.brickName = brickName;
+			this.simpleName = simpleName;
+		}
+
+		public void run() {
+    		try {
+				Thread.sleep(5000);
+			} catch (InterruptedException e) {
+			}
+    		
+			LeJOSEV3Util.message("Starting debugger ...");
+			
+			// Find the socket attach connector
+			VirtualMachineManager mgr=Bootstrap.virtualMachineManager();
+			
+			List<?> connectors = mgr.attachingConnectors();
+			
+			AttachingConnector chosen=null;
+			for (Iterator<?> iterator = connectors.iterator(); iterator
+					.hasNext();) {
+				AttachingConnector conn = (AttachingConnector) iterator.next();
+				if(conn.name().contains("SocketAttach")) {
+					chosen=conn;
+					break;
+				}
+			}
+			
+			if(chosen == null) {
+				LeJOSEV3Util.error("No suitable connector");
+			} else {
+				Map<String, Argument> connectorArgs = chosen.defaultArguments();
+				
+				Connector.IntegerArgument portArg = (IntegerArgument) connectorArgs.get("port");
+				Connector.StringArgument hostArg = (StringArgument) connectorArgs.get("hostname");
+				portArg.setValue(8000);
+				
+				//LeJOSEV3Util.message("hostArg is " + hostArg);
+				hostArg.setValue(brickName);
+			
+				VirtualMachine vm;
+						
+				int retries = 10;
+				while (true) {
+					try {
+						vm = chosen.attach(connectorArgs);
+						break;
+					} catch (Exception e) {
+						if (--retries == 0) {
+							LeJOSEV3Util.message("Failed to attach to the debugger: " + e);
+							return;
+						}
+			    		try {
+							Thread.sleep(2000);
+						} catch (InterruptedException e1) {
+						}
+					}
+				}
+				LeJOSEV3Util.message("Connection established");
+				
+				JDIDebugModel.newDebugTarget(launch, vm, simpleName, null, true, true, true);	
+			}
 		}
 	}
 }
