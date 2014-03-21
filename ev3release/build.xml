@@ -41,7 +41,7 @@
 		<attribute name="todir" />
 		<sequential>
 			<copy todir="@{todir}">
-				<fileset file="${project.@{project}}/${vars.@{project}.ev3classes.jar}" />
+				<fileset file="${project.@{project}}/${vars.@{project}.classes.jar}" />
 			</copy>
 			<basename file="${project.@{project}}/${vars.@{project}.classes.src.zip}" property="tmp.copy-project.@{project}" />
 			<zip destfile="@{todir}/${tmp.copy-project.@{project}}">
@@ -200,6 +200,10 @@
 			<fileset dir="${project.ev3classes}/${vars.ev3classes.docs.dir}" />
 		</copy>
 	</target>
+	
+	<target name="subproject.dbusjava">
+		<buildcopy-project project="dbusjava" type="ev3" />
+	</target>
 
 	<target name="subproject.ev3tools">
 		<buildcopy-project2 project="ev3tools" type="pc" />
@@ -215,7 +219,7 @@
 		<copy-pcproject id="ev3pcsamples" todir="${samples.dir}/ev3pcsamples" />
 	</target>
 
-	<target name="shared" depends="subproject.ev3classes, subproject.ev3tools, subproject.ev3samples">
+	<target name="shared" depends="subproject.ev3classes, subproject.dbusjava, subproject.ev3tools, subproject.ev3samples">
 		<zip destfile="${shared.dir}/samples.zip">
 			<fileset dir="${samples.dir}" />
 		</zip>

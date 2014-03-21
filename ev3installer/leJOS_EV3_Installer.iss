@@ -7,13 +7,12 @@
 #endif
 
 #ifndef MyAppVersion
-  #define MyAppVersion "0.9.1beta-2"
+  #define MyAppVersion "0.1.0beta"
 #endif
-#define MinFantomVersion "1,1,3"
 
 ; NOTE: The value of AppId uniquely identifies this application.
 ; Do not use the same AppId value in installers for other applications.
-#define MyAppID "253252E2-EFAE-4AA8-96B6-0828619E536C"
+#define MyAppID "8A65DB51-0626-406E-869A-BAAC2381C494"
 
 [Setup]
 AppId={{{#MyAppID}}
@@ -25,7 +24,7 @@ AppPublisher=The leJOS Team
 AppPublisherURL=http://www.lejos.org/
 AppSupportURL=http://www.lejos.org/
 AppUpdatesURL=http://www.lejos.org/
-SetupIconFile=../org.lejos.website/htdocs/lejos.ico
+SetupIconFile=../../org.lejos.website/htdocs/lejos.ico
 DefaultDirName={pf}\leJOS EV3
 DefaultGroupName=leJOS EV3
 AllowNoIcons=true
@@ -65,14 +64,12 @@ Name: "extras\sources"; Description: "Sources of leJOS EV3 Development Kit"; Typ
 [Files]
 ; Extract helper script to {app}, since {tmp} refers to the temp folder of the admin, and might
 ; not even be accessible by the original user when using postinstall/runasoriginaluser in [Run]
-Source: "..\ev3release\build\bin_windows\*"; DestDir: "{app}"; Excludes: "docs"; Flags: ignoreversion recursesubdirs createallsubdirs; Components: main
-Source: "..\ev3release\build\bin_windows\docs\pc\*"; DestDir: "{app}\docs\pc"; Flags: ignoreversion recursesubdirs createallsubdirs; Components: docs\apipc
+Source: "..\ev3release\build\bin_windows\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs; Components: main
 Source: "..\ev3release\build\bin_windows\docs\ev3\*"; DestDir: "{app}\docs\ev3"; Flags: ignoreversion recursesubdirs createallsubdirs; Components: docs\apiev3
 Source: "..\ev3release\build\samples\*"; DestDir: "{code:ExtrasDirPage_GetSamplesFolder}"; Flags: ignoreversion recursesubdirs createallsubdirs; Components: extras\samples
 Source: "..\ev3release\build\source\*"; DestDir: "{code:ExtrasDirPage_GetSourcesFolder}"; Flags: ignoreversion recursesubdirs createallsubdirs; Components: extras\sources
 
 [Icons]
-Name: "{group}\API Documentation (PC)"; Filename: "{app}\docs\pc\index.html"; Components: docs\apipc
 Name: "{group}\API Documentation (EV3)"; Filename: "{app}\docs\ev3\index.html"; Components: docs\apiev3
 Name: "{group}\EV3 Control"; Filename: "{app}\bin\ev3control.bat"; Flags: closeonexit runminimized
 Name: "{group}\EV3 Image Convertor"; Filename: "{app}\bin\ev3image.bat"; Flags: closeonexit runminimized
@@ -153,17 +150,10 @@ Root: HKCU; Subkey: "Environment"; ValueType: none; ValueName: "LEJOS_EV3_JAVA_H
   var
     ID : String;
   begin
-    if curPageID = wpWelcome then
-    begin
-      Result := DetectOutdatedFantom({#MinFantomVersion});
-      if not Result then Exit;     
-    end;
     
     if curPageID = wpReady then
     begin
-      ID := '{#MyAppID}' 
-      Result := UninstallInstallJammer(ID);
-      if not Result then Exit;     
+      ID := '{#MyAppID}'      
       Result := UninstallInnoSetup(ID);
       if not Result then Exit;     
     end;
