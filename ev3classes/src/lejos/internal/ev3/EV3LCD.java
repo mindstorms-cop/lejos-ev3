@@ -18,8 +18,9 @@ public class EV3LCD implements CommonLCD
     
     private static boolean autoRefresh = true;
 
-    protected final static int LCD_MEM_WIDTH = ((SCREEN_WIDTH + 31)/32)*4; // width of HW Buffer in bytes
-    protected final static int LCD_BUFFER_LENGTH = LCD_MEM_WIDTH*SCREEN_HEIGHT;
+    protected final static int HW_MEM_WIDTH = ((SCREEN_WIDTH + 31)/32)*4; // width of HW Buffer in bytes
+    protected final static int SCREEN_MEM_WIDTH = (SCREEN_WIDTH +7)/8; // width of leJOS screen buffer in bytes
+    protected final static int LCD_BUFFER_LENGTH = HW_MEM_WIDTH*SCREEN_HEIGHT;
     protected static byte[] displayBuf = new byte[LCD_BUFFER_LENGTH];
     protected NativeDevice dev = new NativeDevice("/dev/fb0");
     protected Pointer lcd = dev.mmap(LCD_BUFFER_LENGTH);
@@ -162,7 +163,7 @@ public class EV3LCD implements CommonLCD
         if (x < 0 || x >= SCREEN_WIDTH || y < 0 || y >= SCREEN_HEIGHT) return 0; 
         int bit = (x & 0x7);
         //int index = (y)*SCREEN_WIDTH + x;
-        int index = (y)*LCD_MEM_WIDTH + x;
+        int index = (y)*HW_MEM_WIDTH + x;
         return ((displayBuf[index] >> bit) & 1);
     }
 
@@ -245,9 +246,9 @@ public class EV3LCD implements CommonLCD
         int swb = (sw+7)/8;
         int dwb = (dw+7)/8;
         if (src == displayBuf)
-            swb = LCD_MEM_WIDTH;
+            swb = HW_MEM_WIDTH;
         if (dst == displayBuf)
-            dwb = LCD_MEM_WIDTH;
+            dwb = HW_MEM_WIDTH;
         int inStart = sy*swb;
         int outStart = dy*dwb;
         byte inStartBit = (byte)(1 << (sx & 0x7));
@@ -388,14 +389,14 @@ public class EV3LCD implements CommonLCD
     }
     
     public byte[] getHWDisplay() {
-    	byte[] buffer = new byte[(SCREEN_HEIGHT)*(SCREEN_WIDTH+7)/8];
+    	byte[] buffer = new byte[SCREEN_HEIGHT*SCREEN_MEM_WIDTH];
     	byte [] hwBuffer = new byte[LCD_BUFFER_LENGTH];
     	
     	lcd.read(0, hwBuffer, 0, LCD_BUFFER_LENGTH);
     	
         for(int row = 0; row < SCREEN_HEIGHT; row++)
         {
-            System.arraycopy(hwBuffer, row*LCD_MEM_WIDTH, buffer, row*SCREEN_WIDTH, SCREEN_WIDTH);
+            System.arraycopy(hwBuffer, row*HW_MEM_WIDTH, buffer, row*SCREEN_MEM_WIDTH, SCREEN_MEM_WIDTH);
         }
     	return buffer;
     }
