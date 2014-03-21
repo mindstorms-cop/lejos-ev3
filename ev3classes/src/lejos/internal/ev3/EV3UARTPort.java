@@ -1,6 +1,8 @@
 package lejos.internal.ev3;
 
 import java.nio.ByteBuffer;
+import java.util.Arrays;
+import java.util.List;
 
 import com.sun.jna.Pointer;
 import com.sun.jna.Structure;
@@ -84,6 +86,31 @@ public class EV3UARTPort extends EV3IOPort implements UARTPort
         public byte  Pins;
         public byte[] Symbol = new byte[5];
         public short Align;
+        @Override
+        protected List getFieldOrder()
+        {
+            // TODO Auto-generated method stub
+            return Arrays.asList(new String[] {"Name",
+            "Type",
+            "Connection",
+            "Mode",
+            "DataSets",
+            "Format",
+            "Figures",
+            "Decimals",
+            "Views",
+            "RawMin",
+            "RawMax",
+            "PctMin",
+            "PctMax",
+            "SiMin",
+            "SiMax",
+            "InvalidTime",
+            "IdValue",
+            "Pins",
+            "Symbol",
+            "Align"});
+        }
 
         /*
         public TYPES()
@@ -102,6 +129,15 @@ public class EV3UARTPort extends EV3IOPort implements UARTPort
         {
             //this.setAlignType(Structure.ALIGN_DEFAULT);
             //System.out.println("size is " + size());
+        }
+
+        @Override
+        protected List getFieldOrder()
+        {
+            // TODO Auto-generated method stub
+            return Arrays.asList(new String[] {"TypeData",
+            "Port",
+            "Mode"});
         }
 
     }
