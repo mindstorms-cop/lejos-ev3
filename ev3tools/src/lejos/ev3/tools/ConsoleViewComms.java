@@ -123,7 +123,7 @@ public class ConsoleViewComms
      */
     private class Reader extends Thread
     {
-        private byte [] lcdBuffer = new byte[2960];
+        private byte [] lcdBuffer = new byte[2944];
         private boolean connected = false;
 
 
