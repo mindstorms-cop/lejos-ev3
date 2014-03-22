@@ -11,8 +11,8 @@ import lejos.utility.Delay;
 public class NXTReceive {
 
 	public static void main(String[] args) throws Exception {
-		//NXTCommConnector connector = Bluetooth.getNXTCommConnector();
-		NXTCommConnector connector = new SocketConnector();
+		NXTCommConnector connector = Bluetooth.getNXTCommConnector();
+		//NXTCommConnector connector = new SocketConnector();
 		
 		System.out.println("Waiting for connection ...");
 		NXTConnection con = connector.waitForConnection(0, NXTConnection.RAW);

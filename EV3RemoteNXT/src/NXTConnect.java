@@ -8,12 +8,12 @@ import lejos.remote.nxt.SocketConnector;
 
 
 public class NXTConnect {
-	//private static final String NXT = "00:16:53:12:92:AA";
-	private static final String NXT = "192.168.0.9";
+	private static final String NXT = "EV3";
+	//private static final String NXT = "192.168.0.9";
 
 	public static void main(String[] args) throws Exception {
-		//NXTCommConnector connector = Bluetooth.getNXTCommConnector();
-		NXTCommConnector connector = new SocketConnector();
+		NXTCommConnector connector = Bluetooth.getNXTCommConnector();
+		//NXTCommConnector connector = new SocketConnector();
 		System.out.println("Connecting to " + NXT);
 		NXTConnection connection = connector.connect(NXT, NXTConnection.RAW);
 		if (connection == null) {
