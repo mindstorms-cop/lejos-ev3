@@ -14,6 +14,9 @@
 
 	<property prefix="vars.ev3samples"   file="${project.ev3samples}/build.properties" />
 	<property prefix="vars.ev3pcsamples" file="${project.ev3pcsamples}/build.properties" />
+	
+	<property prefix="vars.ev3example"   file="${project.ev3example}/build.properties" />
+	<property prefix="vars.ev3pcexample" file="${project.ev3pcexample}/build.properties" />
 
 	<!-- for consistency reasons -->
 	<property prefix="vars.release" file="build.properties" />
@@ -136,11 +139,6 @@
 					excludes="build.properties,.classpath,${vars.@{id}.dist.exclude}"
 				/>
 			</copy>
-			<copyfile-linereplace from="${project.@{id}}/.classpath" to="@{todir}/.classpath"
-				replace="&lt;classpathentry\s.*kind=&quot;src&quot;\s.*path=&quot;/pccomms.*&gt;"
-				with="&lt;classpathentry kind=&quot;con&quot; path=&quot;org.lejos.ev3.ldt.LEJOS_EV3_LIBRARY_CONTAINER&quot;/&gt;"
-				ignore="classpathentry\s.*kind=&quot;src&quot;\s.*path=&quot;/"
-			/>
 			<copyfile-linereplace from="${project.@{id}}/build.properties" to="@{todir}/build.properties"
 				replace="^\s*ev3.home\s*=.*" with="ev3.home=${env.EV3_HOME}"
 				ignore="don't match anything please"
@@ -218,8 +216,16 @@
 	<target name="subproject.ev3pcsamples">
 		<copy-pcproject id="ev3pcsamples" todir="${samples.dir}/ev3pcsamples" />
 	</target>
+	
+	<target name="subproject.ev3example">
+		<copy-ev3project id="ev3example" todir="${samples.dir}/org.lejos.pc.example" />
+	</target>
+	
+	<target name="subproject.ev3pcexample">
+		<copy-pcproject id="ev3pcexample" todir="${samples.dir}/org.lejos.pc.pcexample" />
+	</target>
 
-	<target name="shared" depends="subproject.ev3classes, subproject.dbusjava, subproject.ev3tools, subproject.ev3samples">
+	<target name="shared" depends="subproject.ev3classes, subproject.dbusjava, subproject.ev3tools, subproject.ev3samples, subproject.ev3example, subproject.ev3pcexample">
 		<zip destfile="${shared.dir}/samples.zip">
 			<fileset dir="${samples.dir}" />
 		</zip>
