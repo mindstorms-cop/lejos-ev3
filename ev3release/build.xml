@@ -17,27 +17,14 @@
 	
 	<property prefix="vars.ev3example"   file="${project.ev3example}/build.properties" />
 	<property prefix="vars.ev3pcexample" file="${project.ev3pcexample}/build.properties" />
+	
+	<property prefix="vars.ev3menu" file="${project.ev3menu}/build.properties" />
 
 	<!-- for consistency reasons -->
-	<property prefix="vars.release" file="build.properties" />
-	<property name="project.release" location="." />
+	<property prefix="vars.ev3release" file="build.properties" />
+	<property name="project.ev3release" location="." />
 	
 	<echoproperties/>
-
-	<path id="pc.3rdparty">
-		<fileset dir="${project.jtools}/3rdparty">
-			<include name="**/*.jar"/>
-		</fileset>
-		<fileset dir="${project.pccomms}/3rdparty">
-			<include name="**/*.jar"/>
-		</fileset>
-		<fileset dir="${project.pctools}/3rdparty">
-			<include name="**/*.jar"/>
-		</fileset>
-		<fileset dir="${project.charting}/3rdparty">
-			<include name="**/*.jar"/>
-		</fileset>
-	</path>
 
 	<macrodef name="copy-project">
 		<attribute name="project" />
@@ -239,10 +226,16 @@
 		<copy-source todir="${source.dir}" id="dbusjava" />
 		<copy-source todir="${source.dir}" id="ev3scripts" />
 		
+		<copy-source todir="${source.dir}" id="ev3menu" />
+		
 		<copy-source todir="${source.dir}" id="ev3samples" />
+		<copy-source todir="${source.dir}" id="ev3pcsamples" />
+		
+		<copy-source todir="${source.dir}" id="ev3example" />
+		<copy-source todir="${source.dir}" id="ev3pcexample" />
 		
 		<!-- last but not least -->
-		<copy-source todir="${source.dir}" id="release" />
+		<copy-source todir="${source.dir}" id="ev3release" />
 		
 		<mkdir dir="${dist.dir}" />
 		<tar destfile="${dist.dir}/${lejos.source.version}.tar.gz" compression="gzip" longfile="gnu">
