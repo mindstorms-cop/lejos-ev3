@@ -19,6 +19,7 @@
 	<property prefix="vars.ev3pcexample" file="${project.ev3pcexample}/build.properties" />
 	
 	<property prefix="vars.ev3menu" file="${project.ev3menu}/build.properties" />
+	<property prefix="vars.ev3installer" file="${project.ev3installer}/build.properties" />
 
 	<!-- for consistency reasons -->
 	<property prefix="vars.ev3release" file="build.properties" />
@@ -212,7 +213,7 @@
 		<copy-pcproject id="ev3pcexample" todir="${samples.dir}/org.lejos.pc.pcexample" />
 	</target>
 
-	<target name="shared" depends="subproject.ev3classes, subproject.dbusjava, subproject.ev3tools, subproject.ev3samples, subproject.ev3example, subproject.ev3pcexample">
+	<target name="shared" depends="subproject.ev3classes, subproject.dbusjava, subproject.ev3tools, subproject.ev3samples, subproject.ev3pcsamples, subproject.ev3example, subproject.ev3pcexample">
 		<zip destfile="${shared.dir}/samples.zip">
 			<fileset dir="${samples.dir}" />
 		</zip>
@@ -233,6 +234,8 @@
 		
 		<copy-source todir="${source.dir}" id="ev3example" />
 		<copy-source todir="${source.dir}" id="ev3pcexample" />
+		
+		<copy-source todir="${source.dir}" id="ev3installer" />
 		
 		<!-- last but not least -->
 		<copy-source todir="${source.dir}" id="ev3release" />
