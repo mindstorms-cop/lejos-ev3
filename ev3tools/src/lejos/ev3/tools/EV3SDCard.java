@@ -33,11 +33,14 @@ public class EV3SDCard extends JFrame {
 	private static File[] roots = new File[0];
 	private URI uri;
 	private File zipFile, jreFile;
+	private JLabel cardDescription = new JLabel();
 
-	public EV3SDCard() {
+	public int run () {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setTitle("EV3 SD Card creator");
 		setPreferredSize(new Dimension(500, 300));
+		
+		getCandidateDrives();
 
 		// Drive panel
 		JPanel drivePanel = new JPanel();
@@ -58,7 +61,15 @@ public class EV3SDCard extends JFrame {
 		filesPanel.add(zipFileName);
 		filesPanel.add(zipButton);
 
-		final JFileChooser zipChooser = new JFileChooser(System.getProperty("user.home") + "/Downloads");
+		final JFileChooser zipChooser = new JFileChooser(System.getProperty("user.home"));
+		
+		zipFile = new File(System.getenv("EV3_HOME") + File.separator + "lejosimage.zip");
+		
+		if (zipFile.exists()) {
+			zipFileName.setText(zipFile.getPath());
+		} else {
+			System.out.println(zipFile.getPath() + " does not exist");
+		}
 		
 		zipChooser.setAcceptAllFileFilterUsed(false);
 		
@@ -128,13 +139,26 @@ public class EV3SDCard extends JFrame {
 		getContentPane().add(filesPanel, BorderLayout.CENTER);
 
 		JPanel buttonPanel = new JPanel();
-
-		final JLabel cardDescription = new JLabel(drives.length > 0 ? drives[0]
-				: "No card selected");
+		
 		JButton createButton = new JButton("Create");
+		
+		JButton refreshButton = new JButton("Refresh");
+		
+		refreshButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				getCandidateDrives();
+				driveDropdown.removeAllItems();
+				for(String drive: drives) {
+					driveDropdown.addItem(drive);
+				}
+			}		
+		});
+		
 		JButton exitButton = new JButton("Exit");
 		buttonPanel.add(cardDescription);
 		buttonPanel.add(createButton);
+		buttonPanel.add(refreshButton);
 		buttonPanel.add(exitButton);
 		buttonPanel.setBorder(BorderFactory.createEtchedBorder());
 		getContentPane().add(buttonPanel, BorderLayout.PAGE_END);
@@ -149,6 +173,7 @@ public class EV3SDCard extends JFrame {
 		driveDropdown.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
+				if (driveDropdown.getSelectedIndex() < 0) return;
 				cardDescription.setText(drives[driveDropdown.getSelectedIndex()]);
 			}
 		});
@@ -226,13 +251,15 @@ public class EV3SDCard extends JFrame {
 
 		pack();
 		setVisible(true);
+		
+		return 0;
 	}
 	
 	private void showMessage(String msg) {
 		JOptionPane.showMessageDialog(this, msg);
 	}
-
-	public static void main(String[] args) {
+	
+	private void getCandidateDrives() {
 		File[] roots = File.listRoots();
 		ArrayList<String> driveList = new ArrayList<String>();
 		ArrayList<File> rootList = new ArrayList<File>();
@@ -241,7 +268,7 @@ public class EV3SDCard extends JFrame {
 					.getSystemDisplayName(r);
 			String s2 = FileSystemView.getFileSystemView()
 					.getSystemTypeDescription(r);
-			if (s2.equals("Removable Disk") && r.getTotalSpace() > 0) {
+			if (!r.getPath().equals("C:\\") && r.getTotalSpace() > 0) {
 				rootList.add(r);
 				System.out.print("Name : " + s1);
 				System.out.print(" , Description : " + s2);
@@ -250,22 +277,40 @@ public class EV3SDCard extends JFrame {
 				driveList.add(s1);
 			}
 		}
-		if (driveList.size() == 0)
+		if (driveList.size() == 0) {
 			System.out.println("No SD card found");
-		else {
+			drives = new String[0]; 
+			EV3SDCard.roots = new File[0];
+			cardDescription.setText("No card selected");
+		} else {
 			drives = driveList.toArray(new String[0]);
 			EV3SDCard.roots = rootList.toArray(new File[0]);
+			cardDescription.setText(drives[0]);
 		}
-		new EV3SDCard();
+	}
+	
+	/**
+	 * Command line entry point
+	 */
+	public static void main(String args[])
+	{
+		ToolStarter.startSwingTool(EV3SDCard.class, args);
+	}
+	
+	public static int start(String[] args)
+	{
+		return new EV3SDCard().run();
 	}
 
 	private static void open(URI uri) {
 		if (Desktop.isDesktopSupported()) {
 			try {
 				Desktop.getDesktop().browse(uri);
-			} catch (IOException e) { /* TODO: error handling */
+			} catch (IOException e) {
+				System.err.println("IOException getting desktop");
 			}
-		} else { /* TODO: error handling */
+		} else {
+			System.err.println("Desktop not supported");
 		}
 	}
 
