@@ -1,0 +1,45 @@
+For running the ant based release utilities successfully, you will need to have
+
+- an ANT installation (at least 1.6). The one in Eclipse should be OK.
+- all changed pulled from Git
+
+To create a new release of leJOS EV3 in Eclipse on Linux, please perform the following steps:
+
+1. Update the following files:
+	release/lejos_ev3/README.md
+	and other documentation for the release
+2. Update the following files with the current version number:
+	EV3Menu/src/lejos/ev3/startup/Config.java
+	ev3installer/leJOS_EV3_Installer.iss
+4. Ensure you have the latest lejosimage.zip. The release/build.xml does
+   not build it. It is located at ev3sdcard/sdcard.
+5. Test that all the samples and pcsamples run successfully.
+6. Check the the API docs builds without errors or warnings.
+7. Ensure that the release/build.xml script is up to date
+8. Build and test the Eclipse plugin - see EclipsePlugin.HOWTO
+9. Update this file if there are any changes in the way the release is built
+10. Right click on release/build.xml and select "Run As", "Ant Build"
+11. After the ant script has finished, the packed distributions for Linux and Windows may be found
+    inside the folder release/dist.
+12. Install Inno Setup (unicode version) and open/compile installjammer/leJOS_EV3_Installer.iss
+13. After that, the installer can be found at installjammer/leJOS_EV3_<version>_win32_setup.exe
+
+There are other steps that are needed after this to release the product:
+
+A. Update the Wiki
+B. Test the release Windows installer and other distribution on as many operating systems as possible. Ensure
+   that the instructions in README.hml and in the tutorial work for this release.
+C. Release the Windows installer and zip file versions, and the Linux/MAC OSX distribution using the sourceforge
+   File Release System.
+D. Open the file details of the Windows installer and the Linux/OSX tarball in the sourceforge file release system,
+    and make the files as the default download for Windows and Linux/OSX respectively. 
+E. Copy the EV3 api docs to htdocs/ev3/api on the sourceforge web site.
+F. Copy the contents of the dist folder in the org.lejos.nxt.ldt.update-site project to htdocs/tools/eclipse/plugin/ev3.
+   Rename the old version first by appending its version number.
+G. Announce the release, tutorial and Eclipse plugin on the lejos web site with new items.
+H. Announce the release on the forums.
+I. Create tags with the release number in both of the GIT repositories.
+J. Annonce the release on the developers mailing list.
+
+
+    

@@ -14,27 +14,16 @@
 
 	<property prefix="vars.ev3samples"   file="${project.ev3samples}/build.properties" />
 	<property prefix="vars.ev3pcsamples" file="${project.ev3pcsamples}/build.properties" />
+	
+	<property prefix="vars.ev3example"   file="${project.ev3example}/build.properties" />
+	<property prefix="vars.ev3pcexample" file="${project.ev3pcexample}/build.properties" />
+	
+	<property prefix="vars.ev3menu" file="${project.ev3menu}/build.properties" />
+	<property prefix="vars.ev3installer" file="${project.ev3installer}/build.properties" />
 
 	<!-- for consistency reasons -->
-	<property prefix="vars.release" file="build.properties" />
-	<property name="project.release" location="." />
-	
-	<echoproperties/>
-
-	<path id="pc.3rdparty">
-		<fileset dir="${project.jtools}/3rdparty">
-			<include name="**/*.jar"/>
-		</fileset>
-		<fileset dir="${project.pccomms}/3rdparty">
-			<include name="**/*.jar"/>
-		</fileset>
-		<fileset dir="${project.pctools}/3rdparty">
-			<include name="**/*.jar"/>
-		</fileset>
-		<fileset dir="${project.charting}/3rdparty">
-			<include name="**/*.jar"/>
-		</fileset>
-	</path>
+	<property prefix="vars.ev3release" file="build.properties" />
+	<property name="project.ev3release" location="." />
 
 	<macrodef name="copy-project">
 		<attribute name="project" />
@@ -70,6 +59,19 @@
 		<attribute name="type" />
 		<sequential>
 			<buildcopy-project project="@{project}" type="@{type}" />
+			<copy todir="${shared.dir}/lib/@{type}/3rdparty">
+				<fileset dir="${project.@{project}}/thirdparty/lib">
+					<include name="*.jar" />
+					<include name="*-src.zip" />
+				</fileset>
+			</copy>
+		</sequential>
+	</macrodef>
+	
+	<macrodef name="buildcopy-project3">
+		<attribute name="project" />
+		<attribute name="type" />
+		<sequential>
 			<copy todir="${shared.dir}/lib/@{type}/3rdparty">
 				<fileset dir="${project.@{project}}/thirdparty/lib">
 					<include name="*.jar" />
@@ -136,14 +138,14 @@
 					excludes="build.properties,.classpath,${vars.@{id}.dist.exclude}"
 				/>
 			</copy>
-			<copyfile-linereplace from="${project.@{id}}/.classpath" to="@{todir}/.classpath"
-				replace="&lt;classpathentry\s.*kind=&quot;src&quot;\s.*path=&quot;/pccomms.*&gt;"
-				with="&lt;classpathentry kind=&quot;con&quot; path=&quot;org.lejos.ev3.ldt.LEJOS_EV3_LIBRARY_CONTAINER&quot;/&gt;"
-				ignore="classpathentry\s.*kind=&quot;src&quot;\s.*path=&quot;/"
-			/>
 			<copyfile-linereplace from="${project.@{id}}/build.properties" to="@{todir}/build.properties"
 				replace="^\s*ev3.home\s*=.*" with="ev3.home=${env.EV3_HOME}"
 				ignore="don't match anything please"
+			/>
+			<copyfile-linereplace from="${project.@{id}}/.classpath" to="@{todir}/.classpath"
+				replace="&lt;classpathentry\s.*kind=&quot;src&quot;\s.*path=&quot;/ev3classes.*&gt;"
+				with="&lt;classpathentry kind=&quot;con&quot; path=&quot;org.lejos.ev3.ldt.LEJOS_EV3_LIBRARY_CONTAINER&quot;/&gt;"
+				ignore="(classpathentry\s.*kind=&quot;src&quot;\s.*path=&quot;/|classpathentry\skind=&quot;lib&quot;)"
 			/>
 		</sequential>
 	</macrodef>
@@ -209,20 +211,32 @@
 		<buildcopy-project2 project="ev3tools" type="pc" />
 	</target>
 	
+	<target name="subproject.ev3pcsamples">
+		<buildcopy-project3 project="ev3pcsamples" type="pc" />
+		<copy-pcproject id="ev3pcsamples" todir="${samples.dir}/ev3pcsamples" />
+	</target>
+	
 	<target name="subproject.ev3samples">
 		<echo message="*** entering ev3samples project" />
 		<copy-ev3project id="ev3samples" todir="${samples.dir}/ev3samples" />
 		<echo message="*** leaving ev3samples project" />
 	</target>
+
+	<target name="subproject.ev3example">
+		<copy-ev3project id="ev3example" todir="${samples.dir}/org.lejos.ev3.example" />
+	</target>
 	
-	<target name="subproject.ev3pcsamples">
-		<copy-pcproject id="ev3pcsamples" todir="${samples.dir}/ev3pcsamples" />
+	<target name="subproject.ev3pcexample">
+		<copy-pcproject id="ev3pcexample" todir="${samples.dir}/org.lejos.ev3.pcexample" />
 	</target>
 
-	<target name="shared" depends="subproject.ev3classes, subproject.dbusjava, subproject.ev3tools, subproject.ev3samples">
+	<target name="shared" depends="subproject.ev3classes, subproject.dbusjava, subproject.ev3tools, subproject.ev3samples, subproject.ev3pcsamples, subproject.ev3example, subproject.ev3pcexample">
 		<zip destfile="${shared.dir}/samples.zip">
 			<fileset dir="${samples.dir}" />
 		</zip>
+		<copy todir="${shared.dir}">
+			<fileset dir="${project.ev3snapshot}/sdcard" />
+		</copy>
 	</target>
 
 	<!-- copies the lejos sources -->
@@ -233,10 +247,18 @@
 		<copy-source todir="${source.dir}" id="dbusjava" />
 		<copy-source todir="${source.dir}" id="ev3scripts" />
 		
+		<copy-source todir="${source.dir}" id="ev3menu" />
+		
 		<copy-source todir="${source.dir}" id="ev3samples" />
+		<copy-source todir="${source.dir}" id="ev3pcsamples" />
+		
+		<copy-source todir="${source.dir}" id="ev3example" />
+		<copy-source todir="${source.dir}" id="ev3pcexample" />
+		
+		<copy-source todir="${source.dir}" id="ev3installer" />
 		
 		<!-- last but not least -->
-		<copy-source todir="${source.dir}" id="release" />
+		<copy-source todir="${source.dir}" id="ev3release" />
 		
 		<mkdir dir="${dist.dir}" />
 		<tar destfile="${dist.dir}/${lejos.source.version}.tar.gz" compression="gzip" longfile="gnu">
