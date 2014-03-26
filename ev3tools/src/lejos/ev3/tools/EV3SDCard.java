@@ -61,7 +61,15 @@ public class EV3SDCard extends JFrame {
 		filesPanel.add(zipFileName);
 		filesPanel.add(zipButton);
 
-		final JFileChooser zipChooser = new JFileChooser(System.getProperty("user.home") + "/Downloads");
+		final JFileChooser zipChooser = new JFileChooser(System.getProperty("user.home"));
+		
+		zipFile = new File(System.getenv("EV3_HOME") + File.separator + "lejosimage.zip");
+		
+		if (zipFile.exists()) {
+			zipFileName.setText(zipFile.getPath());
+		} else {
+			System.out.println(zipFile.getPath() + " does not exist");
+		}
 		
 		zipChooser.setAcceptAllFileFilterUsed(false);
 		
