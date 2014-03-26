@@ -145,7 +145,7 @@
 			<copyfile-linereplace from="${project.@{id}}/.classpath" to="@{todir}/.classpath"
 				replace="&lt;classpathentry\s.*kind=&quot;src&quot;\s.*path=&quot;/ev3classes.*&gt;"
 				with="&lt;classpathentry kind=&quot;con&quot; path=&quot;org.lejos.ev3.ldt.LEJOS_EV3_LIBRARY_CONTAINER&quot;/&gt;"
-				ignore="classpathentry\s.*kind=&quot;src&quot;\s.*path=&quot;/"
+				ignore="(classpathentry\s.*kind=&quot;src&quot;\s.*path=&quot;/|classpathentry\skind=&quot;lib&quot;)"
 			/>
 		</sequential>
 	</macrodef>
@@ -211,8 +211,9 @@
 		<buildcopy-project2 project="ev3tools" type="pc" />
 	</target>
 	
-		<target name="subproject.ev3pcsamples">
+	<target name="subproject.ev3pcsamples">
 		<buildcopy-project3 project="ev3pcsamples" type="pc" />
+		<copy-pcproject id="ev3pcsamples" todir="${samples.dir}/ev3pcsamples" />
 	</target>
 	
 	<target name="subproject.ev3samples">
@@ -222,11 +223,11 @@
 	</target>
 
 	<target name="subproject.ev3example">
-		<copy-ev3project id="ev3example" todir="${samples.dir}/org.lejos.pc.example" />
+		<copy-ev3project id="ev3example" todir="${samples.dir}/org.lejos.ev3.example" />
 	</target>
 	
 	<target name="subproject.ev3pcexample">
-		<copy-pcproject id="ev3pcexample" todir="${samples.dir}/org.lejos.pc.pcexample" />
+		<copy-pcproject id="ev3pcexample" todir="${samples.dir}/org.lejos.ev3.pcexample" />
 	</target>
 
 	<target name="shared" depends="subproject.ev3classes, subproject.dbusjava, subproject.ev3tools, subproject.ev3samples, subproject.ev3pcsamples, subproject.ev3example, subproject.ev3pcexample">

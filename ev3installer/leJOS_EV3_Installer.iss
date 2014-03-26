@@ -7,7 +7,7 @@
 #endif
 
 #ifndef MyAppVersion
-  #define MyAppVersion "0.1.0beta"
+  #define MyAppVersion "0.8.1-alpha"
 #endif
 
 ; NOTE: The value of AppId uniquely identifies this application.
