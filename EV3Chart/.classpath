@@ -5,5 +5,6 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/ev3classes"/>
 	<classpathentry kind="lib" path="lib/jfreechart.jar" sourcepath="/org.lejos.charting/3rdparty/lib/jfreechart-src.zip"/>
 	<classpathentry kind="lib" path="lib/jcommon.jar" sourcepath="/org.lejos.charting/3rdparty/lib/jcommon-src.zip"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/ev3tools"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
