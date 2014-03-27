@@ -35,6 +35,7 @@ import lejos.hardware.RemoteBTDevice;
 import lejos.hardware.Sound;
 import lejos.hardware.Wifi;
 import lejos.hardware.ev3.LocalEV3;
+import lejos.hardware.lcd.LCD;
 import lejos.hardware.lcd.LCDOutputStream;
 import lejos.hardware.lcd.TextLCD;
 import lejos.hardware.port.Port;
@@ -53,6 +54,10 @@ public class GraphicStartup implements Menu {
 	static final String JAVA_RUN_JAR = "jrun -jar ";
 	static final String JAVA_DEBUG_JAR = "jrun -Xdebug -Xrunjdwp:transport=dt_socket,server=y,address=8000,suspend=y -jar ";
 	
+	static final int TYPE_PROGRAM = 0;
+	static final int TYPE_SAMPLE = 1;
+	static final int TYPE_TOOL = 2;
+	
 	static final String defaultProgramProperty = "lejos.default_program";
     static final String defaultProgramAutoRunProperty = "lejos.default_autoRun";
     static final String sleepTimeProperty = "lejos.sleep_time";
@@ -67,6 +72,8 @@ public class GraphicStartup implements Menu {
     static final String ICProgram = "\u00fc\u00ff\u00ff\u003f\u00fc\u00ff\u00ff\u003f\u0003\u0000\u0000\u00c0\u0003\u0000\u0000\u00c0\u0003\u0000\u0003\u00c0\u0003\u0000\u0003\u00c0\u0003\u00c0\u0000\u00c0\u0003\u00c0\u0000\u00c0\u0003\u00c0\u000c\u00c0\u0003\u00c0\u000c\u00c0\u0003\u0030\u000c\u00c0\u0003\u0030\u000c\u00c0\u0003\u0030\u0003\u00c0\u0003\u0030\u0003\u00c0\u0003\u00c0\u0000\u00c0\u0003\u00c0\u0000\u00c0\u0003\u00ff\u00cf\u00c3\u0003\u00ff\u00cf\u00c3\u0003\u0000\u0000\u00c3\u0003\u0000\u0000\u00c3\u0003\u00fc\u00f3\u00c0\u0003\u00fc\u00f3\u00c0\u0003\u0000\u0000\u00c0\u0003\u0000\u0000\u00c0\u00c3\u00ff\u003f\u00c0\u00c3\u00ff\u003f\u00c0\u0003\u0000\u0000\u00c0\u0003\u0000\u0000\u00c0\u0003\u0000\u0000\u00c0\u0003\u0000\u0000\u00c0\u00fc\u00ff\u00ff\u003f\u00fc\u00ff\u00ff\u003f";
     static final String ICFiles = "\u0000\u00c0\u0000\u0000\u0000\u00c0\u0000\u0000\u0000\u0030\u00ff\u000f\u0000\u0030\u00ff\u000f\u0000\u000c\u000c\u0030\u0000\u000c\u000c\u0030\u00fc\u0003\u0030\u00cc\u00fc\u0003\u0030\u00cc\u00c3\u0000\u00c0\u00f0\u00c3\u0000\u00c0\u00f0\u003f\u0000\u0000\u00c3\u003f\u0000\u0000\u00c3\u00ff\u003f\u0000\u00fc\u00ff\u003f\u0000\u00fc\u0003\u00c0\u0000\u00f0\u0003\u00c0\u0000\u00f0\u0003\u0000\u00ff\u00ff\u0003\u0000\u00ff\u00ff\u0083\u0007\u0000\u00f3\u0083\u0008\u0000\u00f3\u0083\u0008\u00c0\u00cc\u0083\u0008\u00c0\u00cc\u0083\u0007\u0000\u00f3\u0083\u0000\u0000\u00f3\u0083\u0000\u0000\u00cc\u0083\u0000\u0000\u00cc\u0083\u0000\u0000\u00f3\u0083\u0000\u0000\u00f3\u0003\u0000\u00c0\u00cc\u0003\u0000\u00c0\u00cc\u00fc\u00ff\u00ff\u003f\u00fc\u00ff\u00ff\u003f";
     static final String ICSamples = "\u0000\u00c0\u0000\u0000\u0000\u00c0\u0000\u0000\u0000\u0030\u00ff\u000f\u0000\u0030\u00ff\u000f\u0000\u000c\u000c\u0030\u0000\u000c\u000c\u0030\u00fc\u0003\u0030\u00cc\u00fc\u0003\u0030\u00cc\u00c3\u0000\u00c0\u00f0\u00c3\u0000\u00c0\u00f0\u003f\u0000\u0000\u00c3\u003f\u0000\u0000\u00c3\u00ff\u003f\u0000\u00fc\u00ff\u003f\u0000\u00fc\u0003\u00c0\u0000\u00f0\u0003\u00c0\u0000\u00f0\u0003\u0000\u00ff\u00ff\u0003\u001e\u00ff\u00ff\u0003\u0001\u0000\u00f3\u0003\u0001\u0000\u00f3\u0003\u0001\u00c0\u00cc\u0003\u001e\u00c0\u00cc\u0003\u0010\u0000\u00f3\u0003\u0010\u0000\u00f3\u0003\u0010\u0000\u00cc\u0003\u000f\u0000\u00cc\u0003\u0000\u0000\u00f3\u0003\u0000\u0000\u00f3\u0003\u0000\u00c0\u00cc\u0003\u0000\u00c0\u00cc\u00fc\u00ff\u00ff\u003f\u00fc\u00ff\u00ff\u003f";
+    static final String ICTools = "\u0000\u00c0\u0000\u0000\u0000\u00c0\u0000\u0000\u0000\u0030\u00ff\u000f\u0000\u0030\u00ff\u000f\u0000\u000c\u000c\u0030\u0000\u000c\u000c\u0030\u00fc\u0003\u0030\u00cc\u00fc\u0003\u0030\u00cc\u00c3\u0000\u00c0\u00f0\u00c3\u0000\u00c0\u00f0\u003f\u0000\u0000\u00c3\u003f\u0000\u0000\u00c3\u00ff\u003f\u0000\u00fc\u00ff\u003f\u0000\u00fc\u0003\u00c0\u0000\u00f0\u0003\u00c0\u0000\u00f0\u0003\u0000\u00ff\u00ff\u0003\u001e\u00ff\u00ff\u0003\u0001\u0000\u00f3\u0003\u0001\u0000\u00f3\u0003\u0001\u00c0\u00cc\u0003\u001e\u00c0\u00cc\u0003\u0010\u0000\u00f3\u0003\u0010\u0000\u00f3\u0003\u0010\u0000\u00cc\u0003\u000f\u0000\u00cc\u0003\u0000\u0000\u00f3\u0003\u0000\u0000\u00f3\u0003\u0000\u00c0\u00cc\u0003\u0000\u00c0\u00cc\u00fc\u00ff\u00ff\u003f\u00fc\u00ff\u00ff\u003f";
+
     static final String ICBlue = "\u0000\u00f0\u000f\u0000\u0000\u00f0\u000f\u0000\u0000\u00ff\u00ff\u0000\u0000\u00ff\u00ff\u0000\u00c0\u003f\u00ff\u0003\u00c0\u003f\u00ff\u0003\u00c0\u003f\u00fc\u0003\u00c0\u003f\u00fc\u0003\u00f0\u003c\u00f0\u000f\u00f0\u003c\u00f0\u000f\u00f0\u0030\u00c3\u000f\u00f0\u0030\u00c3\u000f\u00f0\u0003\u00c3\u000f\u00f0\u0003\u00c3\u000f\u00f0\u000f\u00f0\u000f\u00f0\u000f\u00f0\u000f\u00f0\u000f\u00f0\u000f\u00f0\u000f\u00f0\u000f\u00f0\u0003\u00c3\u000f\u00f0\u0003\u00c3\u000f\u00f0\u0030\u00c3\u000f\u00f0\u0030\u00c3\u000f\u00f0\u003c\u00f0\u000f\u00f0\u003c\u00f0\u000f\u00c0\u003f\u00fc\u0003\u00c0\u003f\u00fc\u0003\u00c0\u003f\u00ff\u0003\u00c0\u003f\u00ff\u0003\u0000\u00ff\u00ff\u0000\u0000\u00ff\u00ff\u0000\u0000\u00f0\u000f\u0000\u0000\u00f0\u000f\u0000";
     static final String ICWifi = "\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u00f8\u001f\u0000\u0000\u00ff\u00ff\u0000\u00c0\u00ff\u00ff\u0003\u00f0\u00ff\u00ff\u000f\u00f8\u003f\u00fc\u001f\u00fe\u0003\u00c0\u007f\u00ff\u0000\u0000\u00ff\u003f\u0000\u0000\u00fc\u001f\u0000\u0000\u00f8\u000e\u00f8\u001f\u0070\u0000\u00fe\u007f\u0000\u0000\u00ff\u00ff\u0000\u0080\u00ff\u00ff\u0001\u00c0\u003f\u00fc\u0003\u00c0\u0007\u00e0\u0003\u00c0\u0003\u00c0\u0001\u0000\u0000\u0000\u0000\u0000\u00c0\u0003\u0000\u0000\u00e0\u0007\u0000\u0000\u00e0\u0007\u0000\u0000\u00e0\u0007\u0000\u0000\u00e0\u0007\u0000\u0000\u00c0\u0003\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000";
    
@@ -91,6 +98,7 @@ public class GraphicStartup implements Menu {
 
     static final String PROGRAMS_DIRECTORY = "/home/lejos/programs";
     static final String SAMPLES_DIRECTORY = "/home/root/lejos/samples";
+    static final String TOOLS_DIRECTORY = "/home/root/lejos/tools";
     static final String MENU_DIRECTORY = "/home/root/lejos/bin/utils";
     static final String START_BLUETOOTH = "/home/root/lejos/bin/startbt";
     static final String START_WLAN = "/home/root/lejos/bin/startwlan";
@@ -261,8 +269,8 @@ public class GraphicStartup implements Menu {
     {
         GraphicMenu menu = new GraphicMenu(new String[]
                 {
-                    "Run Default", "Files", "Samples", "Bluetooth", "Wifi", "Sound", "System", "Version"
-                },new String[] {ICDefault,ICFiles,ICSamples,ICBlue,ICWifi,ICSound,ICEV3,ICLeJOS},3);
+                    "Run Default", "Files", "Samples", "Tools", "Bluetooth", "Wifi", "Sound", "System", "Version"
+                },new String[] {ICDefault,ICFiles,ICTools, ICSamples,ICBlue,ICWifi,ICSound,ICEV3,ICLeJOS},3);
         int selection = 0;
         do
         {
@@ -284,18 +292,21 @@ public class GraphicStartup implements Menu {
                     samplesMenu();
                     break;
                 case 3:
-                    bluetoothMenu();
+                    toolsMenu();
                     break;
                 case 4:
-                    wifiMenu();
+                    bluetoothMenu();
                     break;
                 case 5:
-                    soundMenu();
+                    wifiMenu();
                     break;
                 case 6:
-                    systemMenu();
+                    soundMenu();
                     break;
                 case 7:
+                    systemMenu();
+                    break;
+                case 8:
                     displayVersion();
                     break;
             }
@@ -999,7 +1010,7 @@ public class GraphicStartup implements Menu {
      * Present the menu for a single file.
      * @param file
      */
-    private void fileMenu(File file, boolean sample)
+    private void fileMenu(File file, int type)
     {
         String fileName = file.getName();
         String ext = Utils.getExtension(fileName);
@@ -1031,13 +1042,26 @@ public class GraphicStartup implements Menu {
         int selection = getSelection(menu, 0);
         if (selection >= 0)
         {
-        	String directory = (sample ? SAMPLES_DIRECTORY : PROGRAMS_DIRECTORY);
+        	String directory = null;
+        	
+        	switch (type) {
+        	case TYPE_PROGRAM:
+        		directory =  PROGRAMS_DIRECTORY;
+        		break;
+        	case TYPE_SAMPLE:
+        		directory =  SAMPLES_DIRECTORY;
+        		break;
+        	case TYPE_TOOL:
+        		directory = TOOLS_DIRECTORY;
+        		break;
+        	}
 	        switch(selection + selectionAdd)
 	        {
 	            case 0:
 	            	System.out.println("Running program: " + file.getPath());
 	            	ind.suspend();
-	            	exec(JAVA_RUN_JAR + file.getPath(), directory);
+	            	if (type == TYPE_TOOL) execInThisJVM(file);
+	            	else exec(JAVA_RUN_JAR + file.getPath(), directory);
 	            	ind.resume();
 	                break;
 	            case 1:
@@ -1217,7 +1241,42 @@ public class GraphicStartup implements Menu {
             menu.setItems(fileNames,icons);
             selection = getSelection(menu, selection);
             if (selection >= 0)
-                fileMenu(files[selection], false);
+                fileMenu(files[selection], TYPE_PROGRAM);
+        } while (selection >= 0);
+    }
+    
+    /**
+     * Display the tools from the tools directory.
+     * Allow the user to choose a file for further operations.
+     */
+    private void toolsMenu()
+    {
+    	GraphicListMenu menu = new GraphicListMenu(null,null);
+    	//System.out.println("Finding files ...");
+        int selection = 0;
+        do {
+            File[] files = (new File(TOOLS_DIRECTORY)).listFiles();
+            int len = 0;
+            for (int i = 0; i < files.length && files[i] != null; i++)
+                len++;
+            if (len == 0)
+            {
+                msg("No tools found");
+                return;
+            }
+            newScreen("Tools");
+            String fileNames[] = new String[len];
+            String[] icons = new String[len];
+            for (int i = 0; i < len; i++){
+                fileNames[i] = files[i].getName();
+                String ext = Utils.getExtension(files[i].getName());
+               if (ext.equals("jar"))
+                	icons[i] = ICMProgram;
+            }
+            menu.setItems(fileNames,icons);
+            selection = getSelection(menu, selection);
+            if (selection >= 0)
+                fileMenu(files[selection], TYPE_TOOL);
         } while (selection >= 0);
     }
     
@@ -1256,9 +1315,10 @@ public class GraphicStartup implements Menu {
             menu.setItems(fileNames,icons);
             selection = getSelection(menu, selection);
             if (selection >= 0)
-                fileMenu(files[selection], true);
+                fileMenu(files[selection], TYPE_SAMPLE);
         } while (selection >= 0);
     }
+
     
     /**
      * Start a new screen display using the current title.
@@ -1724,6 +1784,16 @@ public class GraphicStartup implements Menu {
         	ind.resume();
 		} catch (Exception e) {
 			System.err.println("Failed to execute startwlan: " + e);
+		}
+	}
+	
+	private void execInThisJVM(File jar) {
+		try {
+			LCD.clearDisplay();
+			new JarMain(jar);
+		} catch (Exception e) {
+			msg("Tool exception");
+			System.err.println("Exception in execution of tool: " + e);
 		}
 	}
 }
