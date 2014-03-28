@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<project name="ev3menutools" basedir="." default="upload">
+    <property file="local.properties" />
+    <property file="build.properties" />
+    
+    <macrodef name="make-jar">
+		<attribute name="jar.file" />
+		<attribute name="main.class" />
+		<sequential>
+			<jar destfile="@{jar.file}" basedir="${classes.dir}">
+	            <manifest>
+	                <attribute name="Main-Class" value="@{main.class}"/>
+	                <attribute name="Class-Path" value="${lejos.home}/lib/ev3classes.jar ${lejos.home}/libjna/usr/share/java/jna.jar"/>
+	            </manifest>
+	        </jar> 		    
+		</sequential>
+	</macrodef>
+    
+    <path id="libraries.path">    
+    	<fileset dir="${ev3classes.dir}">
+            <include name="*.jar"/>
+        </fileset>
+    </path>
+
+    <target name="clean" description="delete old files">
+        <delete dir="${classes.dir}"/>
+    </target>
+
+    <target name="compile" description="build class files" depends="clean">
+        <mkdir dir="${classes.dir}"/>
+        <javac srcdir="${source.dir}" destdir="${classes.dir}">
+            <classpath refid="libraries.path"/>
+        </javac>
+    </target>
+
+    <target name="pc.files" depends="compile">
+        <make-jar jar.file="SensorTest.jar" main.class="org.lejos.ev3.sample.sensortest.EV3SensorTest"/>
+    </target>
+
+    <target name="upload" depends="pc.files">
+    	<scp todir="${credentials}@${ev3.host}:${lejos.tools.dir}" trust="true">
+    	    <fileset file="*.jar"/>
+    	</scp>
+    </target>
+</project>
