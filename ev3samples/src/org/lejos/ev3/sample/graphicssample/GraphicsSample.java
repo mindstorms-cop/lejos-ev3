@@ -1,4 +1,4 @@
-package org.lejos.ev3.graphicstest;
+package org.lejos.ev3.sample.graphicssample;
 
 import java.io.File;
 import java.io.FileInputStream;
