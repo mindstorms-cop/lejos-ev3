@@ -1,4 +1,5 @@
 /bin
+/build
 *.jar
 local.properties
 
