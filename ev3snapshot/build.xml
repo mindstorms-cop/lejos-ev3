@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <project name="snapshot" basedir="." default="all">
     
-    <target name="all" depends="subproject.ev3classes,subproject.ev3menu,subproject.ev3graphicstest,subproject.ev3bumpercar,subproject.ev3sensortest,subproject.ev3tools,subproject.ev3scripts">
+    <target name="all" depends="subproject.ev3classes,subproject.ev3menu,subproject.ev3samples,subproject.ev3pcsamples,subproject.ev3tools,subproject.ev3scripts, subproject.ev3menutools">
 		<echo message="Done." />
 	</target>
 	
@@ -44,6 +44,18 @@
 		<echo message="*** leaving ev3tools project" />
 	</target>
 	
+     <target name="subproject.ev3pcsamples">
+		<echo message="*** entering ev3pcsamples project" />
+		<ant inheritAll="false" dir="../ev3pcsamples" antfile="build.xml">
+			<target name="pc.files" />
+		</ant>
+		<copy todir="lib">
+			<fileset file="../ev3pcsamples/thirdparty/lib/*.jar" />
+			<fileset file="../ev3pcsamples/thirdparty/lib/*.zip" />
+		</copy>
+		<echo message="*** leaving ev3pcsamples project" />
+	</target>
+	
     <target name="subproject.ev3scripts">
 		<echo message="*** entering ev3scripts project" />
 		<ant inheritAll="false" dir="../ev3scripts" antfile="build.xml">
@@ -67,41 +79,30 @@
 		</copy>
 		<echo message="*** leaving EV3Menu project" />
 	</target>
-	
-    <target name="subproject.ev3graphicstest">
-		<echo message="*** entering EV3GraphicsTest project" />
-		<ant inheritAll="false" dir="../EV3GraphicsTest" antfile="build.xml">
-			<target name="jar" />
+
+    <target name="subproject.ev3samples">
+		<echo message="*** entering ev3samples project" />
+		<ant inheritAll="false" dir="../ev3samples" antfile="build.xml">
+			<target name="pc.files" />
 		</ant>
 		<copy todir="samples">
-			<fileset file="../EV3GraphicsTest/dist/GraphicsTest.jar" />
+			<fileset file="../ev3samples/*.jar" />
 		</copy>
-		<echo message="*** leaving EV3GraphicsTest project" />
+		<echo message="*** leaving ev3samples project" />
 	</target>
 	
-    <target name="subproject.ev3bumpercar">
-		<echo message="*** entering EV3BumperCar project" />
-		<ant inheritAll="false" dir="../EV3BumperCar" antfile="build.xml">
-			<target name="jar" />
+    <target name="subproject.ev3menutools">
+		<echo message="*** entering ev3menutools project" />
+		<ant inheritAll="false" dir="../ev3menutools" antfile="build.xml">
+			<target name="pc.files" />
 		</ant>
-		<copy todir="samples">
-			<fileset file="../EV3BumperCar/dist/BumperCar.jar" />
+		<copy todir="tools">
+			<fileset file="../ev3menutools/*.jar" />
 		</copy>
-		<echo message="*** leaving EV3BumperCar project" />
+		<echo message="*** leaving ev3menutools project" />
 	</target>
 	
-    <target name="subproject.ev3sensortest">
-		<echo message="*** entering EV3SensorTest project" />
-		<ant inheritAll="false" dir="../EV3SensorTest" antfile="build.xml">
-			<target name="jar" />
-		</ant>
-		<copy todir="samples">
-			<fileset file="../EV3SensorTest/dist/SensorTest.jar" />
-		</copy>
-		<echo message="*** leaving EV3SensorTest project" />
-	</target>
-	
-    <target name="copy">
+    <target name="upload">
     	<scp todir="root:@${ev3.host}:/home/root/lejos/lib/" trust="true">
     	    <fileset file="lib/ev3classes.jar"/>
     	    <fileset file="lib/dbusjava.jar"/>
@@ -111,9 +112,7 @@
     	    <fileset file="bin/utils/wpa_supplicant.txt"/>
     	</scp>
     	<scp todir="root:@${ev3.host}:/home/root/lejos/samples/" trust="true">
-    	    <fileset file="samples/BumperCar.jar"/>
-    	    <fileset file="samples/GraphicsTest.jar"/>
-    	    <fileset file="samples/SensorTest.jar"/>
+    	    <fileset file="samples/*.jar"/>
     	</scp>
     </target>
 </project>
