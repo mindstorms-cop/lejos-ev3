@@ -1,12 +1,7 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <project name="ev3tools" basedir="." default="jar">
     <property file="local.properties" />
-    <property name="source.dir"     value="src"/>
-    <property name="lib.dir"        value="../ev3classes"/>
-	<property name="thirdparty.dir" value="thirdparty/lib"/>
-    <property name="class.dir"      value="build"/>
-    <property name="jar.dir"        value="dist"/>
-    <property name="src.zip"        value="dist/${ant.project.name}-src.zip"/>
+    <property file="build.properties" />
 
     <path id="libraries.path">    
         <fileset dir="${lib.dir}">
@@ -18,25 +13,25 @@
     </path>
 
     <target name="clean" description="delete old files">
-        <delete dir="${class.dir}"/>
-        <delete dir="${jar.dir}"/>
+        <delete dir="${classes.dir}"/>
+        <delete dir="${dist.dir}"/>
     </target>
 
     <target name="compile" description="build class files" depends="clean">
-        <mkdir dir="${class.dir}"/>
-        <javac srcdir="${source.dir}" destdir="${class.dir}">
+        <mkdir dir="${classes.dir}"/>
+        <javac srcdir="${source.dir}" destdir="${classes.dir}">
             <classpath refid="libraries.path"/>
         </javac>
     </target>
 
     <target name="jar" depends="compile">
-        <mkdir dir="${jar.dir}"/>
-        <jar destfile="${jar.dir}/${ant.project.name}.jar" basedir="${class.dir}">
+        <mkdir dir="${dist.dir}"/>
+        <jar destfile="${classes.jar}" basedir="${classes.dir}">
         </jar>  
     </target>
     
     <target name="src.zip" description="generate zip of sources">
-		<zip destfile="${src.zip}">
+		<zip destfile="${classes.src.zip}">
 			<fileset dir="${source.dir}" />
 		</zip>
 	</target>
