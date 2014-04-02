@@ -2,6 +2,8 @@ package lejos.ev3.tools;
 
 import javax.swing.table.AbstractTableModel;
 
+import lejos.hardware.BrickInfo;
+
 /**
  * A table model for PC GUI programs.
  * This is used by NXJBrowser and NXJMonitor to allow the user to choose
@@ -24,7 +26,7 @@ public class EV3ConnectionModel extends AbstractTableModel {
    * @param EV3s the EV3Info array
    * @param numEV3s the number of EV3s in the array
    */
-  public EV3ConnectionModel(EV3Info[] EV3s, int numEV3s) {
+  public EV3ConnectionModel(BrickInfo[] EV3s, int numEV3s) {
     setData(EV3s, numEV3s);
   }
 
@@ -34,7 +36,7 @@ public class EV3ConnectionModel extends AbstractTableModel {
    * @param EV3s the EV3Info array
    * @param numEV3s the number of EV3s
    */
-  public void setData(EV3Info[] EV3s, int numEV3s) {
+  public void setData(BrickInfo[] EV3s, int numEV3s) {
     this.numEV3s = numEV3s;
     EV3Data = new Object[numEV3s][NUM_COLUMNS];
 

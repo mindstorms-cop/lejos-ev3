@@ -20,8 +20,6 @@ import java.net.DatagramSocket;
 import java.rmi.Naming;
 import java.rmi.RemoteException;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 
 import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
@@ -50,6 +48,8 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 import javax.swing.table.AbstractTableModel;
 
+import lejos.hardware.BrickFinder;
+import lejos.hardware.BrickInfo;
 import lejos.hardware.Button;
 import lejos.hardware.Key;
 import lejos.hardware.RemoteBTDevice;
@@ -198,10 +198,6 @@ public class EV3Control implements ListSelectionListener, NXTProtocol, ConsoleVi
 	
 	private String[] accessPoints = new String[0];
 	private RemoteBTDevice[] bluetoothDevices = new RemoteBTDevice[0];
-	
-    private static final int DEFAULT_PORT = 3016;
-    private DatagramSocket socket;
-    private DatagramPacket packet;
     
     private UpdateSensors updateSensors;
 
@@ -800,7 +796,7 @@ public class EV3Control implements ListSelectionListener, NXTProtocol, ConsoleVi
 					bluetoothTable.revalidate();
 					
 				} catch (Exception ioe) {
-					showMessage("Failed to get list of Wifi access point");
+					showMessage("Exception during Bluetooth search: " + ioe);
 				}
 			}
 		});
@@ -1414,46 +1410,14 @@ public class EV3Control implements ListSelectionListener, NXTProtocol, ConsoleVi
 		closeAll();
 		clearFiles();
 		updateConnectButton(false);
+		BrickInfo[] devices = null;
 		
-		Map<String,EV3Info> ev3s = new HashMap<String,EV3Info>();
-		
-        try {
-            socket = new DatagramSocket(DEFAULT_PORT);
-            socket.setSoTimeout(2000);
-        } catch( Exception ex ) {
-            showMessage("Failed to create datagram socket");
-            return;
-        }
-        
-        packet = new DatagramPacket (new byte[100], 100);
-
-        long start = System.currentTimeMillis();
-        
-        while ((System.currentTimeMillis() - start) < 2000) {
-            try {
-                socket.receive (packet);
-                String message = new String(packet.getData(), "UTF-8");
-                String ip = packet.getAddress().getHostAddress();
-                //System.out.println("Adding " + ip);
-                ev3s.put(ip, new EV3Info(message.trim(),ip));
-
-            } catch (IOException ie) {
-            	if (ev3s.size() == 0) {
-	                showMessage("No EV3s switched on");
-	                return;
-            	}
-            } finally {
-            	socket.close();
-            }
-        }
-        
-        EV3Info[] devices = new EV3Info[ev3s.size()];
-        int i = 0;
-        for(String ev3: ev3s.keySet()) {
-        	EV3Info info = ev3s.get(ev3);
-        	devices[i++] = info;
-        	//System.out.println("Found " + info.getName() + " " + info.getIPAddress());
-        }
+		try {
+			devices = BrickFinder.discover();
+		} catch (IOException e) {
+			showMessage("No EV3s found");
+			return;
+		}
         
         model = new EV3ConnectionModel(devices, devices.length);
 		ev3Table.setModel(model);
