@@ -420,6 +420,11 @@ public class GraphicStartup implements Menu {
 								reply.value = programName;
 								os.writeObject(reply);
 								break;
+							case SUSPEND:
+								GraphicStartup.this.suspend();
+								break;
+							case RESUME:
+								GraphicStartup.this.resume();
 		            		}
 	            		}
             		
@@ -1379,15 +1384,15 @@ public class GraphicStartup implements Menu {
         do {
         	selection = menu.select(cur, timeout*60000);
         	
-            while (suspend && program != null) {
-            	if (!echoIn.isAlive() && !echoErr.isAlive()) {
+            while (suspend) {
+            	if (program != null && !echoIn.isAlive() && !echoErr.isAlive()) {
             		stopProgram();
             		ind.resume();
             		break;
             	}
                 int b = Button.getButtons(); 
                 if (b == 6) {
-                	stopProgram();
+                	if (program != null) stopProgram();
                 	ind.resume();
                 	break;
                 }
@@ -1437,14 +1442,10 @@ public class GraphicStartup implements Menu {
 	    				System.out.println("Read from fifo: " + c + " " + ((char) c));
 	    				
 	    				if (c == 's') {
-	                    	ind.suspend();
-	                    	lcd.clear();
-	                    	lcd.refresh();
-	                    	lcd.setAutoRefresh(false);
+	                    	GraphicStartup.this.suspend();
 	                    	System.out.println("Menu suspended");
 	    				} else if (c == 'r') {
-	    					lcd.setAutoRefresh(true);
-	                    	ind.resume();
+	    					GraphicStartup.this.resume();
 	                    	System.out.println("Menu resumed");
 	    				}
 	    			}
@@ -1795,5 +1796,19 @@ public class GraphicStartup implements Menu {
 			msg("Tool exception");
 			System.err.println("Exception in execution of tool: " + e);
 		}
+	}
+
+	@Override
+	public void suspend() {
+		ind.suspend();
+		LCD.clearDisplay();
+        suspend = true;
+        curMenu.quit();
+	}
+
+	@Override
+	public void resume() {
+		suspend = false;
+		ind.resume();
 	}
 }
