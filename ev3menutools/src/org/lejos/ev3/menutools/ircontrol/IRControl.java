@@ -114,6 +114,12 @@ public class IRControl {
 						
 			if (Button.ESCAPE.isDown()) keep_looping = false;
 		}
+		
+        ir.close();
+        motorA.close();
+        motorB.close();
+        motorC.close();
+        motorD.close();
 	}
 	
 	/**
