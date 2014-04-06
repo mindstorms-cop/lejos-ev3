@@ -1,4 +1,4 @@
-package org.lejos.ev3.sample.sensortest;
+package org.lejos.ev3.menutools.sensortest;
 import java.lang.reflect.Constructor;
 
 import lejos.utility.TextMenu;
