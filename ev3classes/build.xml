@@ -69,5 +69,5 @@
 		</zip>
 	</target>
 	
-	<target name="pc.files" description="Generate the pc files but do not copy to EV3" depends="jar,src.zip,docs.zip"/>
+	<target name="pc.files" description="Generate the pc files but do not copy to EV3" depends="jar,src.zip"/>
 </project>
