@@ -886,7 +886,7 @@ public class GraphicStartup implements Menu {
     private int getYesNo(String prompt, boolean yes)
     {
 //    	lcd.bitBlt(null, 178, 64, 0, 0, 0, 64, 178, 64, CommonLCD.ROP_CLEAR);
-        GraphicMenu menu = new GraphicMenu(new String[]{"No", "Yes"},new String[]{ICNo,ICYes},5,prompt,4);
+        GraphicMenu menu = new GraphicMenu(new String[]{"No", "Yes"},new String[]{ICNo,ICYes},4,prompt,3);
         return getSelection(menu, yes ? 1 : 0);
     }
     
