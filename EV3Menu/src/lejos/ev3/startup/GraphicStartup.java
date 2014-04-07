@@ -1039,8 +1039,8 @@ public class GraphicStartup implements Menu {
         else
         {
         	selectionAdd = 20;
-        	items = new String[]{"Delete file"};
-        	icons = new String[]{ICDelete};
+        	items = new String[]{"Delete file", "View File"};
+        	icons = new String[]{ICDelete, ICEV3};
         }
         newScreen();
         lcd.drawString("Size:", 0, 2);
@@ -1103,6 +1103,13 @@ public class GraphicStartup implements Menu {
 	            case 20:
 	                file.delete();
 	                break;
+	            case 21:
+					try {
+						Viewer.view(file.getPath());
+					} catch (IOException e) {
+						System.err.println("Exception viewing file");
+					}
+	            	break;
 	        }
         }
     }
