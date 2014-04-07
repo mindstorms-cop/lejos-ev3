@@ -218,12 +218,11 @@ public class EV3ImageMainPanel extends JPanel {
 		BufferedImage image = EV3ImageConverter.nxtImageData2Image(data, w, h);
 		this.readImage(image);
 	}
-	
-	public JMenu modeLabel = new JMenu("Mode: 8 Bit");
 
 	public JMenuBar getMenuBar(final JPanel panel) {
 		JMenu menu;
 		JMenuBar menuBar = new JMenuBar();
+		final JMenu modeLabel = new JMenu("Mode: 8 Bit");
 
 		// image menu
 		menu = new JMenu("Image");
