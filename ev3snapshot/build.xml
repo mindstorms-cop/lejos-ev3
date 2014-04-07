@@ -13,7 +13,6 @@
 		<copy todir="lib">
 			<fileset file="../ev3classes/ev3classes.jar" />
 			<fileset file="../ev3classes/ev3classes-src.zip" />
-			<fileset file="../ev3classes/ev3classes-docs.zip" />
 		</copy>
 		<echo message="*** leaving ev3classes project" />
 	</target>
