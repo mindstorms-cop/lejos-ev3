@@ -22,6 +22,7 @@ import java.rmi.registry.LocateRegistry;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.jar.JarFile;
 
 import lejos.ev3.startup.GraphicListMenu;
 import lejos.ev3.startup.Utils;
@@ -52,6 +53,7 @@ public class GraphicStartup implements Menu {
 	static final int REMOTE_MENU_PORT = 8002;
 	
 	static final String JAVA_RUN_JAR = "jrun -jar ";
+	static final String JAVA_RUN_CP = "jrun -cp ";
 	static final String JAVA_DEBUG_JAR = "jrun -Xdebug -Xrunjdwp:transport=dt_socket,server=y,address=8000,suspend=y -jar ";
 	
 	static final int TYPE_PROGRAM = 0;
@@ -1071,15 +1073,17 @@ public class GraphicStartup implements Menu {
 	                break;
 	            case 1:
 	            	System.out.println("Running with System output to LCD: " + file.getPath());
-	            	PrintStream origOut = System.out, origErr = System.err;
-	            	PrintStream lcdOut = new PrintStream(new LCDOutputStream());
-	            	ind.suspend();
-	            	System.setOut(lcdOut);
-	            	System.setErr(lcdOut);
-	            	exec(JAVA_RUN_JAR + file.getPath(), directory);
-	            	System.setOut(origOut);
-	            	System.setOut(origErr);
-	            	ind.resume();
+					JarFile jar = null;
+					try {
+						jar = new JarFile(file);
+						String mainClass = jar.getManifest().getMainAttributes().getValue("Main-class");
+						jar.close();
+			            ind.suspend();
+			            exec(JAVA_RUN_CP + file.getPath() + " lejos.internal.ev3.EV3Wrapper " + mainClass, directory);
+			            ind.resume();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
 	                break;
 	            case 2:
 	            	System.out.println("Debugging program: " + file.getPath());
@@ -1795,6 +1799,7 @@ public class GraphicStartup implements Menu {
 		} catch (Exception e) {
 			msg("Tool exception");
 			System.err.println("Exception in execution of tool: " + e);
+			e.printStackTrace();
 		}
 	}
 
