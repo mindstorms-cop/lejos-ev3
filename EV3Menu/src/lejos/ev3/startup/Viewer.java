@@ -78,7 +78,7 @@ public class Viewer {
 	
 	private static void display() {
 		lcd.clear();
-		for(int i=0;i<NUM_LINES;i++) {
+		for(int i=0;i<NUM_LINES && startY+i<lines.size();i++) {
 			if (lines.get(startY+i).length() > startX)
 				lcd.drawString(lines.get(startY+i).substring(startX), 0, 3+i);
 		}

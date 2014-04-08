@@ -160,7 +160,7 @@ public class GraphicStartup implements Menu {
     		if (auto.equals("ON") && !Button.LEFT.isDown())
             {
             	System.out.println("Auto executing default program " + f.getPath());
-                exec(JAVA_RUN_JAR + f.getPath(), PROGRAMS_DIRECTORY);
+                exec(f, JAVA_RUN_JAR + f.getPath(), PROGRAMS_DIRECTORY);
             }
     	}
         
@@ -757,7 +757,7 @@ public class GraphicStartup implements Menu {
         {
         	System.out.println("Executing default program " + f.getPath());
         	ind.suspend();
-            exec(JAVA_RUN_JAR + f.getPath(), PROGRAMS_DIRECTORY);
+            exec(f, JAVA_RUN_JAR + f.getPath(), PROGRAMS_DIRECTORY);
         	ind.resume();
         }
     }
@@ -1068,7 +1068,7 @@ public class GraphicStartup implements Menu {
 	            	System.out.println("Running program: " + file.getPath());
 	            	ind.suspend();
 	            	if (type == TYPE_TOOL) execInThisJVM(file);
-	            	else exec(JAVA_RUN_JAR + file.getPath(), directory);
+	            	else exec(file, JAVA_RUN_JAR + file.getPath(), directory);
 	            	ind.resume();
 	                break;
 	            case 1:
@@ -1079,7 +1079,7 @@ public class GraphicStartup implements Menu {
 						String mainClass = jar.getManifest().getMainAttributes().getValue("Main-class");
 						jar.close();
 			            ind.suspend();
-			            exec(JAVA_RUN_CP + file.getPath() + " lejos.internal.ev3.EV3Wrapper " + mainClass, directory);
+			            exec(file, JAVA_RUN_CP + file.getPath() + " lejos.internal.ev3.EV3Wrapper " + mainClass, directory);
 			            ind.resume();
 					} catch (IOException e) {
 						e.printStackTrace();
@@ -1088,7 +1088,7 @@ public class GraphicStartup implements Menu {
 	            case 2:
 	            	System.out.println("Debugging program: " + file.getPath());
 	            	ind.suspend();
-	            	exec(JAVA_DEBUG_JAR + file.getPath(), directory);
+	            	exec(file, JAVA_DEBUG_JAR + file.getPath(), directory);
 	            	ind.resume();
 	                break;
 	            case 3:
@@ -1117,24 +1117,24 @@ public class GraphicStartup implements Menu {
     /**
      * Execute a program and display its output to System.out and error stream to System.err
      */
-    private static void exec(String programName, String directory) {
+    private static void exec(File jar, String command, String directory) {
         try {
-        	GraphicStartup.programName = programName;
+        	if (jar != null) programName = jar.getName().replace(".jar", "");
         	lcd.clear();
         	lcd.refresh();
         	lcd.setAutoRefresh(false);
 
-            program = new ProcessBuilder(programName.split(" ")).directory(new File(directory)).start();
+            program = new ProcessBuilder(command.split(" ")).directory(new File(directory)).start();
             BufferedReader input = new BufferedReader(new InputStreamReader(program.getInputStream()));
             BufferedReader err= new BufferedReader(new InputStreamReader(program.getErrorStream()));
             
-            echoIn = new EchoThread(input, System.out);
-            echoErr = new EchoThread(err, System.err);
+            echoIn = new EchoThread(jar.getPath().replace(".jar", ".out"),input, System.out);
+            echoErr = new EchoThread(jar.getPath().replace(".jar", ".err"), err, System.err);
             
-            echoIn.start();
+            echoIn.start(); 
             echoErr.start();
             
-        	System.out.println("Executing " + programName + " in " + directory);
+        	System.out.println("Executing " + command + " in " + directory);
             
             while(true) {
               int b = Button.getButtons(); 
@@ -1166,30 +1166,31 @@ public class GraphicStartup implements Menu {
     /**
      * Execute a program and display its output to System.out and error stream to System.err
      */
-    private static void startProgram(String programName) {
+    private static void startProgram(String command) {
         try {
         	if (program != null) return;
-        	GraphicStartup.programName = programName;
         	lcd.clear();
         	lcd.refresh();
         	lcd.setAutoRefresh(false);
         	
-        	String[] args = programName.split(" ");
+        	String[] args = command.split(" ");
         	File f = new File(args[args.length-1]);
         	File directory = f.getParentFile();
+        	
+        	programName = f.getName().replace(".jar", "");
         	
             program = new ProcessBuilder(args).directory(directory).start();
             
             BufferedReader input = new BufferedReader(new InputStreamReader(program.getInputStream()));
             BufferedReader err= new BufferedReader(new InputStreamReader(program.getErrorStream()));
             
-            echoIn = new EchoThread(input, System.out);
-            echoErr = new EchoThread(err, System.err);
+            echoIn = new EchoThread(f.getPath().replace(".jar",".out"), input, System.out);
+            echoErr = new EchoThread(f.getPath().replace(".jar",".err"), err, System.err);
             
             echoIn.start();
             echoErr.start();
             
-        	System.out.println("Executing " + programName + " in " + directory);
+        	System.out.println("Executing " + command + " in " + directory);
         	
             suspend = true;
             curMenu.quit(); // Quit the current menu and go into the suspend loop
@@ -1763,8 +1764,8 @@ public class GraphicStartup implements Menu {
             BufferedReader err= new BufferedReader(new InputStreamReader(p.getErrorStream()));
             PrintStream lcdStream = new PrintStream(new LCDOutputStream());
             
-            EchoThread echoIn = new EchoThread(input, lcdStream);
-            EchoThread echoErr = new EchoThread(err, lcdStream);
+            EchoThread echoIn = new EchoThread(null, input, lcdStream);
+            EchoThread echoErr = new EchoThread(null, err, lcdStream);
             
             ind.suspend();
             lcd.clear();
