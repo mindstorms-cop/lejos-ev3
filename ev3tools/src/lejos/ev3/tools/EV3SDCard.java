@@ -23,31 +23,51 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JProgressBar;
 import javax.swing.JTextField;
+import javax.swing.SwingWorker;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileSystemView;
 
 public class EV3SDCard extends JFrame {
 	private static final long serialVersionUID = 2112749235155851987L;
 	private static String[] drives = new String[0];
+	private JComboBox<String> driveDropdown;
 	private static File[] roots = new File[0];
 	private URI uri;
 	private File zipFile, jreFile;
 	private JLabel cardDescription = new JLabel();
-
+	private JProgressBar progressBar = new JProgressBar();
+	private static int FILES_TO_COPY = 15; // For progress bar. Total files, directories unzipped or copied.
+	private JButton exitButton = new JButton("Exit");
+		
 	public int run () {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setTitle("EV3 SD Card creator");
+		setTitle("EV3 SD Card Creator");
 		setPreferredSize(new Dimension(500, 300));
 		
 		getCandidateDrives();
 
+		JButton refreshButton = new JButton("Refresh");
+		
+		refreshButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				getCandidateDrives();
+				driveDropdown.removeAllItems();
+				for(String drive: drives) {
+					driveDropdown.addItem(drive);
+				}
+			}		
+		});
+		
 		// Drive panel
 		JPanel drivePanel = new JPanel();
 		JLabel driveLabel = new JLabel("Select SD drive: ");
-		final JComboBox<String> driveDropdown = new JComboBox<String>(drives);
 		drivePanel.add(driveLabel);
+		driveDropdown = new JComboBox<String>(drives);
 		drivePanel.add(driveDropdown);
+		drivePanel.add(refreshButton);
 		drivePanel.setBorder(BorderFactory.createEtchedBorder());
 		getContentPane().add(drivePanel, BorderLayout.PAGE_START);
 
@@ -134,7 +154,11 @@ public class EV3SDCard extends JFrame {
 		});
 
 		filesPanel.add(getJREButton);
-
+		
+		progressBar.setMaximum(FILES_TO_COPY);
+		progressBar.setStringPainted(true);
+		filesPanel.add(progressBar, BorderLayout.LINE_END);		
+		
 		filesPanel.setBorder(BorderFactory.createEtchedBorder());
 		getContentPane().add(filesPanel, BorderLayout.CENTER);
 
@@ -142,23 +166,8 @@ public class EV3SDCard extends JFrame {
 		
 		JButton createButton = new JButton("Create");
 		
-		JButton refreshButton = new JButton("Refresh");
-		
-		refreshButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent arg0) {
-				getCandidateDrives();
-				driveDropdown.removeAllItems();
-				for(String drive: drives) {
-					driveDropdown.addItem(drive);
-				}
-			}		
-		});
-		
-		JButton exitButton = new JButton("Exit");
 		buttonPanel.add(cardDescription);
 		buttonPanel.add(createButton);
-		buttonPanel.add(refreshButton);
 		buttonPanel.add(exitButton);
 		buttonPanel.setBorder(BorderFactory.createEtchedBorder());
 		getContentPane().add(buttonPanel, BorderLayout.PAGE_END);
@@ -204,59 +213,81 @@ public class EV3SDCard extends JFrame {
 			}
 		});
 		
-		createButton.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				if (drives.length == 0) {
-					showMessage("No SD drive selected");
-					return;
-				}
-				
-				File r = roots[driveDropdown.getSelectedIndex()];
-				long space =  r.getTotalSpace() / (1024*1024);
-				File[] files = r.listFiles();
-				
-				System.out.println("Directory is " + r.getPath());
-				System.out.println("Space on drive is " + space  + "Mb");
-				
-				if (space < 400) {
-					showMessage("Insufficient space on drive");
-					return;
-				} else if (files.length > 0) {
-					showMessage("Drive is not empty");
-					return;
-				} else if (zipFile == null || !zipFile.exists()) {
-					showMessage("Zip file not selected");
-					return;
-				} else if (jreFile == null || !jreFile.exists()) {
-					showMessage("JRE file not selected");
-					return;
-				}
-				
-				// Unzip the leJos image to the drive
-				System.out.println("Unzipping " + zipFile.getPath() + " to " + r.getPath());
-				unZip(zipFile.getPath(), r.getPath());
-				
-				// Copy the Oracle JRE
-				System.out.println("Copying " + jreFile.getPath() + " to " + r.getPath());
-				try {
-					copyFile(jreFile, new File(r.getPath() + jreFile.getName()));
-				} catch (IOException e1) {
-					showMessage("Failed to copy the Oracle JRE: " + e1);
-				}
-				
-				showMessage("SD card created. Now safely eject it.");
-			}			
-		});
-
+		createButton.addActionListener(new FileTransfer());
 		pack();
 		setVisible(true);
 		
 		return 0;
 	}
 	
+	private class FileTransfer extends SwingWorker<Void, Void> implements ActionListener {
+		
+		public Void doInBackground() {
+			exitButton.setEnabled(false);
+			
+			if (drives.length == 0) {
+				showMessage("No SD drive selected");
+				exitButton.setEnabled(true);
+				return null;
+			}
+			
+			File r = roots[driveDropdown.getSelectedIndex()];
+			long space =  r.getTotalSpace() / (1024*1024);
+			File[] files = r.listFiles();
+			
+			System.out.println("Directory is " + r.getPath());
+			System.out.println("Space on drive is " + space  + "Mb");
+			
+			if (space < 400) {
+				showMessage("Insufficient space on drive");
+				exitButton.setEnabled(true);
+				return null;
+			} else if (zipFile == null || !zipFile.exists()) {
+				showMessage("Zip file not selected");
+				exitButton.setEnabled(true);
+				return null;
+			} else if (jreFile == null || !jreFile.exists()) {
+				showMessage("JRE file not selected");
+				exitButton.setEnabled(true);
+				return null;
+			} else if (files.length > 0) {
+				String message ="Drive is not empty, files might be overwritten. Do you want to continue?";
+				if (showConfirm(message) == JOptionPane.CANCEL_OPTION) {
+					exitButton.setEnabled(true);
+					return null;
+				}
+			} 
+			
+			// Unzip the leJos image to the drive
+			System.out.println("Unzipping " + zipFile.getPath() + " to " + r.getPath());
+			unZip(zipFile.getPath(), r.getPath());
+			
+			// Copy the Oracle JRE
+			System.out.println("Copying " + jreFile.getPath() + " to " + r.getPath());
+			try {
+				copyFile(jreFile, new File(r.getPath() + jreFile.getName()));
+				progressBar.setValue(progressBar.getValue()+1);
+			} catch (IOException e1) {
+				showMessage("Failed to copy the Oracle JRE: " + e1);
+			}
+			
+			showMessage("SD card created. Now safely eject it, then insert it into \nthe EV3 and power on the brick to continue install.");
+			
+			exitButton.setEnabled(true);
+			return null;
+		}
+		
+		public void actionPerformed(ActionEvent e) {
+			this.execute();
+		}
+	}
+	
 	private void showMessage(String msg) {
 		JOptionPane.showMessageDialog(this, msg);
+	}
+	
+	private int showConfirm(String msg) {
+		return JOptionPane.showConfirmDialog(this, msg, "Select an Option", JOptionPane.OK_CANCEL_OPTION);
 	}
 	
 	private void getCandidateDrives() {
@@ -344,7 +375,8 @@ public class EV3SDCard extends JFrame {
 					}
 					fos.close();	
 				}
-				
+				progressBar.setValue(progressBar.getValue()+1);
+				progressBar.setString((int)(progressBar.getPercentComplete()*100) + "%");
 				ze = zis.getNextEntry();
 			}
 
