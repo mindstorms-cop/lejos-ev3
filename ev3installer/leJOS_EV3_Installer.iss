@@ -89,6 +89,9 @@ Root: HKCU; Subkey: "Environment"; ValueType: none; ValueName: "LEJOS_EV3_JAVA_H
 ; Not using the nowait flag also makes sure that the batch file can be deleted successfully.
 WorkingDir: "{app}"; Filename: "{app}\startEV3SDcard.bat"; Parameters: "{code:JDKSelect_GetSelectionQuoted}"; Description: "{cm:LaunchProgram}"; Flags: postinstall skipifsilent runhidden
 
+[Messages]
+FinishedLabel=Setup has finished installing [name] on your computer. The application may be launched by selecting the installed icons. See the leJOS Wiki for how to install the Eclipse plugin and develop programs.
+ClickFinish=Insert your SD card into the SD card reader and click Finish to exit Setup and run the EV3SDCard utility.
 
 #include "include\Tools.iss"
 #include "include\ModPath.iss"
