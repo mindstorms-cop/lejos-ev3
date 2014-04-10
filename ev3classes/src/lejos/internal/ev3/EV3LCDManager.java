@@ -119,6 +119,7 @@ public class EV3LCDManager
         public void setAutoRefresh(boolean refresh)
         {
             this.autoRefresh = refresh;
+            localLCDManager.buildVisibleList();
         }
 
         /**
