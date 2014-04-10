@@ -7,7 +7,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
-import lejos.hardware.BrickFinder;
 import lejos.hardware.Button;
 import lejos.hardware.Keys;
 import lejos.hardware.Sound;
@@ -98,7 +97,7 @@ public class EV3Wrapper implements UncaughtExceptionHandler {
     		lcd.clear();
     		lcd.drawString("Uncaught exception:", offset, 0);
     		lcd.drawString(t.getClass().getName(), offset, 2);
-    		lcd.drawString(t.getMessage(), offset, 3);		
+    		if (t.getMessage() != null) lcd.drawString(t.getMessage(), offset, 3);		
     		
     		if (t.getCause() != null) {
     			lcd.drawString("Caused by:", offset, 5);
