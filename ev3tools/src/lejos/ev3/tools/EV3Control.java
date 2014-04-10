@@ -15,8 +15,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
 import java.rmi.Naming;
 import java.rmi.RemoteException;
 import java.util.Collection;
