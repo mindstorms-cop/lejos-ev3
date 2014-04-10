@@ -29,6 +29,7 @@ import lejos.ev3.startup.Utils;
 import lejos.utility.Delay;
 import lejos.ev3.startup.Config;
 import lejos.hardware.Bluetooth;
+import lejos.hardware.BrickFinder;
 import lejos.hardware.Button;
 import lejos.hardware.LocalBTDevice;
 import lejos.hardware.LocalWifiDevice;
@@ -36,11 +37,13 @@ import lejos.hardware.RemoteBTDevice;
 import lejos.hardware.Sound;
 import lejos.hardware.Wifi;
 import lejos.hardware.ev3.LocalEV3;
+import lejos.hardware.lcd.Font;
 import lejos.hardware.lcd.LCD;
 import lejos.hardware.lcd.LCDOutputStream;
 import lejos.hardware.lcd.TextLCD;
 import lejos.hardware.port.Port;
 import lejos.hardware.port.TachoMotorPort;
+import lejos.internal.ev3.EV3TextLCD;
 import lejos.internal.io.Settings;
 import lejos.internal.io.SystemSettings;
 import lejos.remote.ev3.Menu;
@@ -1123,6 +1126,23 @@ public class GraphicStartup implements Menu {
     }
     
     /**
+     * Present the menu for a menu tool.
+     * @param file
+     */
+    private void toolMenu(File file)
+    {
+        String fileName = file.getName();
+        String ext = Utils.getExtension(fileName);
+        if (ext.equals("jar"))
+        {
+        	ind.suspend();
+    		execInThisJVM(file);
+    		ind.resume();
+        }
+    }
+
+    
+    /**
      * Execute a program and display its output to System.out and error stream to System.err
      */
     private static void exec(File jar, String command, String directory) {
@@ -1303,7 +1323,7 @@ public class GraphicStartup implements Menu {
             menu.setItems(fileNames,icons);
             selection = getSelection(menu, selection);
             if (selection >= 0)
-                fileMenu(files[selection], TYPE_TOOL);
+                toolMenu(files[selection]);
         } while (selection >= 0);
     }
     
@@ -1845,10 +1865,41 @@ public class GraphicStartup implements Menu {
 			LCD.clearDisplay();
 			new JarMain(jar);
 		} catch (Exception e) {
-			msg("Tool exception");
+			toolException(e);
 			System.err.println("Exception in execution of tool: " + e);
 			e.printStackTrace();
 		}
+	}
+	
+	private void toolException(Throwable t) {
+		Sound.buzz();
+	    TextLCD lcd = BrickFinder.getDefault().getTextLCD(Font.getSmallFont());
+		int offset = 0;
+		// Get rid of invocation exception
+		if (t.getCause() != null) t = t.getCause();
+	    while (true)
+	    {
+    		lcd.clear();
+    		lcd.drawString("Tool exception:", offset, 1);
+    		lcd.drawString(t.getClass().getName(), offset, 3);
+    		if (t.getMessage() != null) lcd.drawString(t.getMessage(), offset, 4);		
+    		
+    		if (t.getCause() != null) {
+    			lcd.drawString("Caused by:", offset, 5);
+    			lcd.drawString(t.getCause().toString(), offset, 6);
+    		}
+    		
+    		StackTraceElement[] trace = t.getStackTrace();
+    		for(int i=0;i<7 && i < trace.length ;i++) lcd.drawString(trace[i].toString(), offset, 8+i);
+    		
+    		lcd.refresh();
+    		int id = Button.waitForAnyEvent();
+    		if (id == Button.ID_ESCAPE) break;
+    		if (id == Button.ID_LEFT) offset += 5;
+    		if (id == Button.ID_RIGHT)offset -= 5;
+    		if (offset > 0) offset = 0;
+	    }
+	    lcd.clear();
 	}
 
 	@Override
