@@ -28,13 +28,12 @@ public class GraphicListMenu extends GraphicMenu {
 	protected void display(int selectedIndex, int animateDirection, int tick)
 	{
 		if(_title != null) {
-			//System.out.println("Displaying title " + _title + " on line " + (_topRow - 1));
 			lcd.drawString(_title, 0, _topRow - 1);
 		}
 			
 		int max = _topRow + _height;
 		for (int i = _topRow; i < max; i++){
-			lcd.drawString(BLANK, 0, i);
+			lcd.clear(i);
 			int idx = i - _topRow + _topIndex;
 			if (idx >= 0 && idx < _length){
 				lcd.drawChar(idx == selectedIndex ? SEL_CHAR : ' ', 0, i);
@@ -43,11 +42,13 @@ public class GraphicListMenu extends GraphicMenu {
 		}
 		lcd.refresh();
 	}
+	
 	@Override
 	public void clearArea(){
+		// TODO : Check what this is for
 		lcd.bitBlt(null, 30, 100, 0, 0, 0, 16, 30, 100, CommonLCD.ROP_CLEAR);
 	}
 	
 	@Override
-	protected boolean get2IconMode(){return true;} // Wrap With 2 Icons
+	protected boolean get2IconMode() {return true;} // Wrap With 2 Icons
 }
