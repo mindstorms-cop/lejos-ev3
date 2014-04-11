@@ -6,18 +6,23 @@ import lejos.hardware.lcd.*;
 import lejos.hardware.motor.NXTMotor;
 import lejos.hardware.port.*;
 import lejos.hardware.sensor.EV3IRSensor;
+import lejos.hardware.sensor.EV3SensorConstants;
 import lejos.utility.Delay;
 
 public class IRControl {
 
 	protected GraphicsLCD g = LocalEV3.get().getGraphicsLCD();
-	private EV3IRSensor ir = new EV3IRSensor(SensorPort.S4);
+	private EV3IRSensor ir;
+	
 	// Unregulated motors:
 	private NXTMotor motorA = new NXTMotor(MotorPort.A);
 	private NXTMotor motorB = new NXTMotor(MotorPort.B);
 	private NXTMotor motorC = new NXTMotor(MotorPort.C);
 	private NXTMotor motorD = new NXTMotor(MotorPort.D);
 	
+	// Will autodetect port with IR sensor
+	Port [] sensorPorts = {SensorPort.S1, SensorPort.S2,SensorPort.S3, SensorPort.S4}; 
+		
 	// GLOBAL GUI WIDGET PARAMETERS:
 	int width = 20; // width of each button and spacer
 	int height = 32; // height of buttons
@@ -29,9 +34,14 @@ public class IRControl {
 	int circleY = b_top_y + 10;
 	
 	public static void main(String[] args) {
-		Sound.beep();
+		
+		LCD.drawString("Wait...", 0, 0);
+		LCD.refresh();
 		
 		IRControl tool = new IRControl();
+		Sound.beep();
+		tool.g.setAutoRefresh(false); // TODO: RELOCATE
+		tool.autodetectIRSensor();
 		tool.initScreen();
         tool.monitorIR();
 		
@@ -44,73 +54,77 @@ public class IRControl {
 	public void monitorIR() {
 
 		boolean keep_looping = true;
-		int old_val_1 = 0;
-		int old_val_2 = 0;
-		int old_val_3 = 0;
-		int old_val_4 = 0;
+		int previous_command = 0;
+		int channel = 0;
+		NXTMotor currentLeft = motorB;
+		NXTMotor currentRight = motorC;
 		
 		while(keep_looping) {
-			Delay.msDelay(100);
+			Delay.msDelay(25);
 			
-			int channel1 = ir.getRemoteCommand(0);
-			if(channel1 != old_val_1) {
-				// TODO: Use binary math to allow buttons held at same time?
-				switch (channel1) {
-					case 0:	motorB.setPower(0);
-							motorC.setPower(0);
-							break;
-					case 1:	motorB.forward();
-							motorB.setPower(100);
-							break;
-					case 2:	motorB.backward();
-							motorB.setPower(100);
-							break;
-					case 3:	motorC.forward();
-							motorC.setPower(100);
-							break;
-					case 4:	motorC.backward();
-							motorC.setPower(100);
-							break;
+			// Get the IR commands
+			byte [] cmds = new byte[4];
+			ir.getRemoteCommands(cmds, 0, cmds.length);
+			
+			// Figure out which channel is active:
+			int command = 0;
+			for(int i=0;i<4;i++) {
+				if(cmds[i] > 0) {
+					channel = i;
+					command = cmds[i];
 				}
-				// Redraw old and new buttons:
-				redrawButtons(channel1, old_val_1);
-				old_val_1 = channel1;
+			}
+			
+			// Make motor and GUI changes according to active channel:
+			if(channel == 0) {
+				currentLeft = motorB;
+				currentRight = motorC;
 				drawChannelCircle(circleX, circleY, '1');
 				redrawMotors("B", "C");
-				continue;
-			}
-			
-			int channel2 = ir.getRemoteCommand(1);
-			if(channel2 != old_val_2) {
-				switch (channel2) {
-					case 0:	motorA.setPower(0);
-							motorD.setPower(0);
-							break;
-					case 1:	
-							motorA.forward();
-							motorA.setPower(100);
-							break;
-					case 2:	motorA.backward();
-							motorA.setPower(100);
-							break;
-					case 3:
-							motorD.forward();
-							motorD.setPower(100);
-							break;
-					case 4:	motorD.backward();
-							motorD.setPower(100);
-							break;
-				}
-				// Redraw old and new buttons:
-				redrawButtons(channel2, old_val_2);
-				old_val_2 = channel2;
+			} 
+			else if(channel == 1) {
+				currentLeft = motorA;
+				currentRight = motorD;
 				drawChannelCircle(circleX, circleY, '2');
-				redrawMotors("A", "D");
-				continue;
+				redrawMotors("A", "D");				
 			}
 			
-			int channel3 = ir.getRemoteCommand(2);
-			int channel4 = ir.getRemoteCommand(3);
+			if(command != previous_command) {
+				//NOTE: 10 means top-left and bottom-left. (11 too) Cancels out:
+				if(command==0|command==3|command==4|command==10) {// left buttons not pressed
+					currentLeft.setPower(0);
+					redrawButton(1, false);
+					redrawButton(2, false);
+				}
+				if(command==0|command==1|command==2|command==11) {// right buttons not pressed
+					currentRight.setPower(0);
+					redrawButton(3, false);
+					redrawButton(4, false);
+				}
+				if(command==1|command==5|command==6) { // upper-left
+					currentLeft.forward();
+					currentLeft.setPower(100);
+					redrawButton(1, true);
+				}
+				if(command==2|command==7|command==8) { // lower-left
+					currentLeft.backward();
+					currentLeft.setPower(100);
+					redrawButton(2, true);
+				}
+				if(command==3|command==5|command==7) { // upper-right
+					currentRight.forward();
+					currentRight.setPower(100);
+					redrawButton(3, true);
+				}
+				if(command==4|command==6|command==8) { // lower-right
+					currentRight.backward();
+					currentRight.setPower(100);
+					redrawButton(4, true);
+				}
+				previous_command = command;
+				g.refresh();
+				
+			}
 						
 			if (Button.ESCAPE.isDown()) keep_looping = false;
 		}
@@ -120,6 +134,49 @@ public class IRControl {
         motorB.close();
         motorC.close();
         motorD.close();
+	}
+
+	public void autodetectIRSensor() {
+		int irPort;
+		do {
+			irPort = detectIRSensorPort();
+			if(irPort >= 0) {
+				LCD.drawString("Detected port " + (irPort+1), 0, 4);
+				LCD.refresh();
+				ir = new EV3IRSensor(sensorPorts[irPort]);
+			} 
+			else {
+				LCD.drawString("Plug IR sensor", 0, 0);
+				LCD.drawString("into any port", 0, 1);
+				LCD.drawString("ENTER+DOWN Quits", 0, 3);
+				LCD.refresh();
+			}
+				
+		} while(irPort < 0);
+		g.clear(); // Clears previous messages
+	}
+	
+	private int detectIRSensorPort() {
+		int detectedPort = -99;
+		for(int i=0;i<4;i++) {
+			int portType = sensorPorts[i].getPortType();
+			// Check if we have a UART sensor
+			if(portType == EV3SensorConstants.CONN_INPUT_UART) {
+				UARTPort u = sensorPorts[i].open(UARTPort.class);
+                // Set mode 0 to activate the sensor
+                u.setMode(0);
+                String modeName = u.getModeName(0);
+                // Copy with any null terminators in name (in case bug not fixed)
+                if (modeName.indexOf(0) >= 0)modeName = modeName.substring(0, modeName.indexOf(0));
+                //System.out.println("Uart sensor: " + modeName);
+                u.close();
+				if(modeName.equals("IR-PROX"))
+					detectedPort = i;
+			}
+			
+		}
+		
+		return detectedPort;
 	}
 	
 	/**
@@ -133,27 +190,32 @@ public class IRControl {
 		redrawMotors("B", "C");
 		
 		// Center IR Port message near bottom:
+		/*
+		g.setFont(Font.getSmallFont()); // can also get specific size using Font.getFont()
 		String ir_str ="IR Sensor in Port 4";
 		int str_width = Font.getSmallFont().stringWidth(ir_str);
 		int box_border = 4; // spacing for rectangles drawn around text
-		g.setFont(Font.getSmallFont()); // can also get specific size using Font.getFont()
 		int str_x_offset = LCD.SCREEN_WIDTH/2 - str_width/2;
 		int str_y_offset = LCD.SCREEN_HEIGHT - Font.getSmallFont().getHeight() - box_border*2;
 		g.drawString(ir_str, str_x_offset, str_y_offset, 0);
 		
 		// Draw box around IR port message:
 		g.drawRect(str_x_offset - box_border, str_y_offset - box_border, str_width + box_border*2, Font.getSmallFont().getHeight() + box_border*2);
+		*/
 		
 		// Quit indicator:
+		g.setFont(Font.getSmallFont()); // can also get specific size using Font.getFont()
 		int y_quit = b_top_y * 2 + Font.getLargeFont().height;
 		int width_quit = 45;
 		int height_quit = width_quit/2;
+		int arc_diam = 6;
 		g.drawString("QUIT", 7, y_quit+7, 0);
 		g.drawLine(0, y_quit,  45, y_quit); // top line
-		g.drawLine(0, y_quit,  0, y_quit+height_quit); // left line
+		g.drawLine(0, y_quit,  0, y_quit+height_quit-arc_diam/2); // left line
 		g.drawLine(width_quit, y_quit,  width_quit, y_quit+height_quit/2); // right line
-		g.drawLine(0, y_quit+height_quit,  width_quit-10, y_quit+height_quit); // bottom line
+		g.drawLine(0+arc_diam/2, y_quit+height_quit,  width_quit-10, y_quit+height_quit); // bottom line
 		g.drawLine(width_quit-10, y_quit+height_quit, width_quit, y_quit+height_quit/2); // diagonal
+		g.drawArc(0, y_quit+height_quit-arc_diam, arc_diam, arc_diam, 180, 90);
 		
 		// Draw top 2 buttons:
 		drawButton(b_left_x, b_top_y, width, height);
@@ -169,6 +231,8 @@ public class IRControl {
 		
 		// Draw Middle Circle with Number:
 		drawChannelCircle(circleX, circleY, '1');
+		
+		g.refresh();
 	}
 	
 	public void redrawMotors(String first, String second) {
@@ -192,6 +256,7 @@ public class IRControl {
 	}
 	
 	public void redrawButton(int button, boolean filled) {
+		
 		if(button == 0) return;
 		int x = b_left_x;
 		int y = b_top_y;
