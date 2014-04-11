@@ -48,11 +48,6 @@ public class TextMenu
 	protected static final char SEL_CHAR = '>';
 	
 	/**
-	 * a blank line
-	 */
-	public static final String BLANK = "                ";
-	
-	/**
 	 * boolean to cause select to quit 
 	 */
 	protected boolean _quit = false;
@@ -253,7 +248,7 @@ public class TextMenu
 		int max = _topRow + _height;
 		for (int i = _topRow; i < max; i++)
 		{
-			lcd.drawString(BLANK, 0, i);
+			lcd.clear(i);
 			int idx = i - _topRow + topIndex;
 			if (idx >= 0 && idx < _length)
 			{
