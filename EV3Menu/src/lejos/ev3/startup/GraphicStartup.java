@@ -53,9 +53,7 @@ import lejos.remote.ev3.RMIRemoteEV3;
 public class GraphicStartup implements Menu {
 	private static final int REMOTE_MENU_PORT = 8002;
 	
-	private static final String JAVA_RUN_JAR = "jrun -jar ";
 	private static final String JAVA_RUN_CP = "jrun -cp ";
-	private static final String JAVA_DEBUG_JAR = "jrun -Xdebug -Xrunjdwp:transport=dt_socket,server=y,address=8000,suspend=y -jar ";
 	private static final String JAVA_DEBUG_CP = "jrun -Xdebug -Xrunjdwp:transport=dt_socket,server=y,address=8000,suspend=y -cp ";
 	
 	private static final int TYPE_PROGRAM = 0;
@@ -140,6 +138,7 @@ public class GraphicStartup implements Menu {
      * Main method
      */
 	public static void main(String[] args) throws Exception {
+		Thread.setDefaultUncaughtExceptionHandler(new ExceptionHandler());
 		System.out.println("Menu started");
 		
         if (args.length > 0) {    	
