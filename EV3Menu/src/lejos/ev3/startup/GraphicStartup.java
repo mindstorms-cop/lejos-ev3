@@ -154,14 +154,21 @@ public class GraphicStartup implements Menu {
         System.out.println("Version: " + version);
         
         // Check for autorun
-    	File f = getDefaultProgram();
-    	if (f != null)
+    	File file = getDefaultProgram();
+    	if (file != null)
     	{
         	String auto = Settings.getProperty(defaultProgramAutoRunProperty, "");        	
     		if (auto.equals("ON") && !Button.LEFT.isDown())
             {
-            	System.out.println("Auto executing default program " + f.getPath());
-                exec(f, JAVA_RUN_JAR + f.getPath(), PROGRAMS_DIRECTORY);
+            	System.out.println("Auto executing default program " + file.getPath());
+				try {
+					JarFile jar = new JarFile(file);
+					String mainClass = jar.getManifest().getMainAttributes().getValue("Main-class");
+					jar.close();
+		            exec(file, JAVA_RUN_CP + file.getPath() + " lejos.internal.ev3.EV3Wrapper " + mainClass, PROGRAMS_DIRECTORY);
+				} catch (IOException e) {
+					System.err.println("Exception running program");
+				}
             }
     	}
         
@@ -749,16 +756,23 @@ public class GraphicStartup implements Menu {
      */
     private void mainRunDefault()
     {
-    	File f = getDefaultProgram();
-        if (f == null)
+    	File file = getDefaultProgram();
+        if (file == null)
         {
        		msg("No default set");
         }
         else
         {
-        	System.out.println("Executing default program " + f.getPath());
+        	System.out.println("Executing default program " + file.getPath());
         	ind.suspend();
-            exec(f, JAVA_RUN_JAR + f.getPath(), PROGRAMS_DIRECTORY);
+			try {
+				JarFile jar = new JarFile(file);
+				String mainClass = jar.getManifest().getMainAttributes().getValue("Main-class");
+				jar.close();
+	            exec(file, JAVA_RUN_CP + file.getPath() + " lejos.internal.ev3.EV3Wrapper " + mainClass, PROGRAMS_DIRECTORY);
+			} catch (IOException e) {
+				System.err.println("Exception running program");
+			}
         	ind.resume();
         }
     }
