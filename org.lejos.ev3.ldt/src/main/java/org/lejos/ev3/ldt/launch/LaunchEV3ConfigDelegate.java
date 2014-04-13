@@ -119,7 +119,6 @@ public class LaunchEV3ConfigDelegate extends AbstractJavaLaunchConfigurationDele
 			
 			LeJOSEV3Util.message("Jar file has been created successfully");
 				
-			LeJOSEV3Util.message("Uploading ...");
 			monitor.subTask("Uploading ...");
 			
 			String brickName = resolve(p, config, LaunchConstants.KEY_TARGET_USE_DEFAULTS,
@@ -149,6 +148,8 @@ public class LaunchEV3ConfigDelegate extends AbstractJavaLaunchConfigurationDele
 				if (debugMode) {
 					new Thread(new DebugStarter(launch, brickName, simpleName)).start();
 				}
+				
+				LeJOSEV3Util.message("Uploading to " + brickName + " ...");
 				int r = starter.invokeTool(LeJOSEV3Util.TOOL_EV3SCPUPLOAD, args);
 					
 				if (r == 0)
@@ -176,6 +177,9 @@ public class LaunchEV3ConfigDelegate extends AbstractJavaLaunchConfigurationDele
 				byte[] data = new byte[(int)f.length()];
 			    in.read(data);
 			    in.close();
+			    
+				LeJOSEV3Util.message("Uploading to " + brickName + " ...");
+				
 			    menu.uploadFile("/home/lejos/programs/" + binary.getProjectRelativePath().toPortableString(), data);
 			    
 			    LeJOSEV3Util.message("Program has been uploaded");
