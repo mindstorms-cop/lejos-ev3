@@ -75,6 +75,8 @@ public class LaunchEV3ConfigDelegate extends AbstractJavaLaunchConfigurationDele
 		
 		boolean useSsh = p.getBoolean(org.lejos.ev3.ldt.preferences.PreferenceConstants.KEY_SSH_SCP, false);
 		
+		boolean namedBrick = p.getBoolean(org.lejos.ev3.ldt.preferences.PreferenceConstants.KEY_TARGET_CONNECT_BY_NAME, false);
+		
 		boolean debugMode = (ILaunchManager.DEBUG_MODE.equals(mode));
 		
 		if (monitor.isCanceled())
@@ -156,35 +158,39 @@ public class LaunchEV3ConfigDelegate extends AbstractJavaLaunchConfigurationDele
 			} else {
 				LeJOSEV3Util.message("Using the EV3 menu for upload and to execute program");
 				
-				// TODO : case where a specific brick is specified
-				BrickInfo[] bricks = Discover.discover();
-				
-				if (bricks.length ==  0) {
-					LeJOSEV3Util.error("No EV3 Found");					
-				} else {	
-					brickName = bricks[0].getIPAddress();
-					RMIMenu menu = (RMIMenu)Naming.lookup("//" + brickName + "/RemoteMenu");
-					File f = new File(binaryPath);
-					FileInputStream in = new FileInputStream(f);
-					byte[] data = new byte[(int)f.length()];
-				    in.read(data);
-				    in.close();
-				    menu.uploadFile("/home/lejos/programs/" + binary.getProjectRelativePath().toPortableString(), data);
-				    
-				    LeJOSEV3Util.message("Program has been uploaded");
-				    
-				    if (run) {
-				    	if (debugMode) {
-				    		LeJOSEV3Util.message("Starting program in debug mode ...");
-				    		new Thread(new DebugStarter(launch, brickName, simpleName)).start();
-				    		menu.debugProgram(binary.getProjectRelativePath().toPortableString().replace(".jar", ""));
-				    	}
-				    	else {
-				    		LeJOSEV3Util.message("Running program ...");
-				    		menu.runProgram(binary.getProjectRelativePath().toPortableString().replace(".jar", ""));
-				    	}	
-				    }
+				if (!namedBrick) {			
+					// TODO : case where a specific brick is specified
+					BrickInfo[] bricks = Discover.discover();
+					
+					if (bricks.length ==  0) {
+						LeJOSEV3Util.error("No EV3 Found");
+						return;
+					} else {	
+						brickName = bricks[0].getIPAddress();
+					}
 				}
+					
+				RMIMenu menu = (RMIMenu)Naming.lookup("//" + brickName + "/RemoteMenu");
+				File f = new File(binaryPath);
+				FileInputStream in = new FileInputStream(f);
+				byte[] data = new byte[(int)f.length()];
+			    in.read(data);
+			    in.close();
+			    menu.uploadFile("/home/lejos/programs/" + binary.getProjectRelativePath().toPortableString(), data);
+			    
+			    LeJOSEV3Util.message("Program has been uploaded");
+			    
+			    if (run) {
+			    	if (debugMode) {
+			    		LeJOSEV3Util.message("Starting program in debug mode ...");
+			    		new Thread(new DebugStarter(launch, brickName, simpleName)).start();
+			    		menu.debugProgram(binary.getProjectRelativePath().toPortableString().replace(".jar", ""));
+			    	}
+			    	else {
+			    		LeJOSEV3Util.message("Running program ...");
+			    		menu.runProgram(binary.getProjectRelativePath().toPortableString().replace(".jar", ""));
+			    	}	
+			    }
 			}
 			
 			LeJOSEV3Util.message("leJOS EV3 plugin launch complete");
