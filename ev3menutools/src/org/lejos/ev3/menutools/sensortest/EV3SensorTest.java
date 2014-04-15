@@ -110,9 +110,47 @@ public class EV3SensorTest {
 			} 
         }
         
+        public static void introMessage() {
+        	
+    		GraphicsLCD g = LocalEV3.get().getGraphicsLCD();
+    		g.setFont(Font.getDefaultFont());
+    		g.drawString("Sensor Demo", 5, 0, 0);
+    		g.setFont(Font.getSmallFont());
+    		g.drawString("Plug a sensor into any port. ", 2, 20, 0);
+    		g.drawString("Then using the following menu", 2, 30, 0);
+    		g.drawString("screens, select the port, ", 2, 40, 0);
+    		g.drawString("sensor type, and possibly", 2, 50, 0);
+    		g.drawString("mode. The program will then", 2, 60, 0);
+    		g.drawString("continuously display the", 2, 70, 0); 
+    		g.drawString("sensor data.", 2, 80, 0);
+    		  
+    		// Quit GUI button:
+    		g.setFont(Font.getSmallFont()); // can also get specific size using Font.getFont()
+    		int y_quit = 100;
+    		int width_quit = 45;
+    		int height_quit = width_quit/2;
+    		int arc_diam = 6;
+    		g.drawString("QUIT", 9, y_quit+7, 0);
+    		g.drawLine(0, y_quit,  45, y_quit); // top line
+    		g.drawLine(0, y_quit,  0, y_quit+height_quit-arc_diam/2); // left line
+    		g.drawLine(width_quit, y_quit,  width_quit, y_quit+height_quit/2); // right line
+    		g.drawLine(0+arc_diam/2, y_quit+height_quit,  width_quit-10, y_quit+height_quit); // bottom line
+    		g.drawLine(width_quit-10, y_quit+height_quit, width_quit, y_quit+height_quit/2); // diagonal
+    		g.drawArc(0, y_quit+height_quit-arc_diam, arc_diam, arc_diam, 180, 90);
+    		
+    		// Enter GUI button:
+    		g.fillRect(width_quit+10, y_quit, height_quit, height_quit);
+    		g.drawString("GO", width_quit+15, y_quit+7, 0,true);
+    		
+    		Button.waitForAnyPress();
+    		//if(Button.ESCAPE.isDown()) System.exit(0);
+    		g.clear();
+    	}
+        
         public static void main(String [] args) throws Exception
         {   
-        	TextMenu portMenu = new TextMenu(ports, 1, "DELSensor port");
+        	introMessage();
+        	TextMenu portMenu = new TextMenu(ports, 1, "Sensor port");
             TextMenu sensorMenu = new TextMenu(sensors, 1, "Sensor type");
 
             int portNo = portMenu.select();
