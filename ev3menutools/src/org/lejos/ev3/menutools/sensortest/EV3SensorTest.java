@@ -4,6 +4,8 @@ import java.lang.reflect.Constructor;
 import lejos.utility.TextMenu;
 import lejos.hardware.Button;
 import lejos.hardware.ev3.LocalEV3;
+import lejos.hardware.lcd.Font;
+import lejos.hardware.lcd.GraphicsLCD;
 import lejos.hardware.lcd.LCD;
 import lejos.hardware.port.Port;
 import lejos.hardware.sensor.SensorMode;
@@ -109,8 +111,8 @@ public class EV3SensorTest {
         }
         
         public static void main(String [] args) throws Exception
-        {          
-            TextMenu portMenu = new TextMenu(ports, 1, "Sensor port");
+        {   
+        	TextMenu portMenu = new TextMenu(ports, 1, "DELSensor port");
             TextMenu sensorMenu = new TextMenu(sensors, 1, "Sensor type");
 
             int portNo = portMenu.select();

@@ -197,7 +197,7 @@ public class TextMenu
 				return selectedIndex;
 			if(button == Button.ID_ESCAPE)
 				return -1; //Escape
-			if(button == Button.ID_RIGHT)//scroll forward
+			if(button == Button.ID_DOWN)//scroll forward
 			{
 				selectedIndex++;
 				// check for index out of bounds
@@ -211,7 +211,7 @@ public class TextMenu
 					_topIndex = selectedIndex - _height + 1;
 				}
 			}
-			if(button == Button.ID_LEFT)//scroll backward
+			if(button == Button.ID_UP)//scroll backward
 			{
 				selectedIndex --;
 				// check for index out of bounds
