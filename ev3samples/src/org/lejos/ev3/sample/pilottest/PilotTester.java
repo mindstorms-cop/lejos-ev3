@@ -1,5 +1,8 @@
 package org.lejos.ev3.sample.pilottest;
 import lejos.hardware.Button;
+import lejos.hardware.ev3.LocalEV3;
+import lejos.hardware.lcd.Font;
+import lejos.hardware.lcd.GraphicsLCD;
 import lejos.hardware.lcd.LCD;
 import lejos.robotics.RegulatedMotor;
 import lejos.robotics.navigation.DifferentialPilot;
@@ -34,6 +37,8 @@ public class PilotTester
 		
 	public static void main(String[] args ) throws Exception
 	{
+		introMessage();
+		
     	PilotProps pp = new PilotProps();
     	pp.loadPersistentValues();
     	float wheelDiameter = Float.parseFloat(pp.getProperty(PilotProps.KEY_WHEELDIAMETER, "4.0"));
@@ -110,6 +115,42 @@ public class PilotTester
 		Button.waitForAnyPress();
 	}
    
+	public static void introMessage() {
+		
+		GraphicsLCD g = LocalEV3.get().getGraphicsLCD();
+		g.drawString("Pilot Demo", 5, 0, 0);
+		g.setFont(Font.getSmallFont());
+		g.drawString("Run the PilotParams sample ", 2, 20, 0);
+		g.drawString("first to create a properties " , 2, 30, 0);
+		g.drawString("file." , 2, 40, 0);
+		g.drawString("Requires a wheeled vehicle ", 2, 50, 0);
+		g.drawString("with two independant motors.", 2, 60, 0);
+		g.drawString("Plug motors into ports B and ", 2, 70, 0);
+		g.drawString("C and press enter. ", 2, 80, 0);
+		  
+		// Quit GUI button:
+		g.setFont(Font.getSmallFont()); // can also get specific size using Font.getFont()
+		int y_quit = 100;
+		int width_quit = 45;
+		int height_quit = width_quit/2;
+		int arc_diam = 6;
+		g.drawString("QUIT", 9, y_quit+7, 0);
+		g.drawLine(0, y_quit,  45, y_quit); // top line
+		g.drawLine(0, y_quit,  0, y_quit+height_quit-arc_diam/2); // left line
+		g.drawLine(width_quit, y_quit,  width_quit, y_quit+height_quit/2); // right line
+		g.drawLine(0+arc_diam/2, y_quit+height_quit,  width_quit-10, y_quit+height_quit); // bottom line
+		g.drawLine(width_quit-10, y_quit+height_quit, width_quit, y_quit+height_quit/2); // diagonal
+		g.drawArc(0, y_quit+height_quit-arc_diam, arc_diam, arc_diam, 180, 90);
+		
+		// Enter GUI button:
+		g.fillRect(width_quit+10, y_quit, height_quit, height_quit);
+		g.drawString("GO", width_quit+15, y_quit+7, 0,true);
+		
+		Button.waitForAnyPress();
+		if(Button.ESCAPE.isDown()) System.exit(0);
+		g.clear();
+	}
+	
 	public static void showCount(DifferentialPilot robot, int i)
 	{
 		LCD.drawInt(leftMotor.getTachoCount(),0,i);
