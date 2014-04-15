@@ -10,7 +10,7 @@ public class EV3HelloWorld
 {
     public static void main(String[] args)
     {
-        System.out.println("Running...");
+        //System.out.println("Running...");
         GraphicsLCD g = BrickFinder.getDefault().getGraphicsLCD();
         final int SW = g.getWidth();
         final int SH = g.getHeight();
