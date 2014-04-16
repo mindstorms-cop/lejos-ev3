@@ -80,13 +80,25 @@ public class IRControl {
 				currentLeft = motorB;
 				currentRight = motorC;
 				drawChannelCircle(circleX, circleY, '1');
-				redrawMotors("B", "C");
+				//redrawMotors("B", "C");
 			} 
 			else if(channel == 1) {
 				currentLeft = motorA;
 				currentRight = motorD;
 				drawChannelCircle(circleX, circleY, '2');
-				redrawMotors("A", "D");				
+				//redrawMotors("A", "D");				
+			}
+			else if(channel == 2) {
+				currentLeft = motorA;
+				currentRight = motorB;
+				drawChannelCircle(circleX, circleY, '3');
+				//redrawMotors("A", "D");				
+			}
+			else if(channel == 3) {
+				currentLeft = motorC;
+				currentRight = motorD; // BC actually * See hack below
+				drawChannelCircle(circleX, circleY, '4');
+				//redrawMotors("A", "D");				
 			}
 			
 			if(command != previous_command) {
@@ -121,6 +133,7 @@ public class IRControl {
 					currentRight.setPower(100);
 					redrawButton(4, true);
 				}
+				redrawMotors(channel);
 				previous_command = command;
 				g.refresh();
 				
@@ -173,9 +186,7 @@ public class IRControl {
 				if(modeName.equals("IR-PROX"))
 					detectedPort = i;
 			}
-			
 		}
-		
 		return detectedPort;
 	}
 	
@@ -187,7 +198,8 @@ public class IRControl {
 		g.setFont(Font.getLargeFont());
 		g.drawString("IR", b_top_y, b_top_y, 0);
 		
-		redrawMotors("B", "C");
+		//redrawMotors("B", "C");
+		redrawMotors(-99);
 		
 		// Center IR Port message near bottom:
 		/*
@@ -235,6 +247,47 @@ public class IRControl {
 		g.refresh();
 	}
 	
+	public void redrawMotors(int highlightChannel) {
+		String [] leftMotor = {"B", "A", "A", "C"};
+		String [] rightMotor = {"C", "D", "B", "D"};
+		
+		int y = height * 2 + width;
+		
+		// Clear area first:
+		g.setColor(1);
+		g.fillRect(b_left_x, y, 80, 45);
+		g.setColor(0);
+		g.drawRect(b_left_x-20, y-4, 110, 45);
+		
+		// Draw all motor ports:
+		for(int i = 0;i<leftMotor.length;i++) {
+			
+			g.setFont(Font.getSmallFont());
+			int str_width = g.getFont().width;//.stringWidth(leftMotor[i]);
+			int x1 = b_left_x+width/2-str_width/2;
+			int x2 = b_right_x+width/2-str_width/2;
+			
+			g.drawString("ch" + (i+1), x1-25, y, 0);
+			g.drawString(leftMotor[i], x1, y, 0);
+			str_width = Font.getDefaultFont().stringWidth(rightMotor[i]);
+			g.drawString(rightMotor[i], x2, y, 0);
+			
+			if(highlightChannel == i)
+				g.fillRect(x1 + 20, y+2, 30, 3);
+			
+			//drawChannelCircle(circleX, y, '1');
+			
+			// Before loop starts again, make sure next row starts at proper y:
+			y = y + g.getFont().getHeight() + 2;
+			 
+		}
+		g.refresh();
+	}
+	
+	/*
+	 * Draws only the motors for the channel last pressed on the remote.
+	 * REPLACED BY METHOD ABOVE. UNUSED!
+	 */
 	public void redrawMotors(String first, String second) {
 		g.setFont(Font.getDefaultFont());
 		int str_width = Font.getDefaultFont().stringWidth(first);
