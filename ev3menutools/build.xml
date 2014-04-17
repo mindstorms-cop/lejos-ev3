@@ -34,8 +34,8 @@
     </target>
 
     <target name="pc.files" depends="compile">
-        <make-jar jar.file="IRControl.jar" main.class="org.lejos.ev3.menutools.ircontrol.IRControl"/>
-        <make-jar jar.file="SensorTest.jar" main.class="org.lejos.ev3.menutools.sensortest.EV3SensorTest"/>
+        <make-jar jar.file="RemoteControl.jar" main.class="org.lejos.ev3.menutools.ircontrol.RemoteControl"/>
+        <make-jar jar.file="TestSensors.jar" main.class="org.lejos.ev3.menutools.sensortest.TestSensors"/>
     </target>
 
     <target name="upload" depends="pc.files">

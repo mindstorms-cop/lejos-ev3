@@ -1321,7 +1321,7 @@ public class GraphicStartup implements Menu {
     	//System.out.println("Finding files ...");
         int selection = 0;
         do {
-            File[] files = (new File(TOOLS_DIRECTORY)).listFiles();
+            File[] files = new File(TOOLS_DIRECTORY).listFiles();
             int len = 0;
             for (int i = 0; i < files.length && files[i] != null; i++)
                 len++;
@@ -1334,16 +1334,36 @@ public class GraphicStartup implements Menu {
             String fileNames[] = new String[len];
             String[] icons = new String[len];
             for (int i = 0; i < len; i++){
-                fileNames[i] = files[i].getName();
+            	fileNames[i] = formatFileName(files[i].getName());
                 String ext = Utils.getExtension(files[i].getName());
                if (ext.equals("jar"))
                 	icons[i] = ICMProgram;
             }
+            
             menu.setItems(fileNames,icons);
             selection = getSelection(menu, selection);
             if (selection >= 0)
                 toolMenu(files[selection]);
         } while (selection >= 0);
+    }
+    
+    /**
+     * Method to add spaces before capital letters and remove .jar extension.
+     * 
+     * @param fileName
+     * @return
+     */
+	static private String formatFileName(String fileName) {
+    	StringBuffer formattedName = new StringBuffer(""+fileName.charAt(0));
+		for(int i=1;i<fileName.length();i++) { //Skip the first letter-can't put space before first word
+    		if(fileName.charAt(i)=='.') break;
+    		if(Character.isUpperCase(fileName.charAt(i))) {
+    			formattedName.append(' ');
+    		}
+    		formattedName.append(fileName.charAt(i));
+    		
+    	}
+    	return formattedName.toString();
     }
     
     /**
