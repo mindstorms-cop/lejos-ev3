@@ -167,8 +167,7 @@ public class GraphicStartup implements Menu {
 					JarFile jar = new JarFile(file);
 					String mainClass = jar.getManifest().getMainAttributes().getValue("Main-class");
 					jar.close();
-					drawLaunchScreen();
-		            exec(file, JAVA_RUN_CP + file.getPath() + " lejos.internal.ev3.EV3Wrapper " + mainClass, PROGRAMS_DIRECTORY);
+					exec(file, JAVA_RUN_CP + file.getPath() + " lejos.internal.ev3.EV3Wrapper " + mainClass, PROGRAMS_DIRECTORY);
 				} catch (IOException e) {
 					System.err.println("Exception running program");
 				}
@@ -772,7 +771,6 @@ public class GraphicStartup implements Menu {
 				JarFile jar = new JarFile(file);
 				String mainClass = jar.getManifest().getMainAttributes().getValue("Main-class");
 				jar.close();
-				drawLaunchScreen();
 	            exec(file, JAVA_RUN_CP + file.getPath() + " lejos.internal.ev3.EV3Wrapper " + mainClass, PROGRAMS_DIRECTORY);
 			} catch (IOException e) {
 				System.err.println("Exception running program");
@@ -1171,6 +1169,8 @@ public class GraphicStartup implements Menu {
         	lcd.refresh();
         	lcd.setAutoRefresh(false);
 
+        	drawLaunchScreen();
+                    	
             program = new ProcessBuilder(command.split(" ")).directory(new File(directory)).start();
             BufferedReader input = new BufferedReader(new InputStreamReader(program.getInputStream()));
             BufferedReader err= new BufferedReader(new InputStreamReader(program.getErrorStream()));
@@ -1220,6 +1220,8 @@ public class GraphicStartup implements Menu {
         	lcd.refresh();
         	lcd.setAutoRefresh(false);
         	
+        	drawLaunchScreen();
+        	
         	String[] args = command.split(" ");
         	File directory = jar.getParentFile();
         	
@@ -1240,7 +1242,7 @@ public class GraphicStartup implements Menu {
         	
             suspend = true;
             curMenu.quit(); // Quit the current menu and go into the suspend loop
-            drawLaunchScreen();
+            
         } catch (Exception e) {
         	System.err.println("Failed to start program: " + e);
         } 
