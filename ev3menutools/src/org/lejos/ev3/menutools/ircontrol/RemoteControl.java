@@ -9,7 +9,7 @@ import lejos.hardware.sensor.EV3IRSensor;
 import lejos.hardware.sensor.EV3SensorConstants;
 import lejos.utility.Delay;
 
-public class IRControl {
+public class RemoteControl {
 
 	protected GraphicsLCD g = LocalEV3.get().getGraphicsLCD();
 	private EV3IRSensor ir;
@@ -38,7 +38,7 @@ public class IRControl {
 		LCD.drawString("Wait...", 0, 0);
 		LCD.refresh();
 		
-		IRControl tool = new IRControl();
+		RemoteControl tool = new RemoteControl();
 		Sound.beep();
 		tool.g.setAutoRefresh(false); // TODO: RELOCATE
 		tool.autodetectIRSensor();

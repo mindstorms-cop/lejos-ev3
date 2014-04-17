@@ -12,7 +12,7 @@ import lejos.hardware.sensor.SensorMode;
 import lejos.hardware.sensor.SensorModes;
 import lejos.utility.Delay;
 
-public class EV3SensorTest {	
+public class TestSensors {	
         static final String ports[] = {"Port 1", "Port 2", "Port 3", "Port 4"};
         
         static final String sensors[] = {"EV3 Color",
@@ -141,6 +141,8 @@ public class EV3SensorTest {
     		// Enter GUI button:
     		g.fillRect(width_quit+10, y_quit, height_quit, height_quit);
     		g.drawString("GO", width_quit+15, y_quit+7, 0,true);
+    		
+    		g.refresh();
     		
     		Button.waitForAnyPress();
     		//if(Button.ESCAPE.isDown()) System.exit(0);
