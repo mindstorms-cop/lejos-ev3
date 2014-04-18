@@ -19,7 +19,8 @@ public class EV3ScpUpload {
 	
 	private static final String JAVA_RUN_JAR = "cd /home/lejos/programs;jrun -jar ";
 	private static final String JAVA_DEBUG_JAR = "cd /home/lejos/programs;jrun -Xdebug -Xrunjdwp:transport=dt_socket,server=y,address=8000,suspend=y -jar ";
-
+	private boolean debugging = false;
+	
 	public static void main(String[] args) {
 		ToolStarter.startTool(EV3ScpUpload.class, args);
 	}
@@ -49,7 +50,7 @@ public class EV3ScpUpload {
 		boolean run = fParser.isRun();
 		boolean debug = fParser.isDebug();
 
-		System.out.println("Copying to host " + host + " from " + from + " to "
+		if (debugging) System.out.println("Copying to host " + host + " from " + from + " to "
 				+ to + " run = " + run + " and debug = " + debug);
 
 		JSch jsch = new JSch();
@@ -71,7 +72,7 @@ public class EV3ScpUpload {
 			channel.connect();
 
 			if (checkAck(in) != 0) {
-				System.err.println("scp command failed");
+				System.err.println("EV3ScpUpload: scp command failed");
 				System.exit(1);
 			}
 
@@ -90,7 +91,7 @@ public class EV3ScpUpload {
 			out.flush();
 
 			if (checkAck(in) != 0) {
-				System.err.println("C0644 failed");
+				System.err.println("EV3ScpUload: C0644 failed");
 				System.exit(1);
 			}
 
@@ -115,18 +116,16 @@ public class EV3ScpUpload {
 			out.flush();
 
 			if (checkAck(in) != 0) {
-				System.err.println("send contents failed");
+				System.err.println("EV3ScpUoload: send contents failed");
 				System.exit(1);
 			}
 			out.close();
 			channel.disconnect();
 
-			System.out.println("Copied OK");
-
 			if (run || debug) {
 				command = (debug ? JAVA_DEBUG_JAR : JAVA_RUN_JAR) + to;
 
-				System.out.println("Running program: " + command);
+				System.out.println("Running program ... ");
 
 				channel = session.openChannel("exec");
 				((ChannelExec) channel).setCommand(command);
@@ -146,7 +145,7 @@ public class EV3ScpUpload {
 					}
 
 					if (channel.isClosed()) {
-						System.out.println("exit-status: " + channel.getExitStatus());
+						if (debugging) System.out.println("exit-status: " + channel.getExitStatus());
 						break;
 					}
 
@@ -156,7 +155,7 @@ public class EV3ScpUpload {
 					}
 				}
 
-				System.out.println("Run finished");
+				if (debugging) System.out.println("Run finished");
 			}
 
 			channel.disconnect();
@@ -165,7 +164,7 @@ public class EV3ScpUpload {
 			System.exit(0);
 
 		} catch (JSchException e) {
-			System.err.println("Failed to upload or run jar file: " + e);
+			System.err.println("EV3ScpUpload: Failed to upload or run jar file: " + e);
 			return 1;
 		}
 
