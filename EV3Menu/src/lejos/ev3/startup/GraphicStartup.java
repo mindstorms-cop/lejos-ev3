@@ -1638,6 +1638,7 @@ public class GraphicStartup implements Menu {
  
     public static void drawLaunchScreen() {
     	GraphicsLCD g = LocalEV3.get().getGraphicsLCD();
+    	g.setFont(Font.getDefaultFont());
     	g.drawRegion(duke, 0, 0, duke.getWidth(), duke.getHeight(), GraphicsLCD.TRANS_NONE, 50, 65, GraphicsLCD.HCENTER | GraphicsLCD.VCENTER);
     	int x = LCD.SCREEN_WIDTH/2;
     	g.drawString("Wait", x, 30, 0);
