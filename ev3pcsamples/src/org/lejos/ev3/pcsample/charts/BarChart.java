@@ -39,7 +39,7 @@ public class BarChart extends JFrame {
 	private float frequency;
 	private float factor;
 	
-	public BarChart(String host, String sensorClass, String portName, String category, String[] labels, 
+	public BarChart(String host, String sensorClass, String portName, String mode, String category, String[] labels, 
 			String units, float minValue, float maxValue, int windowWidth, int windowHeight, 
 			float frequency, float factor) throws Exception {
 		super(title);
@@ -48,8 +48,8 @@ public class BarChart extends JFrame {
 		this.labels = labels;
 		this.frequency = frequency;
 		this.factor = factor;
-		System.out.println("Creating remote sensor class: " + sensorClass + " on port " + portName);
-		sp = ev3.createSampleProvider(portName, sensorClass, null);
+		System.out.println("Creating remote sensor class: " + sensorClass + " on port " + portName + " with mode " + mode);
+		sp = ev3.createSampleProvider(portName, sensorClass, (mode != null && mode.length() > 0 ? mode : null));
 		JFreeChart chart = ChartFactory.createBarChart(title, category, units, dataset, 
 				PlotOrientation.VERTICAL, true, true, false);
 		
@@ -90,7 +90,7 @@ public class BarChart extends JFrame {
 		p.load(new FileReader("chart.properties"));
 		
 		String[] labels = p.getProperty("labels").split(",");
-        BarChart demo = new BarChart(p.getProperty("host"), p.getProperty("class"), p.getProperty("port"), 
+        BarChart demo = new BarChart(p.getProperty("host"), p.getProperty("class"), p.getProperty("port"), p.getProperty("mode"),
         		                     p.getProperty("category"), labels, p.getProperty("units"), 
         		                     Float.parseFloat(p.getProperty("min")), Float.parseFloat(p.getProperty("max")), 
         		                     Integer.parseInt(p.getProperty("width")), Integer.parseInt(p.getProperty("height")), 

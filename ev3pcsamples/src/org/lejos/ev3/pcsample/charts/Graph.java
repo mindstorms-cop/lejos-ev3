@@ -1,4 +1,5 @@
 package org.lejos.ev3.pcsample.charts;
+
 import java.awt.Dimension;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -32,13 +33,13 @@ public class Graph extends JFrame {
 	private String[] labels;
 	private float frequency;
 	
-	public Graph(String host, String sensorClass, String portName, String category, String[] labels, 
+	public Graph(String host, String sensorClass, String portName, String mode, String category, String[] labels, 
 			String units, float minValue, float maxValue, int windowWidth, int windowHeight, float frequency) throws Exception {
 		super(title);
 		ev3 = new RemoteEV3(host);
 		this.labels = labels;
 		this.frequency = frequency;
-		sp = ev3.createSampleProvider(portName, sensorClass, null);
+		sp = ev3.createSampleProvider(portName, sensorClass, (mode != null && mode.length() > 0 ? mode : null));
 		series = new XYSeries(labels[0]);
 		dataset.addSeries(series);
 		JFreeChart chart = ChartFactory.createXYLineChart(title, category, units, (XYDataset) dataset, 
@@ -81,7 +82,7 @@ public class Graph extends JFrame {
 		Properties p = new Properties();
 		p.load(new FileReader("graph.properties"));
 		String[] labels = p.getProperty("labels").split(",");
-		Graph demo = new Graph(p.getProperty("host"), p.getProperty("class"), p.getProperty("port"),  
+		Graph demo = new Graph(p.getProperty("host"), p.getProperty("class"), p.getProperty("port"), p.getProperty("mode"),
 				p.getProperty("category"), labels, p.getProperty("units"), Float.parseFloat(p.getProperty("min")), Float.parseFloat(p.getProperty("max")), 
                 Integer.parseInt(p.getProperty("width")), Integer.parseInt(p.getProperty("height")), 
                 Float.parseFloat(p.getProperty("frequency")));
