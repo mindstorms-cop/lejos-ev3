@@ -1,4 +1,5 @@
 package org.lejos.ev3.menutools.sensortest;
+
 import java.lang.reflect.Constructor;
 
 import lejos.utility.TextMenu;
@@ -8,8 +9,9 @@ import lejos.hardware.lcd.Font;
 import lejos.hardware.lcd.GraphicsLCD;
 import lejos.hardware.lcd.LCD;
 import lejos.hardware.port.Port;
+import lejos.hardware.port.PortException;
+import lejos.hardware.sensor.BaseSensor;
 import lejos.hardware.sensor.SensorMode;
-import lejos.hardware.sensor.SensorModes;
 import lejos.utility.Delay;
 
 public class TestSensors {	
@@ -19,6 +21,7 @@ public class TestSensors {
                                          "EV3 IR",                                     
         	                             "EV3 Gyro",
         	                             "EV3 Touch",
+        	                             "EV3 Ultrasonic",
         	                             "NXT Light", 
         	                             "NXT Color",
         	                             "NXT Touch",
@@ -54,6 +57,7 @@ public class TestSensors {
 			 "lejos.hardware.sensor.EV3IRSensor",
 			 "lejos.hardware.sensor.EV3GyroSensor",
 			 "lejos.hardware.sensor.EV3TouchSensor",
+			 "lejos.hardware.sensor.EV3UltrasonicSensor",
 			 "lejos.hardware.sensor.NXTLightSensor",
 			 "lejos.hardware.sensor.NXTColorSensor",
 			 "lejos.hardware.sensor.NXTTouchSensor",
@@ -91,7 +95,7 @@ public class TestSensors {
             LCD.drawInt(calibrated, 5, 11, line);
         }
 
-        static SensorModes getSensor(int typ, Port p)
+        static BaseSensor getSensor(int typ, Port p)
         {
         	Class<?> c;
         	
@@ -103,10 +107,9 @@ public class TestSensors {
 				Object[] args = new Object[1];
 				args[0] = p;
 				Object o = con.newInstance(args);
-				return (SensorModes) o;
+				return (BaseSensor) o;
 			} catch (Exception e) {
-				e.printStackTrace();
-				return null;
+				throw new PortException("Failed to create sensor class", e);
 			} 
         }
         
@@ -145,7 +148,6 @@ public class TestSensors {
     		g.refresh();
     		
     		Button.waitForAnyPress();
-    		//if(Button.ESCAPE.isDown()) System.exit(0);
     		g.clear();
     	}
         
@@ -161,14 +163,14 @@ public class TestSensors {
             int sensorType = sensorMenu.select();
             if (sensorType < 0) return;
             Port p = LocalEV3.get().getPort("S"+(portNo+1));
-            SensorModes sensor = getSensor(sensorType, p);
+            BaseSensor sensor = getSensor(sensorType, p);
             
             for(;;)
             {
             	LCD.clear();
                 TextMenu modeMenu = new TextMenu(sensor.getAvailableModes().toArray(new String[1]), 1, "Sensor mode");
                 int mode = modeMenu.select();
-                if (mode < 0) return;
+                if (mode < 0) break;
                 SensorMode sm = sensor.getMode(mode);
                 LCD.clear();
                 while (!Button.ESCAPE.isDown())
@@ -180,6 +182,7 @@ public class TestSensors {
                     sm.fetchSample(samples, 0);
                     for(int i = 0; i < sampleSize; i++)
                     {
+                    	LCD.clear(i+2);
                         LCD.drawString("Val[" + i + "]: " + samples[i], 2, i+2);
                     }
                     LCD.refresh();
@@ -189,5 +192,6 @@ public class TestSensors {
                 while(Button.ESCAPE.isDown())
                     Delay.msDelay(10);
             }
+            if (sensor != null) sensor.close();
         }
     }
