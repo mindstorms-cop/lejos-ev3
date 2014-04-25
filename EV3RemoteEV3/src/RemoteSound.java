@@ -30,6 +30,10 @@ public class RemoteSound {
 		
 		sound.playNote(Sounds.PIANO, 2000, 1000);
 		
+		// Play the file on the EV3
+		sound.playSample(new File("/home/lejos/programs/Trumpet.wav"));
+		
+		// PLay the file ob the PC
 		File f = new File("Trumpet.wav");
 		FileInputStream in = new FileInputStream(f);
 		byte[] data = new byte[(int)f.length()];
