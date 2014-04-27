@@ -1,6 +1,5 @@
 package lejos.ev3.startup;
 
-import java.awt.Graphics;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -29,6 +28,7 @@ import lejos.ev3.startup.GraphicListMenu;
 import lejos.ev3.startup.Utils;
 import lejos.utility.Delay;
 import lejos.ev3.startup.Config;
+import lejos.hardware.Battery;
 import lejos.hardware.Bluetooth;
 import lejos.hardware.BrickFinder;
 import lejos.hardware.Button;
@@ -48,6 +48,8 @@ import lejos.hardware.port.Port;
 import lejos.hardware.port.TachoMotorPort;
 import lejos.internal.io.Settings;
 import lejos.internal.io.SystemSettings;
+import lejos.remote.ev3.EV3Reply;
+import lejos.remote.ev3.EV3Request;
 import lejos.remote.ev3.Menu;
 import lejos.remote.ev3.MenuReply;
 import lejos.remote.ev3.MenuRequest;
@@ -213,8 +215,12 @@ public class GraphicStartup implements Menu {
         public void run()
         {               
         	// Create the Bluetooth local device and connect to DBus
-            System.out.println("Creating bluetooth local device");
-            bt = Bluetooth.getLocalDevice();
+        	try {
+	            System.out.println("Creating bluetooth local device");
+	            bt = Bluetooth.getLocalDevice();
+        	} catch (Exception e) {
+        		// Ignore
+        	}
             
         	// Start the RMI server
             System.out.println("Starting RMI");
@@ -360,84 +366,136 @@ public class GraphicStartup implements Menu {
             		            		
             		try {
 	            		while(true) { 
-	                		MenuRequest request = (MenuRequest) is.readObject();
-	                		MenuReply reply = new MenuReply();
-	                		
-		            		switch (request.request) {
-		            		case RUN_PROGRAM:
-		            			runProgram(request.name);
-		            			break;
-							case DEBUG_PROGRAM:
-								debugProgram(request.name);
-								break;
-							case DELETE_ALL_PROGRAMS:
-								deleteAllPrograms();
-								break;
-							case DELETE_FILE:
-								reply.result = deleteFile(request.name);
-								os.writeObject(reply);
-								break;
-							case FETCH_FILE:
-								reply.contents = fetchFile(request.name);
-								os.writeObject(reply);
-								break;
-							case GET_FILE_SIZE:
-								reply.reply = (int) getFileSize(request.name);
-								os.writeObject(reply);
-								break;
-							case GET_MENU_VERSION:
-								reply.value = getMenuVersion();
-								os.writeObject(reply);
-								break;
-							case GET_NAME:
-								reply.value = menu.getName();
-								os.writeObject(reply);
-								break;
-							case GET_PROGRAM_NAMES:
-								reply.names = getProgramNames();
-								os.writeObject(reply);
-								break;
-							case GET_SAMPLE_NAMES:
-								reply.names = getSampleNames();
-								os.writeObject(reply);
-								break;
-							case GET_SETTING:
-								reply.value = getSetting(request.name);
-								os.writeObject(reply);
-								break;
-							case GET_VERSION:
-								reply.value = getVersion();
-								os.writeObject(reply);
-								break;
-							case RUN_SAMPLE:
-		            			runSample(request.name);
-								break;
-							case SET_NAME:
-								setName(request.name);
-								break;
-							case SET_SETTING:
-								setSetting(request.name, request.value);
-								break;
-							case UPLOAD_FILE:
-								reply.result = uploadFile(request.name, request.contents);
-								os.writeObject(reply);
-								break;  
-							case STOP_PROGRAM:
-								stopProgram();
-								break;
-							case SHUT_DOWN:
-								shutdown();
-								break;
-							case GET_EXECUTING_PROGRAM_NAME:
-								reply.value = programName;
-								os.writeObject(reply);
-								break;
-							case SUSPEND:
-								GraphicStartup.this.suspend();
-								break;
-							case RESUME:
-								GraphicStartup.this.resume();
-		            		}
+	            			Object obj = is.readObject();
+	            			
+	            			if (obj instanceof MenuRequest) {
+		                		MenuRequest request = (MenuRequest) obj;
+		                		MenuReply reply = new MenuReply();
+		                		
+			            		switch (request.request) {
+			            		case RUN_PROGRAM:
+			            			runProgram(request.name);
+			            			break;
+								case DEBUG_PROGRAM:
+									debugProgram(request.name);
+									break;
+								case DELETE_ALL_PROGRAMS:
+									deleteAllPrograms();
+									break;
+								case DELETE_FILE:
+									reply.result = deleteFile(request.name);
+									os.writeObject(reply);
+									break;
+								case FETCH_FILE:
+									reply.contents = fetchFile(request.name);
+									os.writeObject(reply);
+									break;
+								case GET_FILE_SIZE:
+									reply.reply = (int) getFileSize(request.name);
+									os.writeObject(reply);
+									break;
+								case GET_MENU_VERSION:
+									reply.value = getMenuVersion();
+									os.writeObject(reply);
+									break;
+								case GET_NAME:
+									reply.value = menu.getName();
+									os.writeObject(reply);
+									break;
+								case GET_PROGRAM_NAMES:
+									reply.names = getProgramNames();
+									os.writeObject(reply);
+									break;
+								case GET_SAMPLE_NAMES:
+									reply.names = getSampleNames();
+									os.writeObject(reply);
+									break;
+								case GET_SETTING:
+									reply.value = getSetting(request.name);
+									os.writeObject(reply);
+									break;
+								case GET_VERSION:
+									reply.value = getVersion();
+									os.writeObject(reply);
+									break;
+								case RUN_SAMPLE:
+			            			runSample(request.name);
+									break;
+								case SET_NAME:
+									setName(request.name);
+									break;
+								case SET_SETTING:
+									setSetting(request.name, request.value);
+									break;
+								case UPLOAD_FILE:
+									reply.result = uploadFile(request.name, request.contents);
+									os.writeObject(reply);
+									break;  
+								case STOP_PROGRAM:
+									stopProgram();
+									break;
+								case SHUT_DOWN:
+									shutdown();
+									break;
+								case GET_EXECUTING_PROGRAM_NAME:
+									reply.value = programName;
+									os.writeObject(reply);
+									break;
+								case SUSPEND:
+									GraphicStartup.this.suspend();
+									break;
+								case RESUME:
+									GraphicStartup.this.resume();
+			            		}
+	            			} else if (obj instanceof EV3Request) {
+		                		EV3Request request = (EV3Request) obj;
+		                		EV3Reply reply = new EV3Reply();
+		                		
+		                		switch (request.request){
+		                		case GET_VOLTAGE_MILLIVOLTS:
+		                			reply.reply = Battery.getVoltageMilliVolt();
+		                			os.writeObject(reply);
+		                			break;
+		                		case GET_VOLTAGE:
+		                			reply.floatReply = Battery.getVoltage();
+		                			os.writeObject(reply);
+		                			break;
+		                		case GET_BATTERY_CURRENT:
+		                			reply.floatReply = Battery.getBatteryCurrent();
+		                			os.writeObject(reply);
+		                			break;
+		                		case GET_MOTOR_CURRENT:
+		                			reply.floatReply = Battery.getMotorCurrent();
+		                			os.writeObject(reply);
+		                			break;
+		                		case SYSTEM_SOUND:
+		                			Sound.systemSound(false, request.intValue);
+		                			break;
+		                		case GET_NAME:
+									reply.value = menu.getName();
+									os.writeObject(reply);
+									break;
+		                		case LED_PATTERN:
+		                			LocalEV3.get().getLED().setPattern(request.intValue);
+		                			break;
+		                		case WAIT_FOR_ANY_EVENT:
+		                			reply.reply = Button.waitForAnyEvent(request.intValue);
+		                			os.writeObject(reply);
+		                			break;
+		                		case WAIT_FOR_ANY_PRESS:
+		                			reply.reply = Button.waitForAnyPress(request.intValue);
+		                			os.writeObject(reply);
+		                			break;
+		                		case GET_BUTTONS:
+		                			reply.reply = Button.getButtons();
+		                			os.writeObject(reply);
+		                			break;
+		                		case READ_BUTTONS:
+		                			reply.reply = Button.readButtons();
+		                			os.writeObject(reply);
+		                			break;
+		                		}
+	            			}
 	            		}
             		
                     } catch(Exception e) {
