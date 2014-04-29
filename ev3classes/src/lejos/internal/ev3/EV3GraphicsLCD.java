@@ -700,6 +700,12 @@ public class EV3GraphicsLCD extends EV3LCD implements GraphicsLCD
         int x0 = x + (width >> 1);
         int y0 = y + (height >> 1);
         int radius = (width < height) ? (width >> 1) : (height >> 1);
+        if (arcAngle >= 360 || arcAngle <= -360)
+        {
+            drawTheCircle(radius, style, fill, xscale, yscale, x0, y0);
+            return;
+        }
+            
         while (startAngle < 0)
             startAngle += 360;
         while (startAngle > 360)
@@ -726,6 +732,65 @@ public class EV3GraphicsLCD extends EV3LCD implements GraphicsLCD
         } else
             drawTheArc(radius, style, fill, xscale, yscale, endAngle, startAngle, x0, y0);
 
+    }
+
+    private void drawTheCircle(int radius, int style, boolean fill, int xscale,
+            int yscale, int x0, int y0)
+    {
+        // Initialize scaled up Bresenham's circle algorithm
+        int f = (1 - ARC_ACC * radius);
+        int ddF_x = 0;
+        int ddF_y = -2 * ARC_ACC * radius;
+        int xc = 0;
+        int yc = ARC_ACC * radius;
+        int dotskip = 0;
+        while (xc < yc)
+        {
+            if (f >= 0)
+            {
+                yc--;
+                ddF_y += 2;
+                f += ddF_y;
+            }
+
+            xc++;
+            ddF_x += 2;
+            f += ddF_x + 1;
+
+            // Skip points for dotted version
+            dotskip = (dotskip + 1) % (2 * ARC_ACC);
+            if ((style == DOTTED) && !fill && (dotskip < ((2 * ARC_ACC) - 1)))
+                continue;
+
+            // Scale down again
+            int xxp = (xc * xscale + (xscale >> 1)) / (ARC_ACC * ARC_ACC);
+            int xyp = (xc * yscale + (yscale >> 1)) / (ARC_ACC * ARC_ACC);
+            int yyp = (yc * yscale + (yscale >> 1)) / (ARC_ACC * ARC_ACC);
+            int yxp = (yc * xscale + (xscale >> 1)) / (ARC_ACC * ARC_ACC);
+
+            if (fill)
+            {
+                /* TODO: Optimize more by drawing horizontal lines */
+                drawLine(x0, y0, x0 + yxp, y0 - xyp, style); // 0   - 45 degrees
+                drawLine(x0, y0, x0 + xxp, y0 - yyp, style); // 45  - 90 degrees
+                drawLine(x0, y0, x0 - xxp, y0 - yyp, style); // 90  - 135 degrees
+                drawLine(x0, y0, x0 - yxp, y0 - xyp, style); // 135 - 180 degrees
+                drawLine(x0, y0, x0 - yxp, y0 + xyp, style); // 180 - 225 degrees
+                drawLine(x0, y0, x0 - xxp, y0 + yyp, style); // 225 - 270 degrees
+                drawLine(x0, y0, x0 + xxp, y0 + yyp, style); // 270 - 315 degrees
+                drawLine(x0, y0, x0 + yxp, y0 + xyp, style); // 315 - 360 degrees
+            } else
+            {
+                setPixel(x0 + yxp, y0 - xyp); // 0   - 45 degrees
+                setPixel(x0 + xxp, y0 - yyp); // 45  - 90 degrees
+                setPixel(x0 - xxp, y0 - yyp); // 90  - 135 degrees
+                setPixel(x0 - yxp, y0 - xyp); // 135 - 180 degrees
+                setPixel(x0 - yxp, y0 + xyp); // 180 - 225 degrees
+                setPixel(x0 - xxp, y0 + yyp); // 225 - 270 degrees
+                setPixel(x0 + xxp, y0 + yyp); // 270 - 315 degrees
+                setPixel(x0 + yxp, y0 + xyp); // 315 - 360 degrees
+            }
+        }
     }
 
     private void drawTheArc(int radius, int style, boolean fill, int xscale,

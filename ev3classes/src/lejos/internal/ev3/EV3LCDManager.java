@@ -65,7 +65,7 @@ public class EV3LCDManager
         /**
          * Open the layer making it available for use
          */
-        public void open()
+        public synchronized void open()
         {
             if (openCnt++ == 0)
             {
@@ -78,7 +78,7 @@ public class EV3LCDManager
          * Close the layer, closed layers can not be written to.
          */
         @Override
-        public void close()
+        public synchronized void close()
         {
             if (openCnt <= 0)
                 throw new IllegalStateException("layer is not open");
@@ -86,15 +86,15 @@ public class EV3LCDManager
             {
                 setVisible(false);
                 displayBuf = null;
-                openCnt = 0;
             }
+            openCnt--;
         }
 
         /**
          * Check to see if the layer is open
          * @return
          */
-        public boolean isOpen()
+        public synchronized boolean isOpen()
         {
             return openCnt > 0;
         }
@@ -275,7 +275,7 @@ public class EV3LCDManager
     /**
      * Helper method. Copy all of the visible layers to the HW screen
      */
-    protected void update()
+    synchronized protected void update()
     {
         LCDLayer[] vis = visibleLayers;
         if (vis.length > 0)
@@ -306,8 +306,8 @@ public class EV3LCDManager
     protected void closeAll()
     {
         for(LCDLayer l : layers)
-            if (l.isOpen())
-                l.close();        
+            while (l.isOpen())
+                l.close(); 
     }
 
     /**
