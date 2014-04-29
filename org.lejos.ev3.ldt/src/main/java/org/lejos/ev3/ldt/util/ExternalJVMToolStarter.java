@@ -13,6 +13,7 @@ import org.lejos.ev3.ldt.LeJOSEV3Plugin;
 public class ExternalJVMToolStarter implements ToolStarter {
 
 	private File ev3Home;
+	private boolean debug = false;
 
 	public ExternalJVMToolStarter(File ev3Home)
 	{
@@ -55,7 +56,7 @@ public class ExternalJVMToolStarter implements ToolStarter {
 			for(String arg: args2) {
 				sb.append(arg + " ");
 			}
-			LeJOSEV3Util.message("Command line: " + sb.toString());
+			if (debug) LeJOSEV3Util.message("Command line: " + sb.toString());
 			
 			return LeJOSEV3Util.createProcessBuilder(args2).start();
 		} catch (IOException e) {

@@ -141,6 +141,7 @@ public class EV3SensorTest {
                     }
                     LCD.refresh();
                     Delay.msDelay(100);
+                    //System.exit(0);
                 }
                 LCD.clear();
                 while(Button.ESCAPE.isDown())

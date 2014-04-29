@@ -1,6 +1,9 @@
 package org.lejos.ev3.sample.bumpercar;
 
 import lejos.hardware.Button;
+import lejos.hardware.ev3.LocalEV3;
+import lejos.hardware.lcd.Font;
+import lejos.hardware.lcd.GraphicsLCD;
 import lejos.hardware.lcd.LCD;
 import lejos.hardware.motor.Motor;
 import lejos.hardware.port.SensorPort;
@@ -13,9 +16,8 @@ import lejos.robotics.subsumption.Behavior;
  * Demonstration of the Behavior subsumption classes.
  * 
  * Requires a wheeled vehicle with two independently controlled
- * motors connected to motor ports A and C, and 
- * a touch sensor connected to sensor  port 1 and
- * an ultrasonic sensor connected to port 3;
+ * motors connected to motor ports B and C, and 
+ * an ultrasonic sensor connected to port 4;
  * 
  * @author Brian Bagnall and Lawrie Griffiths, modified by Roger Glassey
  *
@@ -24,16 +26,55 @@ public class EV3BumperCar
 {
     //static RegulatedMotor leftMotor = MirrorMotor.invertMotor(Motor.A);
     //static RegulatedMotor rightMotor = MirrorMotor.invertMotor(Motor.B);
-    static RegulatedMotor leftMotor = Motor.A;
-    static RegulatedMotor rightMotor = Motor.B;
+    static RegulatedMotor leftMotor = Motor.B;
+    static RegulatedMotor rightMotor = Motor.C;
     static IRSensor sensor;
   
   // Use these definitions instead if your motors are inverted
   // static RegulatedMotor leftMotor = MirrorMotor.invertMotor(Motor.A);
   //static RegulatedMotor rightMotor = MirrorMotor.invertMotor(Motor.C);
   
+  public static void introMessage() {
+
+		  GraphicsLCD g = LocalEV3.get().getGraphicsLCD();
+		  g.drawString("Bumper Car Demo", 5, 0, 0);
+		  g.setFont(Font.getSmallFont());
+		  g.drawString("Demonstration of the Behavior", 2, 20, 0);
+		  g.drawString("subsumption classes. Requires", 2, 30, 0);
+		  g.drawString("a wheeled vehicle with two", 2, 40, 0);
+		  g.drawString("independently controlled", 2, 50, 0);
+		  g.drawString("motors connected to motor", 2, 60, 0);
+		  g.drawString("ports B and C, and an", 2, 70, 0); 
+		  g.drawString("ultrasonic sensor connected", 2, 80, 0);
+		  g.drawString("to port 4.", 2, 90, 0);
+		  
+	  	// Quit GUI button:
+		g.setFont(Font.getSmallFont()); // can also get specific size using Font.getFont()
+		int y_quit = 100;
+		int width_quit = 45;
+		int height_quit = width_quit/2;
+		int arc_diam = 6;
+		g.drawString("QUIT", 9, y_quit+7, 0);
+		g.drawLine(0, y_quit,  45, y_quit); // top line
+		g.drawLine(0, y_quit,  0, y_quit+height_quit-arc_diam/2); // left line
+		g.drawLine(width_quit, y_quit,  width_quit, y_quit+height_quit/2); // right line
+		g.drawLine(0+arc_diam/2, y_quit+height_quit,  width_quit-10, y_quit+height_quit); // bottom line
+		g.drawLine(width_quit-10, y_quit+height_quit, width_quit, y_quit+height_quit/2); // diagonal
+		g.drawArc(0, y_quit+height_quit-arc_diam, arc_diam, arc_diam, 180, 90);
+		
+		// Enter GUI button:
+		g.fillRect(width_quit+10, y_quit, height_quit, height_quit);
+		g.drawString("GO", width_quit+15, y_quit+7, 0,true);
+		
+		Button.waitForAnyPress();
+		if(Button.ESCAPE.isDown()) System.exit(0);
+		g.clear();
+  }
+    
   public static void main(String[] args)
   {
+	  introMessage();
+	  
       leftMotor.resetTachoCount();
       rightMotor.resetTachoCount();
     leftMotor.rotateTo(0);
@@ -61,7 +102,7 @@ public class EV3BumperCar
 
 class IRSensor extends Thread
 {
-    EV3IRSensor ir = new EV3IRSensor(SensorPort.S1);
+    EV3IRSensor ir = new EV3IRSensor(SensorPort.S4);
     public int control = 0;
     public int distance = 255;
 
