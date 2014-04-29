@@ -3,64 +3,77 @@ package lejos.remote.ev3;
 import lejos.hardware.port.BasicSensorPort;
 import lejos.hardware.port.IOPort;
 import lejos.hardware.sensor.EV3SensorConstants;
+import lejos.remote.nxt.RemoteNXTPort;
 
 public class RemoteRequestIOPort implements IOPort, BasicSensorPort, EV3SensorConstants {
-
-	public boolean open(int typ, int portNum,
-			RemoteRequestPort remoteRequestPort) {
-		// TODO Auto-generated method stub
-		return false;
+    protected int port = -1;
+    protected int typ = -1;
+    protected RemoteRequestPort ref;
+    protected int currentMode = 0;
+	protected static RemoteRequestIOPort [][] openPorts = new RemoteRequestIOPort[RemoteNXTPort.MOTOR_PORT+1][PORTS];
+	
+	public boolean open(int typ, int port,
+			RemoteRequestPort ref) {
+        synchronized (openPorts)
+        {
+            if (openPorts[typ][port] == null)
+            {
+                openPorts[typ][port] = this;
+                this.port = port;
+                this.typ = typ;
+                this.ref = ref;
+                return true;
+            }
+            return false;
+        }
 	}
 
 	@Override
 	public int getMode() {
-		// TODO Auto-generated method stub
-		return 0;
+        return currentMode;
 	}
 
 	@Override
-	@Deprecated
 	public int getType() {
-		// TODO Auto-generated method stub
 		return 0;
 	}
 
 	@Override
 	public boolean setMode(int mode) {
-		// TODO Auto-generated method stub
+		currentMode = mode;
 		return false;
 	}
 
 	@Override
-	@Deprecated
 	public boolean setType(int type) {
-		// TODO Auto-generated method stub
-		return false;
+		throw new UnsupportedOperationException("This operation is for legacy modes only");
 	}
 
 	@Override
-	@Deprecated
 	public boolean setTypeAndMode(int type, int mode) {
-		// TODO Auto-generated method stub
-		return false;
+        setType(type);
+        setMode(mode);
+        return true;
 	}
 
 	@Override
 	public void close() {
-		// TODO Auto-generated method stub
-		
+        if (port == -1)
+            throw new IllegalStateException("Port is not open");
+        synchronized (openPorts)
+        {
+            openPorts[typ][port] = null;
+            port = -1;
+        }	
 	}
 
 	@Override
 	public String getName() {
-		// TODO Auto-generated method stub
-		return null;
+		return ref.getName();
 	}
 
 	@Override
 	public void setPinMode(int mode) {
-		// TODO Auto-generated method stub
-		
+		// Overridden by specific port implementations
 	}
-
 }

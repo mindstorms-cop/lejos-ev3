@@ -3,6 +3,8 @@ package lejos.remote.ev3;
 import java.io.File;
 import java.io.Serializable;
 
+import lejos.hardware.lcd.Image;
+
 public class EV3Request implements Serializable {
 	private static final long serialVersionUID = 3277625894143478775L;
 
@@ -26,7 +28,77 @@ public class EV3Request implements Serializable {
 		WAIT_FOR_ANY_EVENT,
 		WAIT_FOR_ANY_PRESS,
 		GET_BUTTONS,
-		READ_BUTTONS
+		READ_BUTTONS,
+		LCD_REFRESH,
+		LCD_CLEAR,
+		LCD_GET_WIDTH,
+		LCD_GET_HEIGHT,
+		LCD_GET_DISPLAY,
+		LCD_GET_HW_DISPLAY,
+		LCD_BITBLT_1,
+		LCD_BITBLT_2,
+		LCD_SET_AUTO_REFRESH,
+		LCD_SET_AUTO_REFRESH_PERIOD,
+		LCD_DRAW_CHAR,
+		LCD_DRAW_STRING_INVERTED,
+		LCD_DRAW_STRING,
+		LCD_DRAW_INT,
+		LCD_DRAW_INT_PLACES,
+		LCD_CLEAR_LINES,
+		LCD_CLEAR_LINE,
+		LCD_SCROLL,
+		LCD_GET_FONT,
+		LCD_GET_TEXT_WIDTH,
+		LCD_GET_TEXT_HEIGHT,
+		OPEN_MOTOR_PORT,
+		CLOSE_MOTOR_PORT,
+		CONTROL_MOTOR,
+		GET_TACHO_COUNT,
+		RESET_TACHO_COUNT,
+		KEY_IS_DOWN,
+		KEY_WAIT_FOR_PRESS,
+		KEY_WAIT_FOR_PRESS_AND_RELEASE,
+		KEY_SIMULATE_EVENT,
+		OPEN_ANALOG_PORT,
+		CLOSE_SENSOR_PORT,
+		GET_PIN_6,
+		GET_PIN_1,
+		SET_PIN_MODE,
+		GET_FLOATS,
+		LCD_G_SET_PIXEL,
+		LCD_G_GET_PIXEL,
+		LCD_G_DRAW_STRING,
+		LCD_G_DRAW_STRING_INVERTED,
+		LCD_G_DRAW_CHAR,
+		LCD_G_DRAW_SUBSTRING,
+		LCD_G_DRAW_CHARS,
+		LCD_G_GET_STROKE_STYLE,
+		LCD_G_SET_STROKE_STYLE,
+		LCD_DRAW_REGION_ROP,
+		LCD_G_DRAW_REGION_ROP_TRANSFORM,
+		LCD_G_DRAW_REGION,
+		LCD_G_DRAW_IMAGE,
+		LCD_G_DRAW_LINE,
+		LCD_G_DRAW_ARC,
+		LCD_G_FILL_ARC,
+		LCD_G_DRAW_ROUND_RECT,
+		LCD_G_DRAW_RECT,
+		LCD_G_FILL_RECT,
+		LCD_G_TRANSLATE,
+		LCD_G_GET_TRANSLATE_X,
+		LCD_G_GET_TRANSLATE_Y,
+		I2C_TRANSACTION,
+		UART_GET_BYTE,
+		UART_GET_BYTES,
+		UART_GET_SHORT,
+		UART_GET_SHORTS,
+		UART_INITIALISE_SENSOR,
+		UART_RESET_SENSOR,
+		UART_GET_MODE_NAME,
+		UART_SET_MODE,
+		OPEN_I2C_PORT,
+		OPEN_UART_PORT
+		
 		
 	}
 	
@@ -34,12 +106,22 @@ public class EV3Request implements Serializable {
 	
 	public boolean replyRequired;
 	
-	public int intValue, intValue2, intValue3;
+	public int intValue, intValue2, intValue3, intValue4, intValue5, intValue6, intValue7, intValue8, intValue9, intValue10, intValue11;
 	
 	public File file;
 	
-	public byte[] byteData;
+	public byte[] byteData, byteData2;
 	
 	public int[] intData;
+	
+	public boolean flag;
+	
+	public String str;
+	
+	public char ch;
+	
+	public char[] chars;
+	
+	public Image image;
 
 }

@@ -15,5 +15,7 @@ public class EV3Reply implements Serializable {
 	public byte[] contents;
 	
 	public String name;
+	public float[] floats;
+	public short[] shorts;
 
 }

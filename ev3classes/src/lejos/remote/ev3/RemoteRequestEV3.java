@@ -27,6 +27,7 @@ public class RemoteRequestEV3 implements EV3, Serializable {
 	private ObjectOutputStream os;
 	private Socket socket;
 	private ArrayList<RemoteRequestPort> ports = new ArrayList<RemoteRequestPort>();
+	private RemoteRequestKeys keys;
 	
 	private static final int PORT = 8002;
 	
@@ -35,6 +36,7 @@ public class RemoteRequestEV3 implements EV3, Serializable {
 		is = new ObjectInputStream(socket.getInputStream());
 		os = new ObjectOutputStream(socket.getOutputStream());
 		createPorts();
+		keys = new RemoteRequestKeys(is, os);
 	}
 	
 	private void createPorts() {
@@ -79,7 +81,6 @@ public class RemoteRequestEV3 implements EV3, Serializable {
 
 	@Override
 	public GraphicsLCD getGraphicsLCD() {
-		// TODO Auto-generated method stub
 		return new RemoteRequestGraphicsLCD(is, os);
 	}
 
@@ -124,12 +125,12 @@ public class RemoteRequestEV3 implements EV3, Serializable {
 
 	@Override
 	public Keys getKeys() {
-		return new RemoteRequestKeys(is, os);
+		return keys;
 	}
 
 	@Override
 	public Key getKey(String name) {
-		return new RemoteRequestKey(is, os);
+		return new RemoteRequestKey(is, os, keys, name);
 	}
 
 	@Override

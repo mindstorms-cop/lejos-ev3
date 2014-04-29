@@ -1,5 +1,6 @@
 package lejos.remote.ev3;
 
+import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
@@ -8,77 +9,167 @@ import lejos.hardware.lcd.GraphicsLCD;
 import lejos.hardware.lcd.Image;
 
 public class RemoteRequestGraphicsLCD implements GraphicsLCD {
+	private ObjectInputStream is;
+	private ObjectOutputStream os;
 
 	public RemoteRequestGraphicsLCD(ObjectInputStream is, ObjectOutputStream os) {
-		// TODO Auto-generated constructor stub
+		this.is = is;
+		this.os = os;
 	}
 
 	@Override
 	public void refresh() {
-		// TODO Auto-generated method stub
-
+		EV3Request req = new EV3Request();
+		req.request = EV3Request.Request.LCD_REFRESH;
+		try {
+			os.writeObject(req);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	@Override
 	public void clear() {
-		// TODO Auto-generated method stub
-
+		EV3Request req = new EV3Request();
+		req.request = EV3Request.Request.LCD_CLEAR;
+		try {
+			os.writeObject(req);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	@Override
 	public int getWidth() {
-		// TODO Auto-generated method stub
-		return 0;
+		EV3Request req = new EV3Request();
+		req.request = EV3Request.Request.LCD_GET_WIDTH;
+		req.replyRequired = true;
+		try {
+			os.writeObject(req);
+			EV3Reply reply = (EV3Reply) is.readObject();
+			return reply.reply;
+		} catch (Exception e) {
+			return 0;
+		}
 	}
 
 	@Override
 	public int getHeight() {
-		// TODO Auto-generated method stub
-		return 0;
+		EV3Request req = new EV3Request();
+		req.request = EV3Request.Request.LCD_GET_HEIGHT;
+		req.replyRequired = true;
+		try {
+			os.writeObject(req);
+			EV3Reply reply = (EV3Reply) is.readObject();
+			return reply.reply;
+		} catch (Exception e) {
+			return 0;
+		}
 	}
 
 	@Override
 	public byte[] getDisplay() {
-		// TODO Auto-generated method stub
-		return null;
+		EV3Request req = new EV3Request();
+		req.request = EV3Request.Request.LCD_GET_DISPLAY;
+		req.replyRequired = true;
+		try {
+			os.writeObject(req);
+			EV3Reply reply = (EV3Reply) is.readObject();
+			return reply.contents;
+		} catch (Exception e) {
+			return null;
+		}
 	}
 
 	@Override
 	public byte[] getHWDisplay() {
-		// TODO Auto-generated method stub
-		return null;
+		EV3Request req = new EV3Request();
+		req.request = EV3Request.Request.LCD_GET_HW_DISPLAY;
+		req.replyRequired = true;
+		try {
+			os.writeObject(req);
+			EV3Reply reply = (EV3Reply) is.readObject();
+			return reply.contents;
+		} catch (Exception e) {
+			return null;
+		}
 	}
 
 	@Override
 	public void setContrast(int contrast) {
-		// TODO Auto-generated method stub
-
+		// Not implemented
 	}
 
 	@Override
 	public void bitBlt(byte[] src, int sw, int sh, int sx, int sy, int dx,
 			int dy, int w, int h, int rop) {
-		// TODO Auto-generated method stub
-
+		EV3Request req = new EV3Request();
+		req.request = EV3Request.Request.LCD_BITBLT_1;
+		req.byteData = src;
+		req.intValue = sw;
+		req.intValue2 = sh;
+		req.intValue3 = sx;
+		req.intValue4 = sy;
+		req.intValue5 = dx;
+		req.intValue6 = dy;
+		req.intValue7 = w;
+		req.intValue8 = h;
+		req.intValue9 = rop;
+		try {
+			os.writeObject(req);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	@Override
 	public void bitBlt(byte[] src, int sw, int sh, int sx, int sy, byte[] dst,
 			int dw, int dh, int dx, int dy, int w, int h, int rop) {
-		// TODO Auto-generated method stub
-
+		EV3Request req = new EV3Request();
+		req.request = EV3Request.Request.LCD_BITBLT_2;
+		req.byteData = src;
+		req.intValue = sw;
+		req.intValue2 = sh;
+		req.intValue3 = sx;
+		req.intValue4 = sy;
+		req.byteData2 = dst;
+		req.intValue5 = dw;
+		req.intValue6 = dh;
+		req.intValue7 = dx;
+		req.intValue8 = dy;
+		req.intValue9 = w;
+		req.intValue10 = h;
+		req.intValue11 = rop;
+		try {
+			os.writeObject(req);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	@Override
 	public void setAutoRefresh(boolean on) {
-		// TODO Auto-generated method stub
-
+		EV3Request req = new EV3Request();
+		req.request = EV3Request.Request.LCD_SET_AUTO_REFRESH;
+		req.flag = on;
+		try {
+			os.writeObject(req);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	@Override
 	public int setAutoRefreshPeriod(int period) {
-		// TODO Auto-generated method stub
-		return 0;
+		EV3Request req = new EV3Request();
+		req.request = EV3Request.Request.LCD_SET_AUTO_REFRESH;
+		req.intValue = period;
+		try {
+			os.writeObject(req);
+			return 0;
+		} catch (IOException e) {
+			return 0;
+		}
 	}
 
 	@Override
@@ -251,5 +342,4 @@ public class RemoteRequestGraphicsLCD implements GraphicsLCD {
 		// TODO Auto-generated method stub
 
 	}
-
 }
