@@ -42,6 +42,7 @@ import com.sun.jdi.connect.Connector.StringArgument;
 
 public class LaunchEV3ConfigDelegate extends AbstractJavaLaunchConfigurationDelegate {
 	public static final String ID_TYPE = "org.lejos.ev3.ldt.LaunchType";
+	private boolean debug = false;
 	
 	//TODO we should make sure, that uploads to the same EV3 are executed sequentially, not in parallel
 	
@@ -75,6 +76,8 @@ public class LaunchEV3ConfigDelegate extends AbstractJavaLaunchConfigurationDele
 		
 		boolean useSsh = p.getBoolean(org.lejos.ev3.ldt.preferences.PreferenceConstants.KEY_SSH_SCP, false);
 		
+		boolean namedBrick = p.getBoolean(org.lejos.ev3.ldt.preferences.PreferenceConstants.KEY_TARGET_CONNECT_BY_NAME, false);
+		
 		boolean debugMode = (ILaunchManager.DEBUG_MODE.equals(mode));
 		
 		if (monitor.isCanceled())
@@ -107,17 +110,16 @@ public class LaunchEV3ConfigDelegate extends AbstractJavaLaunchConfigurationDele
 			monitor.worked(1);			
 			monitor.subTask("Creating jar file and uploading " + binaryPath + " to the brick...");
 			
-			LeJOSEV3Util.message("Binary path is " + binaryPath);
-			LeJOSEV3Util.message("Main type name is " + mainTypeName);
-			LeJOSEV3Util.message("Project relative path is " + binary.getProjectRelativePath().toPortableString());
-			LeJOSEV3Util.message("Bin directory is " + binDirectory);
+			if (debug) LeJOSEV3Util.message("Binary path is " + binaryPath);
+			if (debug) LeJOSEV3Util.message("Main type name is " + mainTypeName);
+			if (debug) LeJOSEV3Util.message("Project relative path is " + binary.getProjectRelativePath().toPortableString());
+			if (debug) LeJOSEV3Util.message("Bin directory is " + binDirectory);
 			
 			JarCreator jc = new JarCreator(binDirectory, binaryPath, mainTypeName);
 			jc.run();
 			
 			LeJOSEV3Util.message("Jar file has been created successfully");
 				
-			LeJOSEV3Util.message("Uploading ...");
 			monitor.subTask("Uploading ...");
 			
 			String brickName = resolve(p, config, LaunchConstants.KEY_TARGET_USE_DEFAULTS,
@@ -147,6 +149,8 @@ public class LaunchEV3ConfigDelegate extends AbstractJavaLaunchConfigurationDele
 				if (debugMode) {
 					new Thread(new DebugStarter(launch, brickName, simpleName)).start();
 				}
+				
+				LeJOSEV3Util.message("Uploading to " + brickName + " ...");
 				int r = starter.invokeTool(LeJOSEV3Util.TOOL_EV3SCPUPLOAD, args);
 					
 				if (r == 0)
@@ -156,35 +160,42 @@ public class LaunchEV3ConfigDelegate extends AbstractJavaLaunchConfigurationDele
 			} else {
 				LeJOSEV3Util.message("Using the EV3 menu for upload and to execute program");
 				
-				// TODO : case where a specific brick is specified
-				BrickInfo[] bricks = Discover.discover();
-				
-				if (bricks.length ==  0) {
-					LeJOSEV3Util.error("No EV3 Found");					
-				} else {	
-					brickName = bricks[0].getIPAddress();
-					RMIMenu menu = (RMIMenu)Naming.lookup("//" + brickName + "/RemoteMenu");
-					File f = new File(binaryPath);
-					FileInputStream in = new FileInputStream(f);
-					byte[] data = new byte[(int)f.length()];
-				    in.read(data);
-				    in.close();
-				    menu.uploadFile("/home/lejos/programs/" + binary.getProjectRelativePath().toPortableString(), data);
-				    
-				    LeJOSEV3Util.message("Program has been uploaded");
-				    
-				    if (run) {
-				    	if (debugMode) {
-				    		LeJOSEV3Util.message("Starting program in debug mode ...");
-				    		new Thread(new DebugStarter(launch, brickName, simpleName)).start();
-				    		menu.debugProgram(binary.getProjectRelativePath().toPortableString().replace(".jar", ""));
-				    	}
-				    	else {
-				    		LeJOSEV3Util.message("Running program ...");
-				    		menu.runProgram(binary.getProjectRelativePath().toPortableString().replace(".jar", ""));
-				    	}	
-				    }
+				if (!namedBrick) {			
+					// TODO : case where a specific brick is specified
+					BrickInfo[] bricks = Discover.discover();
+					
+					if (bricks.length ==  0) {
+						LeJOSEV3Util.error("No EV3 Found");
+						return;
+					} else {	
+						brickName = bricks[0].getIPAddress();
+					}
 				}
+					
+				RMIMenu menu = (RMIMenu)Naming.lookup("//" + brickName + "/RemoteMenu");
+				File f = new File(binaryPath);
+				FileInputStream in = new FileInputStream(f);
+				byte[] data = new byte[(int)f.length()];
+			    in.read(data);
+			    in.close();
+			    
+				LeJOSEV3Util.message("Uploading to " + brickName + " ...");
+				
+			    menu.uploadFile("/home/lejos/programs/" + binary.getProjectRelativePath().toPortableString(), data);
+			    
+			    LeJOSEV3Util.message("Program has been uploaded");
+			    
+			    if (run) {
+			    	if (debugMode) {
+			    		LeJOSEV3Util.message("Starting program in debug mode ...");
+			    		new Thread(new DebugStarter(launch, brickName, simpleName)).start();
+			    		menu.debugProgram(binary.getProjectRelativePath().toPortableString().replace(".jar", ""));
+			    	}
+			    	else {
+			    		LeJOSEV3Util.message("Running program ...");
+			    		menu.runProgram(binary.getProjectRelativePath().toPortableString().replace(".jar", ""));
+			    	}	
+			    }
 			}
 			
 			LeJOSEV3Util.message("leJOS EV3 plugin launch complete");

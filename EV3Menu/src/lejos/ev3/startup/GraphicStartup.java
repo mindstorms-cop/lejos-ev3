@@ -28,6 +28,7 @@ import lejos.ev3.startup.GraphicListMenu;
 import lejos.ev3.startup.Utils;
 import lejos.utility.Delay;
 import lejos.ev3.startup.Config;
+import lejos.hardware.Battery;
 import lejos.hardware.Bluetooth;
 import lejos.hardware.BrickFinder;
 import lejos.hardware.Button;
@@ -38,14 +39,17 @@ import lejos.hardware.Sound;
 import lejos.hardware.Wifi;
 import lejos.hardware.ev3.LocalEV3;
 import lejos.hardware.lcd.Font;
+import lejos.hardware.lcd.GraphicsLCD;
+import lejos.hardware.lcd.Image;
 import lejos.hardware.lcd.LCD;
 import lejos.hardware.lcd.LCDOutputStream;
 import lejos.hardware.lcd.TextLCD;
 import lejos.hardware.port.Port;
 import lejos.hardware.port.TachoMotorPort;
-import lejos.internal.ev3.EV3TextLCD;
 import lejos.internal.io.Settings;
 import lejos.internal.io.SystemSettings;
+import lejos.remote.ev3.EV3Reply;
+import lejos.remote.ev3.EV3Request;
 import lejos.remote.ev3.Menu;
 import lejos.remote.ev3.MenuReply;
 import lejos.remote.ev3.MenuRequest;
@@ -54,9 +58,7 @@ import lejos.remote.ev3.RMIRemoteEV3;
 public class GraphicStartup implements Menu {
 	private static final int REMOTE_MENU_PORT = 8002;
 	
-	private static final String JAVA_RUN_JAR = "jrun -jar ";
 	private static final String JAVA_RUN_CP = "jrun -cp ";
-	private static final String JAVA_DEBUG_JAR = "jrun -Xdebug -Xrunjdwp:transport=dt_socket,server=y,address=8000,suspend=y -jar ";
 	private static final String JAVA_DEBUG_CP = "jrun -Xdebug -Xrunjdwp:transport=dt_socket,server=y,address=8000,suspend=y -cp ";
 	
 	private static final int TYPE_PROGRAM = 0;
@@ -77,8 +79,7 @@ public class GraphicStartup implements Menu {
     private static final String ICProgram = "\u00fc\u00ff\u00ff\u003f\u00fc\u00ff\u00ff\u003f\u0003\u0000\u0000\u00c0\u0003\u0000\u0000\u00c0\u0003\u0000\u0003\u00c0\u0003\u0000\u0003\u00c0\u0003\u00c0\u0000\u00c0\u0003\u00c0\u0000\u00c0\u0003\u00c0\u000c\u00c0\u0003\u00c0\u000c\u00c0\u0003\u0030\u000c\u00c0\u0003\u0030\u000c\u00c0\u0003\u0030\u0003\u00c0\u0003\u0030\u0003\u00c0\u0003\u00c0\u0000\u00c0\u0003\u00c0\u0000\u00c0\u0003\u00ff\u00cf\u00c3\u0003\u00ff\u00cf\u00c3\u0003\u0000\u0000\u00c3\u0003\u0000\u0000\u00c3\u0003\u00fc\u00f3\u00c0\u0003\u00fc\u00f3\u00c0\u0003\u0000\u0000\u00c0\u0003\u0000\u0000\u00c0\u00c3\u00ff\u003f\u00c0\u00c3\u00ff\u003f\u00c0\u0003\u0000\u0000\u00c0\u0003\u0000\u0000\u00c0\u0003\u0000\u0000\u00c0\u0003\u0000\u0000\u00c0\u00fc\u00ff\u00ff\u003f\u00fc\u00ff\u00ff\u003f";
     private static final String ICFiles = "\u0000\u00c0\u0000\u0000\u0000\u00c0\u0000\u0000\u0000\u0030\u00ff\u000f\u0000\u0030\u00ff\u000f\u0000\u000c\u000c\u0030\u0000\u000c\u000c\u0030\u00fc\u0003\u0030\u00cc\u00fc\u0003\u0030\u00cc\u00c3\u0000\u00c0\u00f0\u00c3\u0000\u00c0\u00f0\u003f\u0000\u0000\u00c3\u003f\u0000\u0000\u00c3\u00ff\u003f\u0000\u00fc\u00ff\u003f\u0000\u00fc\u0003\u00c0\u0000\u00f0\u0003\u00c0\u0000\u00f0\u0003\u0000\u00ff\u00ff\u0003\u0000\u00ff\u00ff\u0083\u0007\u0000\u00f3\u0083\u0008\u0000\u00f3\u0083\u0008\u00c0\u00cc\u0083\u0008\u00c0\u00cc\u0083\u0007\u0000\u00f3\u0083\u0000\u0000\u00f3\u0083\u0000\u0000\u00cc\u0083\u0000\u0000\u00cc\u0083\u0000\u0000\u00f3\u0083\u0000\u0000\u00f3\u0003\u0000\u00c0\u00cc\u0003\u0000\u00c0\u00cc\u00fc\u00ff\u00ff\u003f\u00fc\u00ff\u00ff\u003f";
     private static final String ICSamples = "\u0000\u00c0\u0000\u0000\u0000\u00c0\u0000\u0000\u0000\u0030\u00ff\u000f\u0000\u0030\u00ff\u000f\u0000\u000c\u000c\u0030\u0000\u000c\u000c\u0030\u00fc\u0003\u0030\u00cc\u00fc\u0003\u0030\u00cc\u00c3\u0000\u00c0\u00f0\u00c3\u0000\u00c0\u00f0\u003f\u0000\u0000\u00c3\u003f\u0000\u0000\u00c3\u00ff\u003f\u0000\u00fc\u00ff\u003f\u0000\u00fc\u0003\u00c0\u0000\u00f0\u0003\u00c0\u0000\u00f0\u0003\u0000\u00ff\u00ff\u0003\u001e\u00ff\u00ff\u0003\u0001\u0000\u00f3\u0003\u0001\u0000\u00f3\u0003\u0001\u00c0\u00cc\u0003\u001e\u00c0\u00cc\u0003\u0010\u0000\u00f3\u0003\u0010\u0000\u00f3\u0003\u0010\u0000\u00cc\u0003\u000f\u0000\u00cc\u0003\u0000\u0000\u00f3\u0003\u0000\u0000\u00f3\u0003\u0000\u00c0\u00cc\u0003\u0000\u00c0\u00cc\u00fc\u00ff\u00ff\u003f\u00fc\u00ff\u00ff\u003f";
-    private static final String ICTools = "\u0000\u00c0\u0000\u0000\u0000\u00c0\u0000\u0000\u0000\u0030\u00ff\u000f\u0000\u0030\u00ff\u000f\u0000\u000c\u000c\u0030\u0000\u000c\u000c\u0030\u00fc\u0003\u0030\u00cc\u00fc\u0003\u0030\u00cc\u00c3\u0000\u00c0\u00f0\u00c3\u0000\u00c0\u00f0\u003f\u0000\u0000\u00c3\u003f\u0000\u0000\u00c3\u00ff\u003f\u0000\u00fc\u00ff\u003f\u0000\u00fc\u0003\u00c0\u0000\u00f0\u0003\u00c0\u0000\u00f0\u0003\u0000\u00ff\u00ff\u0003\u001e\u00ff\u00ff\u0003\u0001\u0000\u00f3\u0003\u0001\u0000\u00f3\u0003\u0001\u00c0\u00cc\u0003\u001e\u00c0\u00cc\u0003\u0010\u0000\u00f3\u0003\u0010\u0000\u00f3\u0003\u0010\u0000\u00cc\u0003\u000f\u0000\u00cc\u0003\u0000\u0000\u00f3\u0003\u0000\u0000\u00f3\u0003\u0000\u00c0\u00cc\u0003\u0000\u00c0\u00cc\u00fc\u00ff\u00ff\u003f\u00fc\u00ff\u00ff\u003f";
-
+    private static final String ICTools = "\u0000\u00c0\u0000\u0000\u0000\u00c0\u0000\u0000\u0000\u0030\u00ff\u000f\u0000\u0030\u00ff\u000f\u0000\u000c\u000c\u0030\u0000\u000c\u000c\u0030\u00fc\u0003\u0030\u00cc\u00fc\u0003\u0030\u00cc\u00c3\u0000\u00c0\u00f0\u00c3\u0000\u00c0\u00f0\u003f\u0000\u0000\u00c3\u003f\u0000\u0000\u00c3\u00ff\u003f\u0000\u00fc\u00ff\u003f\u0000\u00fc\u0003\u00c0\u0000\u00f0\u0003\u00c0\u0000\u00f0\u0003\u0000\u00ff\u00ff\u0003\u0000\u00ff\u00ff\u0003\u0000\u0000\u00f3\u0003\u00fe\u0000\u00f3\u0003\u0010\u00c0\u00cc\u0003\u0010\u00c0\u00cc\u0003\u0010\u0000\u00f3\u0003\u0010\u0000\u00f3\u0003\u0010\u0000\u00cc\u0003\u0010\u0000\u00cc\u0003\u0010\u0000\u00f3\u0003\u0000\u0000\u00f3\u0003\u0000\u00c0\u00cc\u0003\u0000\u00c0\u00cc\u00fc\u00ff\u00ff\u003f\u00fc\u00ff\u00ff\u003f";
     private static final String ICBlue = "\u0000\u00f0\u000f\u0000\u0000\u00f0\u000f\u0000\u0000\u00ff\u00ff\u0000\u0000\u00ff\u00ff\u0000\u00c0\u003f\u00ff\u0003\u00c0\u003f\u00ff\u0003\u00c0\u003f\u00fc\u0003\u00c0\u003f\u00fc\u0003\u00f0\u003c\u00f0\u000f\u00f0\u003c\u00f0\u000f\u00f0\u0030\u00c3\u000f\u00f0\u0030\u00c3\u000f\u00f0\u0003\u00c3\u000f\u00f0\u0003\u00c3\u000f\u00f0\u000f\u00f0\u000f\u00f0\u000f\u00f0\u000f\u00f0\u000f\u00f0\u000f\u00f0\u000f\u00f0\u000f\u00f0\u0003\u00c3\u000f\u00f0\u0003\u00c3\u000f\u00f0\u0030\u00c3\u000f\u00f0\u0030\u00c3\u000f\u00f0\u003c\u00f0\u000f\u00f0\u003c\u00f0\u000f\u00c0\u003f\u00fc\u0003\u00c0\u003f\u00fc\u0003\u00c0\u003f\u00ff\u0003\u00c0\u003f\u00ff\u0003\u0000\u00ff\u00ff\u0000\u0000\u00ff\u00ff\u0000\u0000\u00f0\u000f\u0000\u0000\u00f0\u000f\u0000";
     private static final String ICWifi = "\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u00f8\u001f\u0000\u0000\u00ff\u00ff\u0000\u00c0\u00ff\u00ff\u0003\u00f0\u00ff\u00ff\u000f\u00f8\u003f\u00fc\u001f\u00fe\u0003\u00c0\u007f\u00ff\u0000\u0000\u00ff\u003f\u0000\u0000\u00fc\u001f\u0000\u0000\u00f8\u000e\u00f8\u001f\u0070\u0000\u00fe\u007f\u0000\u0000\u00ff\u00ff\u0000\u0080\u00ff\u00ff\u0001\u00c0\u003f\u00fc\u0003\u00c0\u0007\u00e0\u0003\u00c0\u0003\u00c0\u0001\u0000\u0000\u0000\u0000\u0000\u00c0\u0003\u0000\u0000\u00e0\u0007\u0000\u0000\u00e0\u0007\u0000\u0000\u00e0\u0007\u0000\u0000\u00e0\u0007\u0000\u0000\u00c0\u0003\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000";
    
@@ -100,7 +101,7 @@ public class GraphicStartup implements Menu {
  
     private static final String ICYes = "\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u000f\u0000\u0000\u0000\u000f\u0000\u0000\u00c0\u003f\u0000\u0000\u00c0\u003f\u0000\u0000\u00f0\u00ff\u0000\u0000\u00f0\u00ff\u0000\u0000\u00fc\u003f\u0000\u0000\u00fc\u003f\u0030\u0000\u00ff\u000f\u0030\u0000\u00ff\u000f\u00fc\u00c0\u00ff\u0003\u00fc\u00c0\u00ff\u0003\u00ff\u00f3\u00ff\u0000\u00ff\u00f3\u00ff\u0000\u00ff\u00ff\u003f\u0000\u00ff\u00ff\u003f\u0000\u00fc\u00ff\u000f\u0000\u00fc\u00ff\u000f\u0000\u00f0\u00ff\u0003\u0000\u00f0\u00ff\u0003\u0000\u00c0\u00ff\u0000\u0000\u00c0\u00ff\u0000\u0000\u0000\u003f\u0000\u0000\u0000\u003f\u0000\u0000\u0000\u000c\u0000\u0000\u0000\u000c\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000";
     private static final String ICNo = "\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u00f0\u0000\u0000\u000f\u00f0\u0000\u0000\u000f\u00fc\u0003\u00c0\u003f\u00fc\u0003\u00c0\u003f\u00fc\u000f\u00f0\u003f\u00fc\u000f\u00f0\u003f\u00f0\u003f\u00fc\u000f\u00f0\u003f\u00fc\u000f\u00c0\u00ff\u00ff\u0003\u00c0\u00ff\u00ff\u0003\u0000\u00ff\u00ff\u0000\u0000\u00ff\u00ff\u0000\u0000\u00fc\u003f\u0000\u0000\u00fc\u003f\u0000\u0000\u00fc\u003f\u0000\u0000\u00fc\u003f\u0000\u0000\u00ff\u00ff\u0000\u0000\u00ff\u00ff\u0000\u00c0\u00ff\u00ff\u0003\u00c0\u00ff\u00ff\u0003\u00f0\u003f\u00fc\u000f\u00f0\u003f\u00fc\u000f\u00fc\u000f\u00f0\u003f\u00fc\u000f\u00f0\u003f\u00fc\u0003\u00c0\u003f\u00fc\u0003\u00c0\u003f\u00f0\u0000\u0000\u000f\u00f0\u0000\u0000\u000f\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000";
-
+    
     private static final String PROGRAMS_DIRECTORY = "/home/lejos/programs";
     private static final String SAMPLES_DIRECTORY = "/home/root/lejos/samples";
     private static final String TOOLS_DIRECTORY = "/home/root/lejos/tools";
@@ -142,6 +143,7 @@ public class GraphicStartup implements Menu {
      * Main method
      */
 	public static void main(String[] args) throws Exception {
+		Thread.setDefaultUncaughtExceptionHandler(new ExceptionHandler());
 		System.out.println("Menu started");
 		
         if (args.length > 0) {    	
@@ -156,14 +158,21 @@ public class GraphicStartup implements Menu {
         System.out.println("Version: " + version);
         
         // Check for autorun
-    	File f = getDefaultProgram();
-    	if (f != null)
+    	File file = getDefaultProgram();
+    	if (file != null)
     	{
         	String auto = Settings.getProperty(defaultProgramAutoRunProperty, "");        	
     		if (auto.equals("ON") && !Button.LEFT.isDown())
             {
-            	System.out.println("Auto executing default program " + f.getPath());
-                exec(f, JAVA_RUN_JAR + f.getPath(), PROGRAMS_DIRECTORY);
+            	System.out.println("Auto executing default program " + file.getPath());
+				try {
+					JarFile jar = new JarFile(file);
+					String mainClass = jar.getManifest().getMainAttributes().getValue("Main-class");
+					jar.close();
+					exec(file, JAVA_RUN_CP + file.getPath() + " lejos.internal.ev3.EV3Wrapper " + mainClass, PROGRAMS_DIRECTORY);
+				} catch (IOException e) {
+					System.err.println("Exception running program");
+				}
             }
     	}
         
@@ -206,8 +215,12 @@ public class GraphicStartup implements Menu {
         public void run()
         {               
         	// Create the Bluetooth local device and connect to DBus
-            System.out.println("Creating bluetooth local device");
-            bt = Bluetooth.getLocalDevice();
+        	try {
+	            System.out.println("Creating bluetooth local device");
+	            bt = Bluetooth.getLocalDevice();
+        	} catch (Exception e) {
+        		// Ignore
+        	}
             
         	// Start the RMI server
             System.out.println("Starting RMI");
@@ -274,8 +287,8 @@ public class GraphicStartup implements Menu {
     {
         GraphicMenu menu = new GraphicMenu(new String[]
                 {
-                    "Run Default", "Files", "Samples", "Tools", "Bluetooth", "Wifi", "Sound", "System", "Version"
-                },new String[] {ICDefault,ICFiles,ICTools, ICSamples,ICBlue,ICWifi,ICSound,ICEV3,ICLeJOS},3);
+                    "Run Default", "Programs", "Samples", "Tools", "Bluetooth", "Wifi", "Sound", "System", "Version"
+                },new String[] {ICDefault,ICFiles,ICSamples,ICTools,ICBlue,ICWifi,ICSound,ICEV3,ICLeJOS},3);
         int selection = 0;
         do
         {
@@ -353,84 +366,136 @@ public class GraphicStartup implements Menu {
             		            		
             		try {
 	            		while(true) { 
-	                		MenuRequest request = (MenuRequest) is.readObject();
-	                		MenuReply reply = new MenuReply();
-	                		
-		            		switch (request.request) {
-		            		case RUN_PROGRAM:
-		            			runProgram(request.name);
-		            			break;
-							case DEBUG_PROGRAM:
-								debugProgram(request.name);
-								break;
-							case DELETE_ALL_PROGRAMS:
-								deleteAllPrograms();
-								break;
-							case DELETE_FILE:
-								reply.result = deleteFile(request.name);
-								os.writeObject(reply);
-								break;
-							case FETCH_FILE:
-								reply.contents = fetchFile(request.name);
-								os.writeObject(reply);
-								break;
-							case GET_FILE_SIZE:
-								reply.reply = (int) getFileSize(request.name);
-								os.writeObject(reply);
-								break;
-							case GET_MENU_VERSION:
-								reply.value = getMenuVersion();
-								os.writeObject(reply);
-								break;
-							case GET_NAME:
-								reply.value = menu.getName();
-								os.writeObject(reply);
-								break;
-							case GET_PROGRAM_NAMES:
-								reply.names = getProgramNames();
-								os.writeObject(reply);
-								break;
-							case GET_SAMPLE_NAMES:
-								reply.names = getSampleNames();
-								os.writeObject(reply);
-								break;
-							case GET_SETTING:
-								reply.value = getSetting(request.name);
-								os.writeObject(reply);
-								break;
-							case GET_VERSION:
-								reply.value = getVersion();
-								os.writeObject(reply);
-								break;
-							case RUN_SAMPLE:
-		            			runSample(request.name);
-								break;
-							case SET_NAME:
-								setName(request.name);
-								break;
-							case SET_SETTING:
-								setSetting(request.name, request.value);
-								break;
-							case UPLOAD_FILE:
-								reply.result = uploadFile(request.name, request.contents);
-								os.writeObject(reply);
-								break;  
-							case STOP_PROGRAM:
-								stopProgram();
-								break;
-							case SHUT_DOWN:
-								shutdown();
-								break;
-							case GET_EXECUTING_PROGRAM_NAME:
-								reply.value = programName;
-								os.writeObject(reply);
-								break;
-							case SUSPEND:
-								GraphicStartup.this.suspend();
-								break;
-							case RESUME:
-								GraphicStartup.this.resume();
-		            		}
+	            			Object obj = is.readObject();
+	            			
+	            			if (obj instanceof MenuRequest) {
+		                		MenuRequest request = (MenuRequest) obj;
+		                		MenuReply reply = new MenuReply();
+		                		
+			            		switch (request.request) {
+			            		case RUN_PROGRAM:
+			            			runProgram(request.name);
+			            			break;
+								case DEBUG_PROGRAM:
+									debugProgram(request.name);
+									break;
+								case DELETE_ALL_PROGRAMS:
+									deleteAllPrograms();
+									break;
+								case DELETE_FILE:
+									reply.result = deleteFile(request.name);
+									os.writeObject(reply);
+									break;
+								case FETCH_FILE:
+									reply.contents = fetchFile(request.name);
+									os.writeObject(reply);
+									break;
+								case GET_FILE_SIZE:
+									reply.reply = (int) getFileSize(request.name);
+									os.writeObject(reply);
+									break;
+								case GET_MENU_VERSION:
+									reply.value = getMenuVersion();
+									os.writeObject(reply);
+									break;
+								case GET_NAME:
+									reply.value = menu.getName();
+									os.writeObject(reply);
+									break;
+								case GET_PROGRAM_NAMES:
+									reply.names = getProgramNames();
+									os.writeObject(reply);
+									break;
+								case GET_SAMPLE_NAMES:
+									reply.names = getSampleNames();
+									os.writeObject(reply);
+									break;
+								case GET_SETTING:
+									reply.value = getSetting(request.name);
+									os.writeObject(reply);
+									break;
+								case GET_VERSION:
+									reply.value = getVersion();
+									os.writeObject(reply);
+									break;
+								case RUN_SAMPLE:
+			            			runSample(request.name);
+									break;
+								case SET_NAME:
+									setName(request.name);
+									break;
+								case SET_SETTING:
+									setSetting(request.name, request.value);
+									break;
+								case UPLOAD_FILE:
+									reply.result = uploadFile(request.name, request.contents);
+									os.writeObject(reply);
+									break;  
+								case STOP_PROGRAM:
+									stopProgram();
+									break;
+								case SHUT_DOWN:
+									shutdown();
+									break;
+								case GET_EXECUTING_PROGRAM_NAME:
+									reply.value = programName;
+									os.writeObject(reply);
+									break;
+								case SUSPEND:
+									GraphicStartup.this.suspend();
+									break;
+								case RESUME:
+									GraphicStartup.this.resume();
+			            		}
+	            			} else if (obj instanceof EV3Request) {
+		                		EV3Request request = (EV3Request) obj;
+		                		EV3Reply reply = new EV3Reply();
+		                		
+		                		switch (request.request){
+		                		case GET_VOLTAGE_MILLIVOLTS:
+		                			reply.reply = Battery.getVoltageMilliVolt();
+		                			os.writeObject(reply);
+		                			break;
+		                		case GET_VOLTAGE:
+		                			reply.floatReply = Battery.getVoltage();
+		                			os.writeObject(reply);
+		                			break;
+		                		case GET_BATTERY_CURRENT:
+		                			reply.floatReply = Battery.getBatteryCurrent();
+		                			os.writeObject(reply);
+		                			break;
+		                		case GET_MOTOR_CURRENT:
+		                			reply.floatReply = Battery.getMotorCurrent();
+		                			os.writeObject(reply);
+		                			break;
+		                		case SYSTEM_SOUND:
+		                			Sound.systemSound(false, request.intValue);
+		                			break;
+		                		case GET_NAME:
+									reply.value = menu.getName();
+									os.writeObject(reply);
+									break;
+		                		case LED_PATTERN:
+		                			LocalEV3.get().getLED().setPattern(request.intValue);
+		                			break;
+		                		case WAIT_FOR_ANY_EVENT:
+		                			reply.reply = Button.waitForAnyEvent(request.intValue);
+		                			os.writeObject(reply);
+		                			break;
+		                		case WAIT_FOR_ANY_PRESS:
+		                			reply.reply = Button.waitForAnyPress(request.intValue);
+		                			os.writeObject(reply);
+		                			break;
+		                		case GET_BUTTONS:
+		                			reply.reply = Button.getButtons();
+		                			os.writeObject(reply);
+		                			break;
+		                		case READ_BUTTONS:
+		                			reply.reply = Button.readButtons();
+		                			os.writeObject(reply);
+		                			break;
+		                		}
+	            			}
 	            		}
             		
                     } catch(Exception e) {
@@ -751,16 +816,23 @@ public class GraphicStartup implements Menu {
      */
     private void mainRunDefault()
     {
-    	File f = getDefaultProgram();
-        if (f == null)
+    	File file = getDefaultProgram();
+        if (file == null)
         {
        		msg("No default set");
         }
         else
         {
-        	System.out.println("Executing default program " + f.getPath());
+        	System.out.println("Executing default program " + file.getPath());
         	ind.suspend();
-            exec(f, JAVA_RUN_JAR + f.getPath(), PROGRAMS_DIRECTORY);
+			try {
+				JarFile jar = new JarFile(file);
+				String mainClass = jar.getManifest().getMainAttributes().getValue("Main-class");
+				jar.close();
+	            exec(file, JAVA_RUN_CP + file.getPath() + " lejos.internal.ev3.EV3Wrapper " + mainClass, PROGRAMS_DIRECTORY);
+			} catch (IOException e) {
+				System.err.println("Exception running program");
+			}
         	ind.resume();
         }
     }
@@ -1155,6 +1227,8 @@ public class GraphicStartup implements Menu {
         	lcd.refresh();
         	lcd.setAutoRefresh(false);
 
+        	drawLaunchScreen();
+                    	
             program = new ProcessBuilder(command.split(" ")).directory(new File(directory)).start();
             BufferedReader input = new BufferedReader(new InputStreamReader(program.getInputStream()));
             BufferedReader err= new BufferedReader(new InputStreamReader(program.getErrorStream()));
@@ -1204,6 +1278,8 @@ public class GraphicStartup implements Menu {
         	lcd.refresh();
         	lcd.setAutoRefresh(false);
         	
+        	drawLaunchScreen();
+        	
         	String[] args = command.split(" ");
         	File directory = jar.getParentFile();
         	
@@ -1224,6 +1300,7 @@ public class GraphicStartup implements Menu {
         	
             suspend = true;
             curMenu.quit(); // Quit the current menu and go into the suspend loop
+            
         } catch (Exception e) {
         	System.err.println("Failed to start program: " + e);
         } 
@@ -1302,7 +1379,7 @@ public class GraphicStartup implements Menu {
     	//System.out.println("Finding files ...");
         int selection = 0;
         do {
-            File[] files = (new File(TOOLS_DIRECTORY)).listFiles();
+            File[] files = new File(TOOLS_DIRECTORY).listFiles();
             int len = 0;
             for (int i = 0; i < files.length && files[i] != null; i++)
                 len++;
@@ -1315,16 +1392,36 @@ public class GraphicStartup implements Menu {
             String fileNames[] = new String[len];
             String[] icons = new String[len];
             for (int i = 0; i < len; i++){
-                fileNames[i] = files[i].getName();
+            	fileNames[i] = formatFileName(files[i].getName());
                 String ext = Utils.getExtension(files[i].getName());
                if (ext.equals("jar"))
                 	icons[i] = ICMProgram;
             }
+            
             menu.setItems(fileNames,icons);
             selection = getSelection(menu, selection);
             if (selection >= 0)
                 toolMenu(files[selection]);
         } while (selection >= 0);
+    }
+    
+    /**
+     * Method to add spaces before capital letters and remove .jar extension.
+     * 
+     * @param fileName
+     * @return
+     */
+	static private String formatFileName(String fileName) {
+    	StringBuffer formattedName = new StringBuffer(""+fileName.charAt(0));
+		for(int i=1;i<fileName.length();i++) { //Skip the first letter-can't put space before first word
+    		if(fileName.charAt(i)=='.') break;
+    		if(Character.isUpperCase(fileName.charAt(i))) {
+    			formattedName.append(' ');
+    		}
+    		formattedName.append(fileName.charAt(i));
+    		
+    	}
+    	return formattedName.toString();
     }
     
     /**
@@ -1538,7 +1635,8 @@ public class GraphicStartup implements Menu {
 	    			// TODO: Fix this
 	    			// clear not necessary, pixels are always overwritten
 	    			for (int i=0; i<lcd.getWidth(); i++)
-	    				buf[i] = 0;	    			
+	    				buf[i] = 0;	  
+	    			indiBA.setWifi(ips.size() > 1);
 	    			indiBA.draw(time, buf);
 	    			lcd.refresh();
     			
@@ -1596,6 +1694,17 @@ public class GraphicStartup implements Menu {
         return result;
     } 
  
+    public static void drawLaunchScreen() {
+    	GraphicsLCD g = LocalEV3.get().getGraphicsLCD();
+    	g.setFont(Font.getDefaultFont());
+    	g.drawRegion(duke, 0, 0, duke.getWidth(), duke.getHeight(), GraphicsLCD.TRANS_NONE, 50, 65, GraphicsLCD.HCENTER | GraphicsLCD.VCENTER);
+    	int x = LCD.SCREEN_WIDTH/2;
+    	g.drawString("Wait", x, 30, 0);
+    	g.drawString("a", x, 45, 0);
+    	g.drawString("second...", x, 60, 0);
+    	g.refresh(); // TODO: Needed?
+    }
+    
 	@Override
 	public void runProgram(String programName) {
 		JarFile jar = null;
@@ -1606,7 +1715,7 @@ public class GraphicStartup implements Menu {
 			String mainClass = jar.getManifest().getMainAttributes().getValue("Main-class");
 			jar.close();
 	    	ind.suspend();
-			startProgram(JAVA_RUN_CP + fullName + " lejos.internal.ev3.EV3Wrapper " + mainClass, jarFile);
+	    	startProgram(JAVA_RUN_CP + fullName + " lejos.internal.ev3.EV3Wrapper " + mainClass, jarFile);
 		} catch (IOException e) {
 			System.err.println("Failed to run program");
 		}
@@ -1638,7 +1747,7 @@ public class GraphicStartup implements Menu {
 			String mainClass = jar.getManifest().getMainAttributes().getValue("Main-class");
 			jar.close();
 	    	ind.suspend();
-			startProgram(JAVA_RUN_CP + fullName + " lejos.internal.ev3.EV3Wrapper " + mainClass, jarFile);
+	    	startProgram(JAVA_RUN_CP + fullName + " lejos.internal.ev3.EV3Wrapper " + mainClass, jarFile);
 		} catch (IOException e) {
 			System.err.println("Failed to run program");
 		}
@@ -1915,4 +2024,173 @@ public class GraphicStartup implements Menu {
 		suspend = false;
 		ind.resume();
 	}
+	
+	static final Image duke = new Image(100, 64, new byte[] {(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+            (byte) 0x00, (byte) 0x00, (byte) 0x1c, (byte) 0x00, (byte) 0x00, 
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+            (byte) 0x1e, (byte) 0x04, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x1e, (byte) 0x0f, 
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+            (byte) 0x60, (byte) 0x3e, (byte) 0x0f, (byte) 0x00, (byte) 0x00, 
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0xf0, (byte) 0xbe, 
+            (byte) 0x0f, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+            (byte) 0x00, (byte) 0xf0, (byte) 0xbe, (byte) 0x07, (byte) 0x00, 
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0xf0, 
+            (byte) 0xfd, (byte) 0x07, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+            (byte) 0x00, (byte) 0x01, (byte) 0xe0, (byte) 0xff, (byte) 0x07, 
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x03, 
+            (byte) 0xe0, (byte) 0xff, (byte) 0x07, (byte) 0x00, (byte) 0x00, 
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+            (byte) 0x00, (byte) 0x00, (byte) 0x0f, (byte) 0xc0, (byte) 0xff, 
+            (byte) 0x07, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+            (byte) 0x1f, (byte) 0xc0, (byte) 0xff, (byte) 0x07, (byte) 0x00, 
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x3f, (byte) 0x80, 
+            (byte) 0xff, (byte) 0x07, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+            (byte) 0x00, (byte) 0x7f, (byte) 0x00, (byte) 0xff, (byte) 0x07, 
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0xff, 
+            (byte) 0x00, (byte) 0xff, (byte) 0x0f, (byte) 0x00, (byte) 0x00, 
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+            (byte) 0x00, (byte) 0x00, (byte) 0xff, (byte) 0xe1, (byte) 0xff, 
+            (byte) 0x07, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+            (byte) 0xff, (byte) 0xf3, (byte) 0xff, (byte) 0x07, (byte) 0x00, 
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0xff, (byte) 0xf7, 
+            (byte) 0xff, (byte) 0x03, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+            (byte) 0x00, (byte) 0xff, (byte) 0xef, (byte) 0xfe, (byte) 0x01, 
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0xff, 
+            (byte) 0x0f, (byte) 0xf8, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+            (byte) 0x00, (byte) 0x00, (byte) 0xff, (byte) 0x1f, (byte) 0xe0, 
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+            (byte) 0xff, (byte) 0x3f, (byte) 0xc0, (byte) 0x00, (byte) 0x00, 
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0xff, (byte) 0x7f, 
+            (byte) 0xc0, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+            (byte) 0x00, (byte) 0xff, (byte) 0x7f, (byte) 0xc0, (byte) 0x00, 
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0xff, 
+            (byte) 0xff, (byte) 0xc0, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+            (byte) 0x00, (byte) 0x00, (byte) 0xff, (byte) 0xff, (byte) 0xc1, 
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+            (byte) 0xff, (byte) 0xff, (byte) 0xc0, (byte) 0x00, (byte) 0x00, 
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0xff, (byte) 0xfd, 
+            (byte) 0xc3, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+            (byte) 0x00, (byte) 0x3f, (byte) 0xea, (byte) 0x7f, (byte) 0x00, 
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x5f, 
+            (byte) 0x55, (byte) 0x7f, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+            (byte) 0x00, (byte) 0x80, (byte) 0x8f, (byte) 0xf8, (byte) 0x3c, 
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x80, 
+            (byte) 0x57, (byte) 0x55, (byte) 0x3c, (byte) 0x00, (byte) 0x00, 
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+            (byte) 0x00, (byte) 0x00, (byte) 0x80, (byte) 0xaf, (byte) 0xea, 
+            (byte) 0x38, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+            (byte) 0x80, (byte) 0x55, (byte) 0x55, (byte) 0x38, (byte) 0x00, 
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0xc0, (byte) 0xad, 
+            (byte) 0x7a, (byte) 0x30, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+            (byte) 0x00, (byte) 0xc0, (byte) 0x5d, (byte) 0x15, (byte) 0x30, 
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0xc0, 
+            (byte) 0xb9, (byte) 0x1e, (byte) 0x60, (byte) 0x00, (byte) 0x00, 
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+            (byte) 0x00, (byte) 0x00, (byte) 0xe0, (byte) 0xf0, (byte) 0x07, 
+            (byte) 0x60, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+            (byte) 0xf0, (byte) 0x80, (byte) 0x00, (byte) 0xe0, (byte) 0x00, 
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0xf8, (byte) 0x00, 
+            (byte) 0x00, (byte) 0xc0, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+            (byte) 0x00, (byte) 0xf8, (byte) 0x00, (byte) 0x00, (byte) 0xc0, 
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0xcc, 
+            (byte) 0x00, (byte) 0x00, (byte) 0x80, (byte) 0x01, (byte) 0x00, 
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+            (byte) 0x00, (byte) 0x00, (byte) 0x6c, (byte) 0x00, (byte) 0x00, 
+            (byte) 0x80, (byte) 0x01, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+            (byte) 0x6c, (byte) 0x00, (byte) 0x00, (byte) 0x80, (byte) 0x01, 
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x6c, (byte) 0x00, 
+            (byte) 0x00, (byte) 0x80, (byte) 0x01, (byte) 0x00, (byte) 0x00, 
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+            (byte) 0x00, (byte) 0x6c, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+            (byte) 0x03, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x78, 
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x03, (byte) 0x00, 
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+            (byte) 0x00, (byte) 0x00, (byte) 0x38, (byte) 0x00, (byte) 0x00, 
+            (byte) 0x00, (byte) 0x03, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+            (byte) 0x38, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x03, 
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x38, (byte) 0x00, 
+            (byte) 0x00, (byte) 0x00, (byte) 0x03, (byte) 0x00, (byte) 0x00, 
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+            (byte) 0x00, (byte) 0x38, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+            (byte) 0x06, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x3c, 
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x06, (byte) 0x00, 
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+            (byte) 0x00, (byte) 0x00, (byte) 0x3c, (byte) 0x00, (byte) 0x00, 
+            (byte) 0x00, (byte) 0x06, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+            (byte) 0x1e, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x06, 
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x1f, (byte) 0x00, 
+            (byte) 0x0c, (byte) 0x00, (byte) 0x06, (byte) 0x00, (byte) 0x00, 
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+            (byte) 0x00, (byte) 0x1f, (byte) 0x80, (byte) 0x7f, (byte) 0x00, 
+            (byte) 0x06, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x1f, 
+            (byte) 0xe0, (byte) 0xff, (byte) 0x00, (byte) 0x06, (byte) 0x00, 
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+            (byte) 0x00, (byte) 0x00, (byte) 0x18, (byte) 0xf0, (byte) 0x80, 
+            (byte) 0x01, (byte) 0x06, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+            (byte) 0x18, (byte) 0x38, (byte) 0x00, (byte) 0x03, (byte) 0x06, 
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x18, (byte) 0x1c, 
+            (byte) 0x00, (byte) 0x06, (byte) 0x07, (byte) 0x00, (byte) 0x00, 
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+            (byte) 0x00, (byte) 0x18, (byte) 0x07, (byte) 0x00, (byte) 0x0e, 
+            (byte) 0x03, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x98, 
+            (byte) 0x03, (byte) 0x00, (byte) 0x0c, (byte) 0x03, (byte) 0x00, 
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+            (byte) 0x00, (byte) 0x00, (byte) 0xf8, (byte) 0x01, (byte) 0x00, 
+            (byte) 0x18, (byte) 0x03, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+            (byte) 0x70, (byte) 0x00, (byte) 0x00, (byte) 0xf0, (byte) 0x01, 
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+            (byte) 0x00, (byte) 0xe0, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+            (byte) 0x00, (byte) 0x00, });
+	
 }

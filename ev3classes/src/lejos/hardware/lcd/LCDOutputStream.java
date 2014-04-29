@@ -37,6 +37,11 @@ public class LCDOutputStream extends OutputStream {
 		char x = (char)(c & 0xFF);
 		switch (x)
 		{
+			case '\f':
+				lcd.clear();
+				line = 0;
+				col = 0;
+				break;
 			case '\t':
 				col = col + 8 - col % 8; 
 				break;

@@ -42,13 +42,13 @@
                id="org.lejos.ev3.ldt.actions.StartEV3ControlAction">
          </action>
          <action
-               label="Start EV3MapCommand"
+               label="Start EV3SDCard"
                icon="icons/ev3_16x16.png"
-               class="org.lejos.ev3.ldt.actions.StartEV3MapCommandAction"
-               tooltip="Starts the EV3MapCommand GUI tool"
+               class="org.lejos.ev3.ldt.actions.StartEV3SDCardAction"
+               tooltip="Starts the EV3SDCard GUI tool"
                menubarPath="leJOSEV3Menu/leJOSEV3Group"
-               toolbarPath="org.lejos.ev3.ldt/StartEV3MapCommand"
-               id="org.lejos.ev3.ldt.actions.StartEV3MapCommandAction">
+               toolbarPath="org.lejos.ev3.ldt/StartEV3SDCard"
+               id="org.lejos.ev3.ldt.actions.StartEV3SDCardAction">
          </action>
       </actionSet>
    </extension>
