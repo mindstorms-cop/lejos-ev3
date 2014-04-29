@@ -44,7 +44,13 @@ import lejos.hardware.lcd.Image;
 import lejos.hardware.lcd.LCD;
 import lejos.hardware.lcd.LCDOutputStream;
 import lejos.hardware.lcd.TextLCD;
+import lejos.hardware.port.AnalogPort;
+import lejos.hardware.port.IOPort;
+import lejos.hardware.port.MotorPort;
 import lejos.hardware.port.Port;
+import lejos.hardware.port.SensorPort;
+import lejos.hardware.port.I2CPort;
+import lejos.hardware.port.UARTPort;
 import lejos.hardware.port.TachoMotorPort;
 import lejos.internal.io.Settings;
 import lejos.internal.io.SystemSettings;
@@ -363,10 +369,15 @@ public class GraphicStartup implements Menu {
             		
             		ObjectOutputStream os = new ObjectOutputStream(conn.getOutputStream());
             		ObjectInputStream is = new ObjectInputStream(conn.getInputStream());
+            		
+            		Port[] ports = new Port[] {SensorPort.S1, SensorPort.S2, SensorPort.S3, SensorPort.S4,
+            				                   MotorPort.A, MotorPort.B, MotorPort.C, MotorPort.D};
+            		IOPort[] ioPorts = new IOPort[8];
             		            		
             		try {
 	            		while(true) { 
 	            			Object obj = is.readObject();
+	            			GraphicsLCD g = LocalEV3.get().getGraphicsLCD();
 	            			
 	            			if (obj instanceof MenuRequest) {
 		                		MenuRequest request = (MenuRequest) obj;
@@ -494,12 +505,226 @@ public class GraphicStartup implements Menu {
 		                			reply.reply = Button.readButtons();
 		                			os.writeObject(reply);
 		                			break;
+		                		case LCD_REFRESH:
+		                			LCD.refresh();
+		                			break;
+		                		case LCD_CLEAR:
+		                			LCD.clear();
+		                			break;
+		                		case LCD_GET_WIDTH:
+		                			reply.reply = LCD.SCREEN_WIDTH;
+		                			break;
+		                		case LCD_GET_HEIGHT:
+		                			reply.reply = LCD.SCREEN_HEIGHT;
+		                			break;
+		                		case LCD_GET_HW_DISPLAY:
+	                				break;
+		                		case LCD_BITBLT_1:
+		                			break;
+		                		case LCD_BITBLT_2:
+		                			break;
+		                		case LCD_SET_AUTO_REFRESH:
+		                			LCD.setAutoRefresh(request.flag);
+		                			break;
+		                		case LCD_SET_AUTO_REFRESH_PERIOD:
+		                			LCD.setAutoRefreshPeriod(request.intValue);
+		                			break;
+		                		case LCD_DRAW_CHAR:
+		                			LCD.drawChar(request.ch, request.intValue, request.intValue2);
+		                			break;
+		                		case LCD_DRAW_STRING_INVERTED:
+		                			LCD.drawString(request.str, request.intValue, request.intValue2, request.flag);
+		                			break;
+		                		case LCD_DRAW_STRING:
+		                			LCD.drawString(request.str, request.intValue, request.intValue2);
+		                			break;
+		                		case LCD_DRAW_INT:
+		                			LCD.drawInt(request.intValue, request.intValue2, request.intValue3);
+		                			break;
+		                		case LCD_DRAW_INT_PLACES:
+		                			LCD.drawInt(request.intValue, request.intValue2, request.intValue3, request.intValue4);
+		                			break;
+		                		case LCD_CLEAR_LINES:
+		                			LCD.clear(request.intValue, request.intValue2, request.intValue3);
+		                			break;
+		                		case LCD_CLEAR_LINE:
+		                			LCD.clear(request.intValue);
+		                			break;
+		                		case LCD_SCROLL:
+		                			LCD.scroll();
+		                			break;
+		                		case LCD_GET_FONT:
+		                			break;
+		                		case LCD_GET_TEXT_WIDTH:
+		                			reply.reply = LCD.DISPLAY_CHAR_WIDTH;
+		                			os.writeObject(reply);
+		                			break;
+		                		case LCD_GET_TEXT_HEIGHT:
+		                			reply.reply = LCD.DISPLAY_CHAR_DEPTH;
+		                			os.writeObject(reply);
+		                			break;
+		                		case OPEN_MOTOR_PORT:
+		                			ioPorts[4+request.intValue2] = ports[4+request.intValue2].open(TachoMotorPort.class);
+		                			break;
+		                		case CLOSE_MOTOR_PORT:
+		                			ioPorts[4+request.intValue].close();
+		                			break;
+		                		case CONTROL_MOTOR:
+		                			((TachoMotorPort) ioPorts[4+request.intValue]).controlMotor(request.intValue2, request.intValue3);
+		                			break;
+		                		case GET_TACHO_COUNT:
+		                			reply.reply = ((TachoMotorPort) ioPorts[4+request.intValue]).getTachoCount();
+		                			os.writeObject(reply);
+		                			break;
+		                		case RESET_TACHO_COUNT:
+		                			((TachoMotorPort) ioPorts[4+request.intValue]).resetTachoCount();
+		                			break;
+		                		case KEY_IS_DOWN:
+		                			reply.result = LocalEV3.get().getKey(request.str).isDown();
+		                			os.writeObject(reply);
+		                			break;
+		                		case KEY_WAIT_FOR_PRESS:
+		                			LocalEV3.get().getKey(request.str).waitForPress();
+		                			os.writeObject(reply);
+		                			break;
+		                		case KEY_WAIT_FOR_PRESS_AND_RELEASE:
+		                			LocalEV3.get().getKey(request.str).waitForPress();
+		                			os.writeObject(reply);
+		                			break;
+		                		case KEY_SIMULATE_EVENT:
+		                			LocalEV3.get().getKey(request.str).simulateEvent(request.intValue);
+		                			break;
+		                		case OPEN_ANALOG_PORT:
+		                			ioPorts[request.intValue2] = ports[request.intValue2].open(AnalogPort.class);
+		                			break;
+		                		case OPEN_I2C_PORT:
+		                			ioPorts[request.intValue2] = ports[request.intValue2].open(I2CPort.class);
+		                			break;
+		                		case OPEN_UART_PORT:
+		                			ioPorts[request.intValue2] = ports[request.intValue2].open(UARTPort.class);
+		                			break;
+		                		case CLOSE_SENSOR_PORT:
+		                			ioPorts[request.intValue].close();
+		                			break;
+		                		case GET_PIN_6:
+		                			reply.floatReply= ((AnalogPort) ioPorts[request.intValue]).getPin6();
+		                			os.writeObject(reply);
+		                			break;
+		                		case GET_PIN_1:
+		                			reply.floatReply= ((AnalogPort) ioPorts[request.intValue]).getPin1();
+		                			os.writeObject(reply);
+		                			break;
+		                		case SET_PIN_MODE:
+		                			((AnalogPort) ioPorts[request.intValue]).setMode(request.intValue);
+		                			break;
+		                		case GET_FLOATS:
+		                			reply.floats = new float[request.intValue2];
+		                			((AnalogPort) ioPorts[request.intValue]).getFloats(reply.floats, 0, request.intValue2);
+		                			os.writeObject(reply);
+		                			break;
+		                		case LCD_G_SET_PIXEL:
+		                			g.setPixel(request.intValue, request.intValue2, request.intValue3);
+		                			break;
+		                		case LCD_G_GET_PIXEL:
+		                			break;
+		                		case LCD_G_DRAW_STRING:
+		                			g.drawString(request.str, request.intValue, request.intValue2, request.intValue3);
+		                			break;
+		                		case LCD_G_DRAW_STRING_INVERTED:
+		                			g.drawString(request.str, request.intValue, request.intValue2, request.intValue3, request.flag);
+		                			break;
+		                		case LCD_G_DRAW_CHAR:
+		                			g.drawChar(request.ch, request.intValue, request.intValue2, request.intValue3);
+		                			break;
+		                		case LCD_G_DRAW_SUBSTRING:
+		                			g.drawSubstring(request.str, request.intValue, request.intValue2, request.intValue3, request.intValue4, request.intValue5);
+		                			break;
+		                		case LCD_G_DRAW_CHARS:
+		                			g.drawChars(request.chars, request.intValue, request.intValue2, request.intValue3, request.intValue4, request.intValue5);
+		                			break;
+		                		case LCD_G_GET_STROKE_STYLE:
+		                			break;
+		                		case LCD_G_SET_STROKE_STYLE:
+		                			g.setStrokeStyle(request.intValue);
+		                			break;
+		                		case LCD_DRAW_REGION_ROP:
+		                			g.drawRegionRop(request.image, request.intValue, request.intValue2, request.intValue3, request.intValue4, request.intValue5, request.intValue6, request.intValue7, request.intValue8);
+		                			break;
+		                		case LCD_G_DRAW_REGION_ROP_TRANSFORM:
+		                			g.drawRegionRop(request.image, request.intValue, request.intValue2, request.intValue3, request.intValue4, request.intValue5, request.intValue6, request.intValue7, request.intValue8, request.intValue9);
+		                			break;
+		                		case LCD_G_DRAW_REGION:
+		                			g.drawRegion(request.image, request.intValue, request.intValue2, request.intValue3, request.intValue4, request.intValue5, request.intValue6, request.intValue7, request.intValue8);
+		                			break;
+		                		case LCD_G_DRAW_IMAGE:
+		                			g.drawImage(request.image, request.intValue, request.intValue2, request.intValue3);
+		                			break;
+		                		case LCD_G_DRAW_LINE:
+		                			g.drawLine(request.intValue, request.intValue2, request.intValue3, request.intValue4);
+		                			break;
+		                		case LCD_G_DRAW_ARC:
+		                			g.drawArc(request.intValue, request.intValue2, request.intValue3, request.intValue4, request.intValue5, request.intValue6);
+		                			break;
+		                		case LCD_G_FILL_ARC:
+		                			g.fillArc(request.intValue, request.intValue2, request.intValue3, request.intValue4, request.intValue5, request.intValue6);
+		                			break;
+		                		case LCD_G_DRAW_ROUND_RECT:
+		                			g.drawRoundRect(request.intValue, request.intValue2, request.intValue3, request.intValue4, request.intValue5, request.intValue6);
+		                			break;
+		                		case LCD_G_DRAW_RECT:
+		                			g.drawRect(request.intValue, request.intValue2, request.intValue3, request.intValue4);
+		                			break;
+		                		case LCD_G_FILL_RECT:
+		                			g.fillRect(request.intValue, request.intValue2, request.intValue3, request.intValue4);
+		                			break;
+		                		case LCD_G_TRANSLATE:
+		                			g.translate(request.intValue, request.intValue2);
+		                			break;
+		                		case LCD_G_GET_TRANSLATE_X:
+		                			break;
+		                		case LCD_G_GET_TRANSLATE_Y:
+		                			break;
+		                		case I2C_TRANSACTION:
+		                			reply.contents = new byte[request.intValue6];
+		                			((I2CPort) ioPorts[request.intValue]).i2cTransaction(request.intValue2, request.byteData, 
+		                					request.intValue3, request.intValue5, reply.contents, 0, request.intValue7);
+		                			os.writeObject(reply);
+		                			break;
+		                		case UART_GET_BYTE:
+		                			reply.reply = ((UARTPort) ioPorts[request.intValue]).getByte();
+		                			os.writeObject(reply);
+		                			break;
+		                		case UART_GET_BYTES:
+		                			reply.contents = new byte[request.intValue2];
+		                			((UARTPort) ioPorts[request.intValue]).getBytes(reply.contents, 0, request.intValue2);
+		                			os.writeObject(reply);
+		                			break;
+		                		case UART_GET_SHORT:
+		                			reply.reply = ((UARTPort) ioPorts[request.intValue]).getShort();
+		                			os.writeObject(reply);
+		                			break;
+		                		case UART_GET_SHORTS:
+		                			reply.shorts = new short[request.intValue2];
+		                			((UARTPort) ioPorts[request.intValue]).getShorts(reply.shorts, 0, request.intValue2);
+		                			os.writeObject(reply);
+		                			break;
+		                		case UART_INITIALISE_SENSOR:
+		                			reply.result = ((UARTPort) ioPorts[request.intValue]).initialiseSensor(request.intValue2);
+		                			os.writeObject(reply);
+		                			break;
+		                		case UART_RESET_SENSOR:
+		                			((UARTPort) ioPorts[request.intValue]).resetSensor();
+		                			break;
+		                		case UART_SET_MODE:
+		                			reply.result = ((UARTPort) ioPorts[request.intValue]).setMode(request.intValue2);
+		                			os.writeObject(reply);
+		                			break;
 		                		}
 	            			}
 	            		}
             		
                     } catch(Exception e) {
-                    	System.err.println("Error reading from connection " + e);
+                    	e.printStackTrace();
 						try {
 							conn.close();
 						} catch (IOException e1) {
