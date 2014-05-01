@@ -20,6 +20,8 @@ import lejos.hardware.lcd.Font;
 import lejos.hardware.lcd.GraphicsLCD;
 import lejos.hardware.lcd.TextLCD;
 import lejos.hardware.port.Port;
+import lejos.robotics.RegulatedMotor;
+import lejos.robotics.SampleProvider;
 
 public class RemoteRequestEV3 implements EV3, Serializable {
 	private static final long serialVersionUID = -7784568187751439269L;
@@ -136,5 +138,13 @@ public class RemoteRequestEV3 implements EV3, Serializable {
 	@Override
 	public LED getLED() {
 		return new RemoteRequestLED(is,os);
+	}
+	
+	public SampleProvider createSampleProvider(String portName, String sensorName, String modeName) {
+		return new RemoteRequestSampleProvider(is,os, portName, sensorName, modeName);
+	}
+	
+	public RegulatedMotor createRegulatedMotor(String portName, char motorType) {
+		return new RemoteRequestRegulatedMotor(is, os, portName, motorType);
 	}
 }
