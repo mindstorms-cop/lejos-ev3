@@ -7,7 +7,7 @@ public class RemoteSample {
 	public static void main(String[] args) throws Exception {
 		RemoteEV3 ev3 = new RemoteEV3("192.168.0.9");
 		
-		RMISampleProvider sp = ev3.createSampleProvider("S1", "lejos.hardware.sensor.EV3IRSensor", "distance");
+		RMISampleProvider sp = ev3.createSampleProvider("S1", "lejos.hardware.sensor.EV3IRSensor", "Distance");
 		
 		float[] sample = sp.fetchSample();
 		
