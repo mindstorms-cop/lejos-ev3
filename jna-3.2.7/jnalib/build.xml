@@ -28,7 +28,7 @@
   <property name="doc" location="doc"/>
   <property name="javadoc" location="${doc}/javadoc"/>
   <property name="stylesheet" location="${javadoc}/doc/css/javadoc.css"/>
-  <property name="vendor" value="JNA Development Team"/>
+  <property name="vendor" value="leJOS Development Team"/>
   <property name="copyright"
             value="Copyright &amp;copy; 2007-2010 Timothy Wall. All Rights Reserved."/>
   <buildnumber/>
@@ -202,36 +202,66 @@
       </srcfiles>
     </uptodate>
   </target>
-  <target name="jar" depends="-setup,native,:jar" unless="-jar"
-          description="Build primary jar">
-    <jar jarfile="${build}/${jar}">
-      <manifest>
-        <attribute name="Main-Class" value="com.sun.jna.Native"/>
-        <section name="com/sun/jna/">
-          <attribute name="Manifest-Version" value="1.0"/>
-          <attribute name="Implementation-Title" value="${impl.title}"/>
-          <attribute name="Implementation-Vendor" value="${vendor}"/>
-          <attribute name="Implementation-Version" value="${impl.version}"/>
-          <attribute name="Specification-Title" value="${spec.title}"/>
-          <attribute name="Specification-Vendor" value="${spec.vendor}"/>
-          <attribute name="Specification-Version" value="${spec.version}"/>
-          <!-- OSGi Bundle attributes -->
-          <attribute name="Bundle-ManifestVersion" value="2"/>
-          <attribute name="Bundle-Name" value="jna"/>
-          <attribute name="Bundle-Description" value="JNA Library"/>
-          <attribute name="Bundle-SymbolicName" value="com.sun.jna"/>
-          <attribute name="Bundle-Version" value="${spec.version}"/>
-          <attribute name="Bundle-RequiredExecutionEnvironment" value="J2SE-1.4"/>
-          <attribute name="Bundle-Vendor" value="${vendor}"/>
-          <attribute name="Bundle-ActivationPolicy" value="lazy"/>
-          <attribute name="Export-Package" value="com.sun.jna*"/>
-        </section>
-      </manifest>
-      <fileset dir="${classes}" excludes="${jar.omitted}">
-        <patternset refid="jar-compiled"/>
-      </fileset>
-    </jar>
-  </target>
+	  <target name="jar" depends="-setup,native,:jar" unless="-jar"
+	          description="Build primary jar">
+	    <jar jarfile="${build}/${jar}">
+	      <manifest>
+	        <attribute name="Main-Class" value="com.sun.jna.Native"/>
+	        <section name="com/sun/jna/">
+	          <attribute name="Manifest-Version" value="1.0"/>
+	          <attribute name="Implementation-Title" value="${impl.title}"/>
+	          <attribute name="Implementation-Vendor" value="${vendor}"/>
+	          <attribute name="Implementation-Version" value="${impl.version}"/>
+	          <attribute name="Specification-Title" value="${spec.title}"/>
+	          <attribute name="Specification-Vendor" value="${spec.vendor}"/>
+	          <attribute name="Specification-Version" value="${spec.version}"/>
+	          <!-- OSGi Bundle attributes -->
+	          <attribute name="Bundle-ManifestVersion" value="2"/>
+	          <attribute name="Bundle-Name" value="jna"/>
+	          <attribute name="Bundle-Description" value="JNA Library"/>
+	          <attribute name="Bundle-SymbolicName" value="com.sun.jna"/>
+	          <attribute name="Bundle-Version" value="${spec.version}"/>
+	          <attribute name="Bundle-RequiredExecutionEnvironment" value="J2SE-1.4"/>
+	          <attribute name="Bundle-Vendor" value="${vendor}"/>
+	          <attribute name="Bundle-ActivationPolicy" value="lazy"/>
+	          <attribute name="Export-Package" value="com.sun.jna*"/>
+	        </section>
+	      </manifest>
+	      <fileset dir="${classes}" excludes="${jar.omitted}">
+	        <patternset refid="jar-compiled"/>
+	      </fileset>
+	    </jar>
+	  </target>
+	  <target name="jaronly" depends="-setup,:jar" unless="-jar"
+	          description="Build primary jar">
+	    <jar jarfile="${build}/${jar}">
+	      <manifest>
+	        <attribute name="Main-Class" value="com.sun.jna.Native"/>
+	        <section name="com/sun/jna/">
+	          <attribute name="Manifest-Version" value="1.0"/>
+	          <attribute name="Implementation-Title" value="${impl.title}"/>
+	          <attribute name="Implementation-Vendor" value="${vendor}"/>
+	          <attribute name="Implementation-Version" value="${impl.version}"/>
+	          <attribute name="Specification-Title" value="${spec.title}"/>
+	          <attribute name="Specification-Vendor" value="${spec.vendor}"/>
+	          <attribute name="Specification-Version" value="${spec.version}"/>
+	          <!-- OSGi Bundle attributes -->
+	          <attribute name="Bundle-ManifestVersion" value="2"/>
+	          <attribute name="Bundle-Name" value="jna"/>
+	          <attribute name="Bundle-Description" value="JNA Library"/>
+	          <attribute name="Bundle-SymbolicName" value="com.sun.jna"/>
+	          <attribute name="Bundle-Version" value="${spec.version}"/>
+	          <attribute name="Bundle-RequiredExecutionEnvironment" value="J2SE-1.4"/>
+	          <attribute name="Bundle-Vendor" value="${vendor}"/>
+	          <attribute name="Bundle-ActivationPolicy" value="lazy"/>
+	          <attribute name="Export-Package" value="com.sun.jna*"/>
+	        </section>
+	      </manifest>
+	      <fileset dir="${classes}" excludes="${jar.omitted}">
+	        <patternset refid="jar-compiled"/>
+	      </fileset>
+	    </jar>
+	  </target>
 
   <target name="contrib-jars" depends="jar" description="Build contrib jars">
     <subant target="jar">
@@ -669,6 +699,18 @@
       <fileset dir="${contrib}" includes="*/build.xml"/>
     </subant>
   </target>
+
+  <target name="src">
+    <!-- JNA sources only, for use in Linux build from source/shared libffi -->
+    <zip zipfile="${build}/jna-src.zip">
+      <zipfileset dir="." includes="build.xml,LICENSE.txt"/>
+      <zipfileset dir="${src}" includes="**/*.java" prefix="src"/>
+      <zipfileset dir="${test.src}" includes="**/*.java" prefix="test"/>
+      <zipfileset dir="${native}" excludes="libffi,libffi/**/*,build,build/**/*" prefix="native"/>
+      <zipfileset dir="${contrib}/platform" includes="**/*.java" prefix="contrib/platform"/>
+    </zip>
+  </target>
+  <target name="pc.files" description="Generate the pc files but do not copy to EV3" depends="jaronly,src"/>
 
 </project>
 
