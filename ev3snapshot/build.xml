@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <project name="snapshot" basedir="." default="all">
     
-    <target name="all" depends="subproject.ev3classes,subproject.ev3menu,subproject.ev3samples,subproject.ev3pcsamples,subproject.ev3tools,subproject.ev3scripts, subproject.ev3menutools">
+    <target name="all" depends="subproject.jna,subproject.ev3classes,subproject.ev3menu,subproject.ev3samples,subproject.ev3pcsamples,subproject.ev3tools,subproject.ev3scripts, subproject.ev3menutools">
 		<echo message="Done." />
 	</target>
 	
@@ -18,17 +18,29 @@
 	</target>
 	
     <target name="subproject.dbusjava">
-		<echo message="*** entering dbusjava project" />
-		<ant inheritAll="false" dir="../DBusJava" antfile="build.xml">
-			<target name="pc.files" />
-		</ant>
-		<copy todir="lib">
-			<fileset file="../DBusJava/dbusjava.jar" />
-			<fileset file="../DBusJava/dbusjava-src.zip" />
-		</copy>
-		<echo message="*** leaving dbusjava project" />
-	</target>
-	
+        <echo message="*** entering dbusjava project" />
+        <ant inheritAll="false" dir="../DBusJava" antfile="build.xml">
+            <target name="pc.files" />
+        </ant>
+        <copy todir="lib">
+            <fileset file="../DBusJava/dbusjava.jar" />
+            <fileset file="../DBusJava/dbusjava-src.zip" />
+        </copy>
+        <echo message="*** leaving dbusjava project" />
+    </target>
+    
+    <target name="subproject.jna">
+        <echo message="*** entering dbusjava project" />
+        <ant inheritAll="false" dir="../jna-3.2.7/jnalib" antfile="build.xml">
+            <target name="pc.files" />
+        </ant>
+        <copy todir="lib">
+            <fileset file="../jna-3.2.7/jnalib/build/jna.jar" />
+            <fileset file="../jna-3.2.7/jnalib/build/jna-src.zip" />
+        </copy>
+        <echo message="*** leaving dbusjava project" />
+    </target>
+            
     <target name="subproject.ev3tools">
 		<echo message="*** entering ev3tools project" />
 		<ant inheritAll="false" dir="../ev3tools" antfile="build.xml">
