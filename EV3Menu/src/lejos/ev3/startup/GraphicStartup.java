@@ -888,15 +888,8 @@ public class GraphicStartup implements Menu {
             		
                 } catch(Exception e) {
                 	System.err.println("Error accepting connection " + e);
-                	break;
                 }		
         	}
-        	
-        	try {
-				ss.close();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
         }
     }
     
