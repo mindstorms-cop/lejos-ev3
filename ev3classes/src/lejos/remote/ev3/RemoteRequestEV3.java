@@ -147,4 +147,14 @@ public class RemoteRequestEV3 implements EV3, Serializable {
 	public RegulatedMotor createRegulatedMotor(String portName, char motorType) {
 		return new RemoteRequestRegulatedMotor(is, os, portName, motorType);
 	}
+	
+	public void disConnect() {
+		try {
+			is.close();
+			os.close();
+			socket.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 }
