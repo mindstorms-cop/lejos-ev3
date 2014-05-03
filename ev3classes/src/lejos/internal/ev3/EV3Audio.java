@@ -217,6 +217,7 @@ public class EV3Audio implements Audio
             buf[offset] = OP_SERVICE;
             int len = dataLen - offset;
             int written = dev.write(buf, offset, len + 1);
+            //System.out.println("Written " + written);
             if (written == 0)
             {
                 Delay.msDelay(1);
@@ -285,6 +286,7 @@ public class EV3Audio implements Audio
         // Now check for a RIFF header
         FileInputStream f = null; 
         DataInputStream d = null;
+        boolean playing = false;
         try
         {
         	f = new FileInputStream(file);
@@ -314,40 +316,63 @@ public class EV3Audio implements Audio
             short sampleSize = d.readShort();
             if (sampleSize != RIFF_FMT_16BITS && sampleSize != RIFF_FMT_8BITS)
                 return -6;
+            playing = true;
             // Skip any data in this chunk after the 16 bytes above
             sz -= 16;
             while (sz-- > 0)
                 d.readByte();
+            System.out.println("Opening");
+            startPCMPlayback(sampleSize == RIFF_FMT_16BITS ? 16 : 8, sampleRate, vol);
+            playing = true;
+            System.out.println("Open");;
+            Delay.msDelay(3000);
             int dataLen;
-            // Skip optional chunks until we find a data sig (or we hit eof!)
+            // Skip/process chunks until we  hit eof!
             for(;;)
             {
                 int chunk = d.readInt();
                 dataLen = readLSBInt(d); 
-                if (chunk == RIFF_DATA_SIG) break;
-                // Skip to the start of the next chunk
-                while(dataLen-- > 0)
-                    d.readByte();
+                System.out.println("Chunk " + chunk + " Length " + dataLen);
+                if (chunk == RIFF_DATA_SIG)
+                {
+                    int read;
+                    if (sampleSize == RIFF_FMT_16BITS)
+                    {
+                        // optimized case for native format
+                        while(dataLen > 0 && (read = d.read(PCMBuffer, 1, (PCMBuffer.length - 1 < dataLen ? PCMBuffer.length -1 : dataLen))) > 0)
+                        {
+                            //System.out.println("read " + read);
+                            writePCMBuffer(PCMBuffer, read);
+                            dataLen -= read;
+                        }
+                    }
+                    else
+                    {
+                        // need to handle data conversion
+                        byte[] data = new byte[PCM_BUFFER_SIZE/2];
+                        while(dataLen > 0 && (read = d.read(data, 0, (data.length < dataLen ? data.length : dataLen))) > 0)
+                        {
+                            writePCMSamples(data, 0, read);
+                            dataLen -= read;
+                        }                        
+                    }
+                }
+                else
+                {
+                    // Skip to the start of the next chunk
+                    while(dataLen-- > 0)
+                        d.readByte();
+                }
             }
-            startPCMPlayback(sampleSize == RIFF_FMT_16BITS ? 16 : 8, sampleRate, vol);
-            if (sampleSize == RIFF_FMT_16BITS)
-            {
-                // optimized case for native format
-                while((dataLen = d.read(PCMBuffer, 1, PCMBuffer.length - 1)) > 0)
-                    writePCMBuffer(PCMBuffer, dataLen);
-            }
-            else
-            {
-                // need to handle data conversion
-                byte[] data = new byte[PCM_BUFFER_SIZE/2];
-                while((dataLen = d.read(data, 0, data.length)) > 0)
-                    writePCMSamples(data, 0, dataLen);
-                
-            }
-            endPCMPlayback();
+        }
+        catch (EOFException e)
+        {
+            System.out.println("Eof");
+            return 0;
         }
         catch (IOException e)
         {
+            System.out.println("Error");
             return -1;
         }
         finally
@@ -357,13 +382,16 @@ public class EV3Audio implements Audio
                     d.close();
                 if (f != null)
                     f.close();
+                Delay.msDelay(4000);
+                System.out.println("closing");
+                if (playing)
+                    endPCMPlayback();
             }
             catch (IOException e)
             {
                 return -1;
             }                
         }
-        return 0;
     }
 
 
