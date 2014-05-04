@@ -68,7 +68,6 @@ EV3_FORCE32=""
 
 case $(uname -s) in
 	CYGWIN*) SEP=";";;
-	Darwin) EV3_FORCE32="-d32";;
 esac
 
 EV3_CP_PC=$(my_build_cp "$EV3_HOME/lib")
