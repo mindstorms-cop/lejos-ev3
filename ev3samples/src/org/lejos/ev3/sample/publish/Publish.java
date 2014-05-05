@@ -1,4 +1,5 @@
 package org.lejos.ev3.sample.publish;
+
 import java.io.IOException;
 
 import lejos.hardware.Button;
@@ -27,18 +28,19 @@ public class Publish {
 		SampleProvider sp3 = new PublishFilter(gyroSensor.getRateMode(), "Gyro readings", frequency);
 		float[] sample3 = new float[sp3.sampleSize()];
 		
-		LCD.drawString("IR:", 0, 3);
-		LCD.drawString("Sonic:", 0, 4);
-		LCD.drawString("Gyro:", 0, 5);
 		while(Button.ESCAPE.isUp()) {
 			sp.fetchSample(sample, 0);
-			LCD.drawString("" + sample[0],7,3);
+			LCD.clear(3);
+			LCD.drawString("IR: " + sample[0],0,3);
 			sp2.fetchSample(sample2, 0);
-			LCD.drawString(("" + sample2[0]),7,4);
+			LCD.clear(4);
+			LCD.drawString("Sonic: " + sample2[0],0,4);
 			sp3.fetchSample(sample3, 0);
-			LCD.drawString("" + sample3[0],7,5);
+			LCD.clear(5);
+			LCD.drawString("Gyro: " + sample3[0],0,5);
 			Delay.msDelay((long) (1000/frequency));
 		}
+		
 		irSensor.close();
 		sonicSensor.close();
 		gyroSensor.close();

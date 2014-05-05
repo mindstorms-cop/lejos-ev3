@@ -9,10 +9,12 @@ import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import lejos.utility.Delay;
 
@@ -108,7 +110,9 @@ public class PublishedSource {
 	
 	public static Collection<PublishedSource> getSources() {
 		Delay.msDelay(SOCKET_TIMEOUT); // Wait to get new sources
-		return sources.values();
+		synchronized (sources) {
+			return sources.values();
+		}
 	}
 	
 	private static class Listener extends Thread {
@@ -126,7 +130,9 @@ public class PublishedSource {
 						socket.receive (packet);
 						String ip = packet.getAddress().getHostAddress();
 						PublishedSource source = new PublishedSource(ip, packet.getData());
-						sources.put(source.getKey(), source);
+						synchronized (sources) {
+							sources.put(source.getKey(), source);
+						}
 					} catch (SocketTimeoutException e) {
 						// Ignore
 					} catch (IOException e) {
@@ -134,11 +140,15 @@ public class PublishedSource {
 					}
 					
 					// Remove anything too old from sources
+					ArrayList<String> removeKeys = new ArrayList<String>();
 					
-					for(String key: sources.keySet()) {
-						if (System.currentTimeMillis() - sources.get(key).getTimeStamp() > MAX_AGE) {
-							sources.remove(key);
+					synchronized (sources) {
+						for(String key: sources.keySet()) {
+							if (System.currentTimeMillis() - sources.get(key).getTimeStamp() > MAX_AGE) {
+								removeKeys.add(key);
+							}
 						}
+						for(String key: removeKeys) sources.remove(key);
 					}
 				}
 			} catch (IOException e) {
