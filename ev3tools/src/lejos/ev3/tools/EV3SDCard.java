@@ -270,7 +270,7 @@ public class EV3SDCard extends JFrame {
 			} catch (IOException e1) {
 				showMessage("Failed to copy the Oracle JRE: " + e1);
 			}
-			
+			progressBar.setString("100%");
 			showMessage("SD card created. Now safely eject it, then insert it into \nthe EV3 and power on the brick to continue install.");
 			
 			exitButton.setEnabled(true);
