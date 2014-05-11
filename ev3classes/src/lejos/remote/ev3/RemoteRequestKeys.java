@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import lejos.hardware.Keys;
-import lejos.remote.ev3.RemoteKeys.KeysListenThread;
 
 public class RemoteRequestKeys implements Keys {
 	private ObjectInputStream is;
@@ -26,10 +25,7 @@ public class RemoteRequestKeys implements Keys {
 	public void discardEvents() {
 		EV3Request req = new EV3Request();
 		req.request = EV3Request.Request.DISCARD_EVENTS;
-		try {
-			os.writeObject(req);
-		} catch (Exception e) {
-		}
+		sendRequest(req, false);
 	}
 
 	@Override
@@ -41,30 +37,16 @@ public class RemoteRequestKeys implements Keys {
 	public int waitForAnyEvent(int timeout) {
 		EV3Request req = new EV3Request();
 		req.request = EV3Request.Request.WAIT_FOR_ANY_EVENT;
-		req.replyRequired = true;
 		req.intValue= timeout;
-		try {
-			os.writeObject(req);
-			EV3Reply reply = (EV3Reply) is.readObject();
-			return reply.reply;
-		} catch (Exception e) {
-			return 0;
-		}
+		return sendRequest(req, true).reply;
 	}
 
 	@Override
 	public int waitForAnyPress(int timeout) {
 		EV3Request req = new EV3Request();
 		req.request = EV3Request.Request.WAIT_FOR_ANY_PRESS;
-		req.replyRequired = true;
 		req.intValue = timeout;
-		try {
-			os.writeObject(req);
-			EV3Reply reply = (EV3Reply) is.readObject();
-			return reply.reply;
-		} catch (Exception e) {
-			return 0;
-		}
+		return sendRequest(req, true).reply;
 	}
 
 	@Override
@@ -76,28 +58,14 @@ public class RemoteRequestKeys implements Keys {
 	public int getButtons() {
 		EV3Request req = new EV3Request();
 		req.request = EV3Request.Request.GET_BUTTONS;
-		req.replyRequired = true;
-		try {
-			os.writeObject(req);
-			EV3Reply reply = (EV3Reply) is.readObject();
-			return reply.reply;
-		} catch (Exception e) {
-			return 0;
-		}
+		return sendRequest(req, true).reply;
 	}
 
 	@Override
 	public int readButtons() {
 		EV3Request req = new EV3Request();
 		req.request = EV3Request.Request.READ_BUTTONS;
-		req.replyRequired = true;
-		try {
-			os.writeObject(req);
-			EV3Reply reply = (EV3Reply) is.readObject();
-			return reply.reply;
-		} catch (Exception e) {
-			return 0;
-		}
+		return sendRequest(req, true).reply;
 	}
 
 	@Override
@@ -136,6 +104,22 @@ public class RemoteRequestKeys implements Keys {
 		listeners.put(iCode, remoteRequestKey);
 	}
 	
+	private EV3Reply sendRequest(EV3Request req, boolean replyRequired) {
+		EV3Reply reply = null;
+		req.replyRequired = replyRequired;
+		try {
+			os.reset();
+			os.writeObject(req);
+			if (replyRequired) {
+				reply = (EV3Reply) is.readObject();
+				if (reply.e != null) throw new RemoteRequestException(reply.e);
+			}
+			return reply;
+		} catch (Exception e) {
+			throw new RemoteRequestException(e);
+		}
+	}
+	
 	class KeysListenThread extends Thread {
 		
 		public KeysListenThread() {
@@ -157,6 +141,5 @@ public class RemoteRequestKeys implements Keys {
 				}
 			}
 		}
-		
 	}
 }

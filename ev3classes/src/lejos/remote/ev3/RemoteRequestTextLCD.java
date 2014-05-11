@@ -1,6 +1,5 @@
 package lejos.remote.ev3;
 
-import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
@@ -28,78 +27,42 @@ public class RemoteRequestTextLCD implements TextLCD {
 	public void refresh() {
 		EV3Request req = new EV3Request();
 		req.request = EV3Request.Request.LCD_REFRESH;
-		try {
-			os.writeObject(req);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		sendRequest(req, false);
 	}
 
 	@Override
 	public void clear() {
 		EV3Request req = new EV3Request();
 		req.request = EV3Request.Request.LCD_CLEAR;
-		try {
-			os.writeObject(req);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		sendRequest(req, false);
 	}
 
 	@Override
 	public int getWidth() {
 		EV3Request req = new EV3Request();
 		req.request = EV3Request.Request.LCD_GET_WIDTH;
-		req.replyRequired = true;
-		try {
-			os.writeObject(req);
-			EV3Reply reply = (EV3Reply) is.readObject();
-			return reply.reply;
-		} catch (Exception e) {
-			return 0;
-		}
+		return sendRequest(req, true).reply;
 	}
 
 	@Override
 	public int getHeight() {
 		EV3Request req = new EV3Request();
 		req.request = EV3Request.Request.LCD_GET_HEIGHT;
-		req.replyRequired = true;
-		try {
-			os.writeObject(req);
-			EV3Reply reply = (EV3Reply) is.readObject();
-			return reply.reply;
-		} catch (Exception e) {
-			return 0;
-		}
+		return sendRequest(req, true).reply;
 	}
 
 	@Override
 	public byte[] getDisplay() {
 		EV3Request req = new EV3Request();
 		req.request = EV3Request.Request.LCD_GET_DISPLAY;
-		req.replyRequired = true;
-		try {
-			os.writeObject(req);
-			EV3Reply reply = (EV3Reply) is.readObject();
-			return reply.contents;
-		} catch (Exception e) {
-			return null;
-		}
+		return sendRequest(req, true).contents;
 	}
 
 	@Override
 	public byte[] getHWDisplay() {
 		EV3Request req = new EV3Request();
 		req.request = EV3Request.Request.LCD_GET_HW_DISPLAY;
-		req.replyRequired = true;
-		try {
-			os.writeObject(req);
-			EV3Reply reply = (EV3Reply) is.readObject();
-			return reply.contents;
-		} catch (Exception e) {
-			return null;
-		}
+		return sendRequest(req, true).contents;
 	}
 
 	@Override
@@ -122,11 +85,7 @@ public class RemoteRequestTextLCD implements TextLCD {
 		req.intValue7 = w;
 		req.intValue8 = h;
 		req.intValue9 = rop;
-		try {
-			os.writeObject(req);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		sendRequest(req, false);
 	}
 
 	@Override
@@ -147,11 +106,7 @@ public class RemoteRequestTextLCD implements TextLCD {
 		req.intValue9 = w;
 		req.intValue10 = h;
 		req.intValue11 = rop;
-		try {
-			os.writeObject(req);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		sendRequest(req, false);
 	}
 
 	@Override
@@ -159,11 +114,7 @@ public class RemoteRequestTextLCD implements TextLCD {
 		EV3Request req = new EV3Request();
 		req.request = EV3Request.Request.LCD_SET_AUTO_REFRESH;
 		req.flag = on;
-		try {
-			os.writeObject(req);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		sendRequest(req, false);
 	}
 
 	@Override
@@ -171,12 +122,7 @@ public class RemoteRequestTextLCD implements TextLCD {
 		EV3Request req = new EV3Request();
 		req.request = EV3Request.Request.LCD_SET_AUTO_REFRESH;
 		req.intValue = period;
-		try {
-			os.writeObject(req);
-			return 0;
-		} catch (IOException e) {
-			return 0;
-		}
+		return sendRequest(req, true).reply;
 	}
 
 	@Override
@@ -186,11 +132,7 @@ public class RemoteRequestTextLCD implements TextLCD {
 		req.ch = c;
 		req.intValue = x;
 		req.intValue2 = y;
-		try {
-			os.writeObject(req);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		sendRequest(req, false);
 	}
 
 	@Override
@@ -201,11 +143,7 @@ public class RemoteRequestTextLCD implements TextLCD {
 		req.intValue = x;
 		req.intValue2 = y;
 		req.flag = inverted;
-		try {
-			os.writeObject(req);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		sendRequest(req, false);
 	}
 
 	@Override
@@ -215,11 +153,7 @@ public class RemoteRequestTextLCD implements TextLCD {
 		req.str = str;
 		req.intValue = x;
 		req.intValue2 = y;
-		try {
-			os.writeObject(req);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		sendRequest(req, false);
 	}
 
 	@Override
@@ -229,11 +163,7 @@ public class RemoteRequestTextLCD implements TextLCD {
 		req.intValue = i;
 		req.intValue2 = x;
 		req.intValue3 = y;
-		try {
-			os.writeObject(req);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		sendRequest(req, false);
 	}
 
 	@Override
@@ -244,11 +174,7 @@ public class RemoteRequestTextLCD implements TextLCD {
 		req.intValue2 = places;
 		req.intValue3 = x;
 		req.intValue4 = y;
-		try {
-			os.writeObject(req);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		sendRequest(req, false);
 	}
 
 	@Override
@@ -258,11 +184,7 @@ public class RemoteRequestTextLCD implements TextLCD {
 		req.intValue = x;
 		req.intValue2 = y;
 		req.intValue3 = n;
-		try {
-			os.writeObject(req);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		sendRequest(req, false);
 	}
 
 	@Override
@@ -270,22 +192,14 @@ public class RemoteRequestTextLCD implements TextLCD {
 		EV3Request req = new EV3Request();
 		req.request = EV3Request.Request.LCD_CLEAR_LINE;
 		req.intValue = y;
-		try {
-			os.writeObject(req);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		sendRequest(req, false);
 	}
 
 	@Override
 	public void scroll() {
 		EV3Request req = new EV3Request();
 		req.request = EV3Request.Request.LCD_SCROLL;
-		try {
-			os.writeObject(req);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		sendRequest(req, false);
 	}
 
 	@Override
@@ -297,27 +211,29 @@ public class RemoteRequestTextLCD implements TextLCD {
 	public int getTextWidth() {
 		EV3Request req = new EV3Request();
 		req.request = EV3Request.Request.LCD_GET_TEXT_WIDTH;
-		req.replyRequired = true;
-		try {
-			os.writeObject(req);
-			EV3Reply reply = (EV3Reply) is.readObject();
-			return reply.reply;
-		} catch (Exception e) {
-			return 0;
-		}
+		return sendRequest(req, true).reply;
 	}
 
 	@Override
 	public int getTextHeight() {
 		EV3Request req = new EV3Request();
 		req.request = EV3Request.Request.LCD_GET_TEXT_HEIGHT;
-		req.replyRequired = true;
+		return sendRequest(req, true).reply;
+	}
+	
+	private EV3Reply sendRequest(EV3Request req, boolean replyRequired) {
+		EV3Reply reply = null;
+		req.replyRequired = replyRequired;
 		try {
+			os.reset();
 			os.writeObject(req);
-			EV3Reply reply = (EV3Reply) is.readObject();
-			return reply.reply;
+			if (replyRequired) {
+				reply = (EV3Reply) is.readObject();
+				if (reply.e != null) throw new RemoteRequestException(reply.e);
+			}
+			return reply;
 		} catch (Exception e) {
-			return 0;
+			throw new RemoteRequestException(e);
 		}
 	}
 }

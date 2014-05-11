@@ -39,9 +39,11 @@ public class RemoteRequest {
 		Keys keys = ev3.getKeys();
 		
 		// Press keys on EV3
+		System.out.println("Waiting for key press");
 		int b = keys.waitForAnyEvent();
 		System.out.println("Key is " + b);
 		
+		System.out.println("Waiting for key press");
 		b = keys.waitForAnyPress();
 		System.out.println("Key is " + b);
 		
@@ -68,10 +70,15 @@ public class RemoteRequest {
 		
 		Key right = ev3.getKey("Right");
 		System.out.println("Right down: " + right.isDown());
+		
+		System.out.println("Waiting for key press");
 		right.waitForPress();
 		System.out.println("Right pressed");
 		
 		EV3TouchSensor touch = new EV3TouchSensor(ev3.getPort("S1"));
+		
+		System.out.println("Touch sensor opened");
+		
 		float[] sample = new float[touch.sampleSize()];
 		touch.fetchSample(sample, 0);
 		System.out.println("Touch: " + sample[0]);

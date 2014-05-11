@@ -53,6 +53,7 @@ import lejos.hardware.port.AnalogPort;
 import lejos.hardware.port.IOPort;
 import lejos.hardware.port.MotorPort;
 import lejos.hardware.port.Port;
+import lejos.hardware.port.PortException;
 import lejos.hardware.port.SensorPort;
 import lejos.hardware.port.I2CPort;
 import lejos.hardware.port.UARTPort;
@@ -389,6 +390,7 @@ public class GraphicStartup implements Menu {
             		
             		try {
 	            		while(true) { 
+	            			os.reset();
 	            			Object obj = is.readObject();
 	            			
 	            			if (obj instanceof MenuRequest) {
@@ -473,7 +475,7 @@ public class GraphicStartup implements Menu {
 	            			} else if (obj instanceof EV3Request) {
 		                		EV3Request request = (EV3Request) obj;
 		                		EV3Reply reply = new EV3Reply();
-		                		
+		                		//System.out.println("Request: " + request.request);
 		                		try {             		
 			                		switch (request.request){
 			                		case GET_VOLTAGE_MILLIVOLTS:
@@ -577,7 +579,7 @@ public class GraphicStartup implements Menu {
 			                			os.writeObject(reply);
 			                			break;
 			                		case OPEN_MOTOR_PORT:
-			                			ioPorts[4+request.intValue2] = ports[4+request.intValue2].open(TachoMotorPort.class);
+			                			ioPorts[4+request.intValue] = ports[4+request.intValue].open(TachoMotorPort.class);
 			                			break;
 			                		case CLOSE_MOTOR_PORT:
 			                			ioPorts[4+request.intValue].close();
@@ -608,29 +610,36 @@ public class GraphicStartup implements Menu {
 			                			LocalEV3.get().getKey(request.str).simulateEvent(request.intValue);
 			                			break;
 			                		case OPEN_ANALOG_PORT:
-			                			ioPorts[request.intValue2] = ports[request.intValue2].open(AnalogPort.class);
+			                			ioPorts[request.intValue] = ports[request.intValue].open(AnalogPort.class);
+			                			os.writeObject(reply);
 			                			break;
 			                		case OPEN_I2C_PORT:
-			                			ioPorts[request.intValue2] = ports[request.intValue2].open(I2CPort.class);
+			                			ioPorts[request.intValue] = ports[request.intValue].open(I2CPort.class);
+			                			os.writeObject(reply);
 			                			break;
 			                		case OPEN_UART_PORT:
-			                			ioPorts[request.intValue2] = ports[request.intValue2].open(UARTPort.class);
+			                			ioPorts[request.intValue] = ports[request.intValue].open(UARTPort.class);
+			                			os.writeObject(reply);
 			                			break;
 			                		case CLOSE_SENSOR_PORT:
 			                			ioPorts[request.intValue].close();
 			                			break;
 			                		case GET_PIN_6:
+			                			if (ioPorts[request.intValue] == null) throw new PortException("Port not open");
 			                			reply.floatReply= ((AnalogPort) ioPorts[request.intValue]).getPin6();
 			                			os.writeObject(reply);
 			                			break;
 			                		case GET_PIN_1:
+			                			if (ioPorts[request.intValue] == null) throw new PortException("Port not open");
 			                			reply.floatReply= ((AnalogPort) ioPorts[request.intValue]).getPin1();
 			                			os.writeObject(reply);
 			                			break;
 			                		case SET_PIN_MODE:
+			                			if (ioPorts[request.intValue] == null) throw new PortException("Port not open");
 			                			((AnalogPort) ioPorts[request.intValue]).setMode(request.intValue);
 			                			break;
 			                		case GET_FLOATS:
+			                			if (ioPorts[request.intValue] == null) throw new PortException("Port not open");
 			                			reply.floats = new float[request.intValue2];
 			                			((AnalogPort) ioPorts[request.intValue]).getFloats(reply.floats, 0, request.intValue2);
 			                			os.writeObject(reply);
@@ -660,7 +669,7 @@ public class GraphicStartup implements Menu {
 			                		case LCD_G_SET_STROKE_STYLE:
 			                			g.setStrokeStyle(request.intValue);
 			                			break;
-			                		case LCD_DRAW_REGION_ROP:
+			                		case LCD_G_DRAW_REGION_ROP:
 			                			g.drawRegionRop(request.image, request.intValue, request.intValue2, request.intValue3, request.intValue4, request.intValue5, request.intValue6, request.intValue7, request.intValue8);
 			                			break;
 			                		case LCD_G_DRAW_REGION_ROP_TRANSFORM:
@@ -698,37 +707,45 @@ public class GraphicStartup implements Menu {
 			                		case LCD_G_GET_TRANSLATE_Y:
 			                			break;
 			                		case I2C_TRANSACTION:
+			                			if (ioPorts[request.intValue] == null) throw new PortException("Port not open");
 			                			reply.contents = new byte[request.intValue6];
 			                			((I2CPort) ioPorts[request.intValue]).i2cTransaction(request.intValue2, request.byteData, 
 			                					request.intValue3, request.intValue5, reply.contents, 0, request.intValue7);
 			                			os.writeObject(reply);
 			                			break;
 			                		case UART_GET_BYTE:
+			                			if (ioPorts[request.intValue] == null) throw new PortException("Port not open");
 			                			reply.reply = ((UARTPort) ioPorts[request.intValue]).getByte();
 			                			os.writeObject(reply);
 			                			break;
 			                		case UART_GET_BYTES:
+			                			if (ioPorts[request.intValue] == null) throw new PortException("Port not open");
 			                			reply.contents = new byte[request.intValue2];
 			                			((UARTPort) ioPorts[request.intValue]).getBytes(reply.contents, 0, request.intValue2);
 			                			os.writeObject(reply);
 			                			break;
 			                		case UART_GET_SHORT:
+			                			if (ioPorts[request.intValue] == null) throw new PortException("Port not open");
 			                			reply.reply = ((UARTPort) ioPorts[request.intValue]).getShort();
 			                			os.writeObject(reply);
 			                			break;
 			                		case UART_GET_SHORTS:
+			                			if (ioPorts[request.intValue] == null) throw new PortException("Port not open");
 			                			reply.shorts = new short[request.intValue2];
 			                			((UARTPort) ioPorts[request.intValue]).getShorts(reply.shorts, 0, request.intValue2);
 			                			os.writeObject(reply);
 			                			break;
 			                		case UART_INITIALISE_SENSOR:
+			                			if (ioPorts[request.intValue] == null) throw new PortException("Port not open");
 			                			reply.result = ((UARTPort) ioPorts[request.intValue]).initialiseSensor(request.intValue2);
 			                			os.writeObject(reply);
 			                			break;
 			                		case UART_RESET_SENSOR:
+			                			if (ioPorts[request.intValue] == null) throw new PortException("Port not open");
 			                			((UARTPort) ioPorts[request.intValue]).resetSensor();
 			                			break;
 			                		case UART_SET_MODE:
+			                			if (ioPorts[request.intValue] == null) throw new PortException("Port not open");
 			                			reply.result = ((UARTPort) ioPorts[request.intValue]).setMode(request.intValue2);
 			                			os.writeObject(reply);
 			                			break;
@@ -853,17 +870,21 @@ public class GraphicStartup implements Menu {
 			                			int pn = request.str2.charAt(1) - '1';
 			                			providers[pn] = provider;
 			                			sensors[pn] = sensor;
+			                			os.writeObject(reply);
 			                			break;
 			                		case SAMPLE_SIZE:
+			                			if (providers[request.intValue] == null) throw new PortException("Port not open");
 			                			reply.reply = providers[request.intValue].sampleSize();
 			                			os.writeObject(reply);
 			                			break;
 			                		case FETCH_SAMPLE:
+			                			if (providers[request.intValue] == null) throw new PortException("Port not open");
 			                			reply.floats = new float[providers[request.intValue].sampleSize()];
 			                			providers[request.intValue].fetchSample(reply.floats, 0);
 			                			os.writeObject(reply);
 			                			break;
 			                		case CLOSE_SENSOR:
+			                			if (sensors[request.intValue] == null) throw new PortException("Port not open");
 			                			sensors[request.intValue].close();
 			                			break;
 			                		}
