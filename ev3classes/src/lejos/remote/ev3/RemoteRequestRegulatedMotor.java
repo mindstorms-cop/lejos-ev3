@@ -173,7 +173,7 @@ public class RemoteRequestRegulatedMotor implements RegulatedMotor {
 	public float getMaxSpeed() {
 		EV3Request req = new EV3Request();
 		req.request = EV3Request.Request.MOTOR_GET_MAX_SPEED;
-		return sendRequest(req, true).reply;
+		return sendRequest(req, true).floatReply;
 	}
 
 	@Override
