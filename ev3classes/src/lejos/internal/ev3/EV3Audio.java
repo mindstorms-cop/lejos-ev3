@@ -2,6 +2,7 @@ package lejos.internal.ev3;
 
 
 import java.io.*;
+
 import lejos.hardware.Audio;
 import lejos.internal.io.NativeDevice;
 import lejos.internal.io.SystemSettings;
@@ -36,7 +37,7 @@ public class EV3Audio implements Audio
     private static final byte OP_PLAY = 2;
     private static final byte OP_REPEAT = 3;
     private static final byte OP_SERVICE = 4;
-    private static final Audio singleton = new EV3Audio();
+    private static final EV3Audio singleton = new EV3Audio();
     private int PCMSampleSize = 0;
     private byte[] PCMBuffer;
     
@@ -45,6 +46,10 @@ public class EV3Audio implements Audio
      */
     static {
         singleton.loadSettings();
+        Runtime.getRuntime().addShutdownHook(new Thread() {
+            @Override
+            public void run() {singleton.endPCMPlayback();}
+        });
     }
 
     private EV3Audio()
@@ -160,7 +165,7 @@ public class EV3Audio implements Audio
      * @param sampleRate number of samples per second
      * @param vol playback volume
      */
-    public void startPCMPlayback(int sampleSize, int sampleRate, int vol)
+    public synchronized void startPCMPlayback(int sampleSize, int sampleRate, int vol)
     {
         if (sampleSize != 8 && sampleSize != 16)
             throw new UnsupportedOperationException("Only 8bit and 16bit samples supported size is " + sampleSize);
@@ -187,11 +192,12 @@ public class EV3Audio implements Audio
     /**
      * Cease the playing of PCM samples
      */
-    public void endPCMPlayback()
+    public synchronized void endPCMPlayback()
     {
         // are we playing?
         if (PCMSampleSize == 0)
             return;
+        PCMSampleSize = 0;         
         byte [] buf = new byte[6];
         buf[0] = OP_BREAK;
         while (dev.write(buf, 1) == 0)
@@ -199,7 +205,6 @@ public class EV3Audio implements Audio
             Delay.msDelay(10);
             System.out.println("Wait for close");
         }
-        PCMSampleSize = 0; 
         PCMBuffer = null;
     }
 
@@ -209,8 +214,10 @@ public class EV3Audio implements Audio
      * @param buffer
      * @param cnt
      */
-    private void writePCMBuffer(byte[] buf, int dataLen)
+    private synchronized void writePCMBuffer(byte[] buf, int dataLen)
     {
+        // check for playback aborted
+        if (PCMSampleSize == 0) return;
         int offset = 0;
         while (offset < dataLen)
         {
