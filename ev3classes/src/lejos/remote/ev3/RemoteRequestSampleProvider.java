@@ -1,6 +1,5 @@
 package lejos.remote.ev3;
 
-import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
@@ -18,31 +17,17 @@ public class RemoteRequestSampleProvider implements SampleProvider {
 		portNum = portName.charAt(1) - '1';
 		EV3Request req = new EV3Request();
 		req.request = EV3Request.Request.CREATE_SAMPLE_PROVIDER;
-		req.intValue = portNum;
 		req.str = sensorName;
 		req.str2 = portName;
 		req.str3 = modeName;
-		try {
-			os.writeObject(req);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		sendRequest(req, true);
 	}
 
 	@Override
 	public int sampleSize() {
 		EV3Request req = new EV3Request();
 		req.request = EV3Request.Request.SAMPLE_SIZE;
-		req.replyRequired = true;
-		req.intValue = portNum;
-		try {
-			os.writeObject(req);
-			EV3Reply reply = (EV3Reply) is.readObject();
-			return reply.reply;
-		} catch (Exception e) {
-			e.printStackTrace();
-			return 0;
-		}
+		return sendRequest(req, true).reply;
 	}
 
 	@Override
@@ -50,22 +35,30 @@ public class RemoteRequestSampleProvider implements SampleProvider {
 		EV3Request req = new EV3Request();
 		req.request = EV3Request.Request.FETCH_SAMPLE;
 		req.replyRequired = true;
-		try {
-			os.writeObject(req);
-			EV3Reply reply = (EV3Reply) is.readObject();
-			for(int i=0;i<reply.floats.length;i++) sample[offset+i] = reply.floats[i];
-		} catch (Exception e) {
-		}
+		EV3Reply reply = sendRequest(req, true);
+		for(int i=0;i<reply.floats.length;i++) sample[offset+i] = reply.floats[i];
 	}
 	
 	public void close() {
 		EV3Request req = new EV3Request();
 		req.request = EV3Request.Request.CLOSE_SENSOR;
+		sendRequest(req, false);
+	}
+	
+	private EV3Reply sendRequest(EV3Request req, boolean replyRequired) {
+		EV3Reply reply = null;
+		req.replyRequired = replyRequired;
 		req.intValue = portNum;
 		try {
+			os.reset();
 			os.writeObject(req);
-		} catch (IOException e) {
-			e.printStackTrace();
+			if (replyRequired) {
+				reply = (EV3Reply) is.readObject();
+				if (reply.e != null) throw new RemoteRequestException(reply.e);
+			}
+			return reply;
+		} catch (Exception e) {
+			throw new RemoteRequestException(e);
 		}
 	}
 }

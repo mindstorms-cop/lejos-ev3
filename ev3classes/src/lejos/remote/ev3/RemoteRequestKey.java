@@ -1,6 +1,5 @@
 package lejos.remote.ev3;
 
-import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
@@ -35,15 +34,8 @@ public class RemoteRequestKey implements Key {
 	public boolean isDown() {
 		EV3Request req = new EV3Request();
 		req.request = EV3Request.Request.KEY_IS_DOWN;
-		req.replyRequired = true;
 		req.str = name;
-		try {
-			os.writeObject(req);
-			EV3Reply reply = (EV3Reply) is.readObject();
-			return reply.result;
-		} catch (Exception e) {
-			return false;
-		}
+		return sendRequest(req, true).result;
 	}
 
 	@Override
@@ -56,12 +48,7 @@ public class RemoteRequestKey implements Key {
 		EV3Request req = new EV3Request();
 		req.request = EV3Request.Request.KEY_WAIT_FOR_PRESS;
 		req.str = name;
-		try {
-			os.writeObject(req);
-			EV3Reply reply = (EV3Reply) is.readObject();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		sendRequest(req, true);
 	}
 
 	@Override
@@ -69,12 +56,7 @@ public class RemoteRequestKey implements Key {
 		EV3Request req = new EV3Request();
 		req.request = EV3Request.Request.KEY_WAIT_FOR_PRESS_AND_RELEASE;
 		req.str = name;
-		try {
-			os.writeObject(req);
-			EV3Reply reply = (EV3Reply) is.readObject();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		sendRequest(req, true);
 	}
 
 	@Override
@@ -92,10 +74,22 @@ public class RemoteRequestKey implements Key {
 		req.request = EV3Request.Request.KEY_SIMULATE_EVENT;
 		req.str = name;
 		req.intValue = event;
+		sendRequest(req, true);
+	}
+	
+	private EV3Reply sendRequest(EV3Request req, boolean replyRequired) {
+		EV3Reply reply = null;
+		req.replyRequired = replyRequired;
 		try {
+			os.reset();
 			os.writeObject(req);
-		} catch (IOException e) {
-			e.printStackTrace();
+			if (replyRequired) {
+				reply = (EV3Reply) is.readObject();
+				if (reply.e != null) throw new RemoteRequestException(reply.e);
+			}
+			return reply;
+		} catch (Exception e) {
+			throw new RemoteRequestException(e);
 		}
 	}
 

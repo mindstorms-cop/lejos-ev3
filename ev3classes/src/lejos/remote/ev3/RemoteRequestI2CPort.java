@@ -1,6 +1,5 @@
 package lejos.remote.ev3;
 
-import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
@@ -23,13 +22,8 @@ public class RemoteRequestI2CPort extends RemoteRequestIOPort implements I2CPort
 		this.portNum = portNum;
 		EV3Request req = new EV3Request();
 		req.request = EV3Request.Request.OPEN_I2C_PORT;
-		req.intValue = typ;
-		req.intValue2 = portNum;
-		try {
-			os.writeObject(req);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		req.intValue2 = typ;
+		sendRequest(req, true);
 		return res;
 	}
 	
@@ -37,12 +31,7 @@ public class RemoteRequestI2CPort extends RemoteRequestIOPort implements I2CPort
 	public void close() {
 		EV3Request req = new EV3Request();
 		req.request = EV3Request.Request.CLOSE_SENSOR_PORT;
-		req.intValue = portNum;
-		try {
-			os.writeObject(req);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}	
+		sendRequest(req, false);	
 	}
 
 	@Override
@@ -51,19 +40,29 @@ public class RemoteRequestI2CPort extends RemoteRequestIOPort implements I2CPort
 			int readLen) {
 		EV3Request req = new EV3Request();
 		req.request = EV3Request.Request.SYSTEM_SOUND;
-		req.replyRequired = true;
-		req.intValue = portNum;
 		req.intValue2 = deviceAddress;
 		req.intValue3 = writeOffset;
 		req.intValue4 = writeLen;
 		req.intValue5 = readLen;
 		req.byteData = writeBuf;
+		EV3Reply reply = sendRequest(req, true);
+		for(int i=0;i<readLen;i++) readBuf[readOffset+i] = reply.contents[i];	
+	}
+	
+	private EV3Reply sendRequest(EV3Request req, boolean replyRequired) {
+		EV3Reply reply = null;
+		req.replyRequired = replyRequired;
+		req.intValue = portNum;
 		try {
+			os.reset();
 			os.writeObject(req);
-			EV3Reply reply = (EV3Reply) is.readObject();
-			for(int i=0;i<readLen;i++) readBuf[readOffset+i] = reply.contents[i];
+			if (replyRequired) {
+				reply = (EV3Reply) is.readObject();
+				if (reply.e != null) throw new RemoteRequestException(reply.e);
+			}
+			return reply;
 		} catch (Exception e) {
-			e.printStackTrace();
-		}	
+			throw new RemoteRequestException(e);
+		}
 	}
 }

@@ -18,14 +18,7 @@ public class RemoteRequestBattery implements Power {
 	public int getVoltageMilliVolt() {
 		EV3Request req = new EV3Request();
 		req.request = EV3Request.Request.GET_VOLTAGE_MILLIVOLTS;
-		req.replyRequired = true;
-		try {
-			os.writeObject(req);
-			EV3Reply reply = (EV3Reply) is.readObject();
-			return reply.reply;
-		} catch (Exception e) {
-			return 0;
-		}
+		return sendRequest(req, true).reply;
 	}
 
 	@Override
@@ -33,41 +26,36 @@ public class RemoteRequestBattery implements Power {
 		EV3Request req = new EV3Request();
 		req.request = EV3Request.Request.GET_VOLTAGE;
 		req.replyRequired = true;
-		try {
-			os.writeObject(req);
-			EV3Reply reply = (EV3Reply) is.readObject();
-			return reply.floatReply;
-		} catch (Exception e) {
-			e.printStackTrace();
-			return 0f;
-		}
+		return sendRequest(req, true).floatReply;
 	}
 
 	@Override
 	public float getBatteryCurrent() {
 		EV3Request req = new EV3Request();
 		req.request = EV3Request.Request.GET_BATTERY_CURRENT;
-		req.replyRequired = true;
-		try {
-			os.writeObject(req);
-			EV3Reply reply = (EV3Reply) is.readObject();
-			return reply.floatReply;
-		} catch (Exception e) {
-			return 0f;
-		}
+		return sendRequest(req, true).floatReply;
 	}
 
 	@Override
 	public float getMotorCurrent() {
 		EV3Request req = new EV3Request();
 		req.request = EV3Request.Request.GET_MOTOR_CURRENT;
-		req.replyRequired = true;
+		return sendRequest(req, true).floatReply;
+	}
+	
+	private EV3Reply sendRequest(EV3Request req, boolean replyRequired) {
+		EV3Reply reply = null;
+		req.replyRequired = replyRequired;
 		try {
+			os.reset();
 			os.writeObject(req);
-			EV3Reply reply = (EV3Reply) is.readObject();
-			return reply.floatReply;
+			if (replyRequired) {
+				reply = (EV3Reply) is.readObject();
+				if (reply.e != null) throw new RemoteRequestException(reply.e);
+			}
+			return reply;
 		} catch (Exception e) {
-			return 0f;
+			throw new RemoteRequestException(e);
 		}
 	}
 }

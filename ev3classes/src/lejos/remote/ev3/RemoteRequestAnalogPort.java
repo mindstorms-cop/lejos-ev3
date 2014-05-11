@@ -1,6 +1,5 @@
 package lejos.remote.ev3;
 
-import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
@@ -23,13 +22,8 @@ public class RemoteRequestAnalogPort extends RemoteRequestIOPort implements Anal
 		this.portNum = portNum;
 		EV3Request req = new EV3Request();
 		req.request = EV3Request.Request.OPEN_ANALOG_PORT;;
-		req.intValue = typ;
-		req.intValue2 = portNum;
-		try {
-			os.writeObject(req);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		req.intValue2 = typ;
+		sendRequest(req, true);
 		return res;
 	}
 	
@@ -37,12 +31,7 @@ public class RemoteRequestAnalogPort extends RemoteRequestIOPort implements Anal
 	public void close() {
 		EV3Request req = new EV3Request();
 		req.request = EV3Request.Request.CLOSE_SENSOR_PORT;
-		req.intValue = portNum;
-		try {
-			os.writeObject(req);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}	
+		sendRequest(req, false);	
 	}
 	
     @Override
@@ -83,56 +72,45 @@ public class RemoteRequestAnalogPort extends RemoteRequestIOPort implements Anal
 		EV3Request req = new EV3Request();
 		req.request = EV3Request.Request.SET_PIN_MODE;
 		req.intValue = portNum;
-		req.intValue2 = mode;
-		try {
-			os.writeObject(req);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		sendRequest(req, false);
 	}
  
 	@Override
 	public float getPin6() {
 		EV3Request req = new EV3Request();
 		req.request = EV3Request.Request.GET_PIN_6;
-		req.replyRequired = true;
-		req.intValue = portNum;
-		try {
-			os.writeObject(req);
-			EV3Reply reply = (EV3Reply) is.readObject();
-			return reply.floatReply;
-		} catch (Exception e) {
-			return 0;
-		}
+		return sendRequest(req, true).floatReply;
 	}
 
 	@Override
 	public float getPin1() {
 		EV3Request req = new EV3Request();
 		req.request = EV3Request.Request.GET_PIN_1;
-		req.replyRequired = true;
-		req.intValue = portNum;
-		try {
-			os.writeObject(req);
-			EV3Reply reply = (EV3Reply) is.readObject();
-			return reply.floatReply;
-		} catch (Exception e) {
-			return 0;
-		}
+		return sendRequest(req, true).floatReply;
 	}
 
 	@Override
 	public void getFloats(float[] vals, int offset, int length) {
 		EV3Request req = new EV3Request();
-		req.request = EV3Request.Request.GET_PIN_6;
-		req.replyRequired = true;
+		req.request = EV3Request.Request.GET_FLOATS;
+		EV3Reply reply = sendRequest(req, true);
+		for(int i=0;i<vals.length;i++) vals[offset+i] = reply.floats[i];	
+	}
+	
+	private EV3Reply sendRequest(EV3Request req, boolean replyRequired) {
+		EV3Reply reply = null;
+		req.replyRequired = replyRequired;
 		req.intValue = portNum;
-		req.intValue2 = length;
 		try {
+			os.reset();
 			os.writeObject(req);
-			EV3Reply reply = (EV3Reply) is.readObject();
-			for(int i=0;i<vals.length;i++) vals[offset+i] = reply.floats[i];
+			if (replyRequired) {
+				reply = (EV3Reply) is.readObject();
+				if (reply.e != null) throw new RemoteRequestException(reply.e);
+			}
+			return reply;
 		} catch (Exception e) {
-		}	
+			throw new RemoteRequestException(e);
+		}
 	}
 }

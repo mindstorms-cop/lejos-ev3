@@ -1,6 +1,5 @@
 package lejos.remote.ev3;
 
-import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
@@ -23,13 +22,8 @@ public class RemoteRequestUARTPort extends RemoteRequestIOPort implements UARTPo
 		this.portNum = portNum;
 		EV3Request req = new EV3Request();
 		req.request = EV3Request.Request.OPEN_UART_PORT;;
-		req.intValue = typ;
-		req.intValue2 = portNum;
-		try {
-			os.writeObject(req);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		req.intValue2 = typ;
+		sendRequest(req, true);
 		return res;
 	}
 	
@@ -37,64 +31,32 @@ public class RemoteRequestUARTPort extends RemoteRequestIOPort implements UARTPo
 	public void close() {
 		EV3Request req = new EV3Request();
 		req.request = EV3Request.Request.CLOSE_SENSOR_PORT;
-		req.intValue = portNum;
-		try {
-			os.writeObject(req);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}	
+		sendRequest(req, false);	
 	}
 
 
 	@Override
 	public byte getByte() {
-		System.out.println("Getting byte");
 		EV3Request req = new EV3Request();
 		req.request = EV3Request.Request.UART_GET_BYTE;
-		req.replyRequired = true;
-		try {
-			os.writeObject(req);
-			req.intValue = portNum;
-			EV3Reply reply = (EV3Reply) is.readObject();
-			System.out.println("Byte is " + reply.reply);
-			return (byte) reply.reply;
-		} catch (Exception e) {
-			return 0;
-		}
+		return (byte) sendRequest(req, true).reply;
 	}
 
 	@Override
 	public void getBytes(byte[] vals, int offset, int len) {
-		System.out.println("Getting bytes");
 		EV3Request req = new EV3Request();
 		req.request = EV3Request.Request.UART_GET_BYTES;
-		req.replyRequired = true;
-		req.intValue = portNum;
 		req.intValue2 = len;
-		try {
-			os.writeObject(req);
-			EV3Reply reply = (EV3Reply) is.readObject();
-			System.out.println("Got bytes: " + len);
-			for(int i=0;i<len;i++) vals[offset+i] = reply.contents[i];
-		} catch (Exception e) {
-		}
+		EV3Reply reply = sendRequest(req,true);
+		for(int i=0;i<len;i++) vals[offset+i] = reply.contents[i];
+
 	}
 
 	@Override
 	public int getShort() {
-		System.out.println("Getting short");
 		EV3Request req = new EV3Request();
 		req.request = EV3Request.Request.UART_GET_SHORT;
-		req.replyRequired = true;
-		req.intValue = portNum;
-		try {
-			os.writeObject(req);
-			EV3Reply reply = (EV3Reply) is.readObject();
-			System.out.println("Got short: " + reply.reply);
-			return (short) reply.reply;
-		} catch (Exception e) {
-			return 0;
-		}
+		return (byte) sendRequest(req, true).reply;
 	}
 
 	@Override
@@ -102,31 +64,16 @@ public class RemoteRequestUARTPort extends RemoteRequestIOPort implements UARTPo
 		System.out.println("Getting shorts");
 		EV3Request req = new EV3Request();
 		req.request = EV3Request.Request.UART_GET_SHORTS;
-		req.replyRequired = true;
-		req.intValue = portNum;
 		req.intValue2 = len;
-		try {
-			os.writeObject(req);
-			EV3Reply reply = (EV3Reply) is.readObject();
-			System.out.println("Got shorts: " + len);
-			for(int i=0;i<len;i++) vals[offset+i] = reply.shorts[i];
-		} catch (Exception e) {
-		}	
+		EV3Reply reply = sendRequest(req,true);
+		for(int i=0;i<len;i++) vals[offset+i] = reply.shorts[i];	
 	}
 
 	@Override
 	public String getModeName(int mode) {
 		EV3Request req = new EV3Request();
 		req.request = EV3Request.Request.UART_GET_MODE_NAME;
-		req.replyRequired = true;
-		try {
-			os.writeObject(req);
-			req.intValue = portNum;
-			EV3Reply reply = (EV3Reply) is.readObject();
-			return reply.name;
-		} catch (Exception e) {
-			return null;
-		}
+		return sendRequest(req, true).name;
 	}
 
 	@Override
@@ -134,28 +81,15 @@ public class RemoteRequestUARTPort extends RemoteRequestIOPort implements UARTPo
 		System.out.println("Initialise sensor");
 		EV3Request req = new EV3Request();
 		req.request = EV3Request.Request.UART_GET_BYTES;
-		req.replyRequired = true;
-		req.intValue = portNum;
 		req.intValue2 = mode;
-		try {
-			os.writeObject(req);
-			EV3Reply reply = (EV3Reply) is.readObject();
-			return reply.result;
-		} catch (Exception e) {
-			return false;
-		}
+		return sendRequest(req, true).result;
 	}
 
 	@Override
 	public void resetSensor() {
 		EV3Request req = new EV3Request();
 		req.request = EV3Request.Request.UART_RESET_SENSOR;
-		req.intValue = portNum;
-		try {
-			os.writeObject(req);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		sendRequest(req, false);
 	}
 	
 	@Override
@@ -163,16 +97,24 @@ public class RemoteRequestUARTPort extends RemoteRequestIOPort implements UARTPo
 		System.out.println("Setting mode to " + mode);
 		EV3Request req = new EV3Request();
 		req.request = EV3Request.Request.UART_SET_MODE;
-		req.replyRequired = true;
-		req.intValue = portNum;
 		req.intValue2 = mode;
+		return sendRequest(req, true).result;
+	}
+	
+	private EV3Reply sendRequest(EV3Request req, boolean replyRequired) {
+		EV3Reply reply = null;
+		req.replyRequired = replyRequired;
+		req.intValue = portNum;
 		try {
+			os.reset();
 			os.writeObject(req);
-			EV3Reply reply = (EV3Reply) is.readObject();
-			return reply.result;
+			if (replyRequired) {
+				reply = (EV3Reply) is.readObject();
+				if (reply.e != null) throw new RemoteRequestException(reply.e);
+			}
+			return reply;
 		} catch (Exception e) {
-			e.printStackTrace();
-			return false;
+			throw new RemoteRequestException(e);
 		}
 	}
 }
