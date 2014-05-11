@@ -12,10 +12,10 @@
  */
 package com.sun.jna;
 
-import java.awt.Component;
-import java.awt.GraphicsEnvironment;
-import java.awt.HeadlessException;
-import java.awt.Window;
+//import java.awt.Component;
+//import java.awt.GraphicsEnvironment;
+//import java.awt.HeadlessException;
+//import java.awt.Window;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -236,9 +236,9 @@ public final class Native {
      * <code>XID</code> (usually <code>long int</code>) to identify windows.
      * @throws HeadlessException if the current VM is running headless 
      */
-    public static long getWindowID(Window w) throws HeadlessException {
-        return getComponentID(w);
-    }
+    //public static long getWindowID(Window w) throws HeadlessException {
+        //return getComponentID(w);
+    //}
 
     /** Utility method to get the native window ID for a heavyweight Java 
      * {@link Component} as a <code>long</code> value.
@@ -246,6 +246,7 @@ public final class Native {
      * <code>XID</code> (usually <code>long int</code>) to identify windows. 
      * @throws HeadlessException if the current VM is running headless 
      */
+    /*
     public static long getComponentID(Component c) throws HeadlessException {
         if (GraphicsEnvironment.isHeadless()) {
             throw new HeadlessException("No native windows when headless");
@@ -267,16 +268,16 @@ public final class Native {
         // (see http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6539705).
         return getWindowHandle0(c);
     }
-    
+    */
     /** Utility method to get the native window pointer for a Java 
      * {@link Window} as a {@link Pointer} value.  This method is primarily for 
      * w32, which uses the <code>HANDLE</code> type (actually 
      * <code>void *</code>) to identify windows. 
      * @throws HeadlessException if the current VM is running headless 
      */
-    public static Pointer getWindowPointer(Window w) throws HeadlessException {
-        return getComponentPointer(w);
-    }
+    //public static Pointer getWindowPointer(Window w) throws HeadlessException {
+        //return getComponentPointer(w);
+    //}
     
     /** Utility method to get the native window pointer for a heavyweight Java 
      * {@link Component} as a {@link Pointer} value.  This method is primarily 
@@ -284,11 +285,11 @@ public final class Native {
      * <code>void *</code>) to identify windows. 
      * @throws HeadlessException if the current VM is running headless 
      */
-    public static Pointer getComponentPointer(Component c) throws HeadlessException {
-        return new Pointer(getComponentID(c));
-    }
+    //public static Pointer getComponentPointer(Component c) throws HeadlessException {
+        //return new Pointer(getComponentID(c));
+    //}
     
-    private static native long getWindowHandle0(Component c);
+    //private static native long getWindowHandle0(Component c);
 
     /** Convert a direct {@link Buffer} into a {@link Pointer}. 
      * @throws IllegalArgumentException if the buffer is not direct.

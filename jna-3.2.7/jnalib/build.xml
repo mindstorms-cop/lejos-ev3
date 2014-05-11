@@ -232,8 +232,8 @@
 	      </fileset>
 	    </jar>
 	  </target>
-	  <target name="jaronly" depends="-setup,:jar" unless="-jar"
-	          description="Build primary jar">
+	  <target name="jaronly" depends="-setup,compile,:jar" unless="-jar"
+	          description="Build primary jar, no native">
 	    <jar jarfile="${build}/${jar}">
 	      <manifest>
 	        <attribute name="Main-Class" value="com.sun.jna.Native"/>
