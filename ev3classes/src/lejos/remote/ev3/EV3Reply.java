@@ -18,6 +18,8 @@ public class EV3Reply implements Serializable {
 	public float[] floats;
 	public short[] shorts;
 	
+	public double doubleReply;
+	
 	public Exception e;
 
 }

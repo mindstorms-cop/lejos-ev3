@@ -22,6 +22,7 @@ import lejos.hardware.lcd.TextLCD;
 import lejos.hardware.port.Port;
 import lejos.robotics.RegulatedMotor;
 import lejos.robotics.SampleProvider;
+import lejos.robotics.navigation.ArcRotateMoveController;
 
 public class RemoteRequestEV3 implements EV3, Serializable {
 	private static final long serialVersionUID = -7784568187751439269L;
@@ -146,6 +147,11 @@ public class RemoteRequestEV3 implements EV3, Serializable {
 	
 	public RegulatedMotor createRegulatedMotor(String portName, char motorType) {
 		return new RemoteRequestRegulatedMotor(is, os, portName, motorType);
+	}
+	
+	
+	public ArcRotateMoveController createPilot(double wheelDiameter, double trackWidth, String leftMotor, String rightMotor) {
+		return new RemoteRequestPilot(is, os, leftMotor, rightMotor, wheelDiameter, trackWidth);
 	}
 	
 	public void disConnect() {
