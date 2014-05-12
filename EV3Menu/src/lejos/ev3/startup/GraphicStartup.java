@@ -69,6 +69,8 @@ import lejos.remote.ev3.MenuRequest;
 import lejos.remote.ev3.RMIRemoteEV3;
 import lejos.robotics.RegulatedMotor;
 import lejos.robotics.SampleProvider;
+import lejos.robotics.navigation.ArcRotateMoveController;
+import lejos.robotics.navigation.DifferentialPilot;
 
 public class GraphicStartup implements Menu {
 	private static final int REMOTE_MENU_PORT = 8002;
@@ -376,6 +378,8 @@ public class GraphicStartup implements Menu {
     		GraphicsLCD g = LocalEV3.get().getGraphicsLCD();
     		SampleProvider[] providers = new SampleProvider[4];
     		BaseSensor[] sensors = new BaseSensor[4];
+    		ArcRotateMoveController pilot = null;
+    		int pilotLeftMotor = 0, pilotRightMotor = 0;
 
     		RegulatedMotor[] motors = new RegulatedMotor[4];
         	
@@ -886,6 +890,99 @@ public class GraphicStartup implements Menu {
 			                		case CLOSE_SENSOR:
 			                			if (sensors[request.intValue] == null) throw new PortException("Port not open");
 			                			sensors[request.intValue].close();
+			                			break;
+			                		case CREATE_PILOT:
+			                			pilotLeftMotor = request.str.charAt(0) - 'A';
+			                			pilotRightMotor = request.str2.charAt(0) - 'A';
+			                			pilot = new DifferentialPilot(request.doubleValue, request.doubleValue2, motors[pilotLeftMotor], motors[pilotRightMotor], false);
+			                			os.writeObject(reply);
+			                			break;
+			                		case CLOSE_PILOT:
+			                			if (motors[pilotLeftMotor] != null) motors[pilotLeftMotor].close();
+			                			if (motors[pilotRightMotor] != null) motors[pilotRightMotor].close();
+			                			os.writeObject(reply);
+			                			break;
+			                		case PILOT_GET_MIN_RADIUS:
+			                			reply.doubleReply = pilot.getMinRadius();
+			                			os.writeObject(reply);
+			                			break;
+			                		case PILOT_SET_MIN_RADIUS:
+			                			pilot.setMinRadius(request.doubleValue);
+			                			break;
+			                		case PILOT_ARC_FORWARD:
+			                			pilot.arcForward(request.doubleValue);
+			                			break;
+			                		case PILOT_ARC_BACKWARD:
+			                			pilot.arcBackward(request.doubleValue);
+			                			break;
+			                		case PILOT_ARC:
+			                			pilot.arc(request.doubleValue, request.doubleValue2);
+			                			os.writeObject(reply);
+			                			break;
+			                		case PILOT_ARC_IMMEDIATE:
+			                			pilot.arc(request.doubleValue, request.doubleValue2, request.flag);
+			                			if (!request.flag) os.writeObject(reply);
+			                			break;
+			                		case PILOT_TRAVEL_ARC:
+			                			pilot.travelArc(request.doubleValue, request.doubleValue2);
+			                			os.writeObject(reply);
+			                			break;
+			                		case PILOT_TRAVEL_ARC_IMMEDIATE:
+			                			pilot.travelArc(request.doubleValue, request.doubleValue2, request.flag);
+			                			if (!request.flag) os.writeObject(reply);
+			                			break;
+			                		case PILOT_FORWARD:
+			                			pilot.forward();
+			                			break;
+			                		case PILOT_BACKWARD:
+			                			pilot.backward();
+			                			break;
+			                		case PILOT_STOP:
+			                			pilot.stop();
+			                			break;
+			                		case PILOT_IS_MOVING:
+			                			reply.result = pilot.isMoving();
+			                			os.writeObject(reply);
+			                			break;
+			                		case PILOT_TRAVEL:
+			                			pilot.travel(request.doubleValue);
+			                			os.writeObject(reply);
+			                			break;
+			                		case PILOT_TRAVEL_IMMEDIATE:
+			                			pilot.travel(request.doubleValue, request.flag);
+			                			if (!request.flag) os.writeObject(reply);
+			                			break;
+			                		case PILOT_SET_TRAVEL_SPEED:
+			                			pilot.setTravelSpeed(request.doubleValue);
+			                			break;
+			                		case PILOT_GET_TRAVEL_SPEED:
+			                			reply.doubleReply = pilot.getTravelSpeed();
+			                			os.writeObject(reply);
+			                			break;
+			                		case PILOT_GET_MAX_TRAVEL_SPEED:
+			                			reply.doubleReply = pilot.getTravelSpeed();
+			                			os.writeObject(reply);
+			                			break;
+			                		case PILOT_GET_MOVEMENT:
+			                			break;
+			                		case PILOT_ROTATE:
+			                			pilot.rotate(request.doubleValue);
+			                			os.writeObject(reply);
+			                			break;
+			                		case PILOT_ROTATE_IMMEDIATE:
+			                			pilot.rotate(request.doubleValue, request.flag);
+			                			if (!request.flag) os.writeObject(reply);
+			                			break;
+			                		case PILOT_GET_ROTATE_SPEED:
+			                			reply.doubleReply = pilot.getRotateSpeed();
+			                			os.writeObject(reply);
+			                			break;
+			                		case PILOT_SET_ROTATE_SPEED:
+			                			pilot.setRotateSpeed(request.doubleValue);
+			                			break;
+			                		case PILOT_GET_MAX_ROTATE_SPEED:
+			                			reply.doubleReply = pilot.getRotateMaxSpeed();
+			                			os.writeObject(reply);
 			                			break;
 			                		}
 		                		} catch (Exception e) {
