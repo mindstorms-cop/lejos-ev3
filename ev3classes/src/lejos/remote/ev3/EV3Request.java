@@ -151,7 +151,8 @@ public class EV3Request implements Serializable {
 		PILOT_SET_ROTATE_SPEED,
 		PILOT_GET_MAX_ROTATE_SPEED,
 		CREATE_PILOT,
-		CLOSE_PILOT
+		CLOSE_PILOT,
+		CREATE_SAMPLE_PROVIDER_PUBLISH
 	}
 	
 	public Request request;
@@ -168,7 +169,7 @@ public class EV3Request implements Serializable {
 	
 	public boolean flag;
 	
-	public String str, str2, str3;
+	public String str, str2, str3, str4;
 	
 	public char ch;
 	
@@ -177,5 +178,7 @@ public class EV3Request implements Serializable {
 	public Image image;
 	
 	public double doubleValue, doubleValue2;
+	
+	public float floatValue;
 
 }

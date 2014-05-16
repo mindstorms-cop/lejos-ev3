@@ -69,6 +69,7 @@ import lejos.remote.ev3.MenuRequest;
 import lejos.remote.ev3.RMIRemoteEV3;
 import lejos.robotics.RegulatedMotor;
 import lejos.robotics.SampleProvider;
+import lejos.robotics.filter.PublishFilter;
 import lejos.robotics.navigation.ArcRotateMoveController;
 import lejos.robotics.navigation.DifferentialPilot;
 
@@ -859,7 +860,9 @@ public class GraphicStartup implements Menu {
 			                			motors[request.intValue].close();
 			                			os.writeObject(reply);
 			                			break;
+			                		case CREATE_SAMPLE_PROVIDER_PUBLISH:
 			                		case CREATE_SAMPLE_PROVIDER:
+			                			float frequency = (request.request == EV3Request.Request.CREATE_SAMPLE_PROVIDER_PUBLISH ? request.floatValue : 0f);
 			                			System.out.println("Creating " + request.str + " on " + request.str2 + " with mode " + request.str3);
 			                			Class<?> c = Class.forName(request.str); // sensor class
 			                			Class<?>[] params = new Class<?>[1];
@@ -872,7 +875,8 @@ public class GraphicStartup implements Menu {
 			                			if (request.str3 == null) provider = (SampleProvider) sensor;
 			                			else provider = sensor.getMode(request.str3);
 			                			int pn = request.str2.charAt(1) - '1';
-			                			providers[pn] = provider;
+			                			if (frequency > 0) providers[pn] = new PublishFilter(provider,request.str4,frequency);
+			                			else providers[pn] = provider;
 			                			sensors[pn] = sensor;
 			                			os.writeObject(reply);
 			                			break;
