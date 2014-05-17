@@ -22,6 +22,23 @@ public class RemoteRequestSampleProvider implements SampleProvider {
 		req.str3 = modeName;
 		sendRequest(req, true);
 	}
+	
+	public RemoteRequestSampleProvider(ObjectInputStream is,
+			ObjectOutputStream os, String portName, String sensorName, String modeName, String topic, float frequency) {
+		this.is = is;
+		this.os = os;
+		portNum = portName.charAt(1) - '1';
+		EV3Request req = new EV3Request();
+		req.request = EV3Request.Request.CREATE_SAMPLE_PROVIDER_PUBLISH;
+		req.str = sensorName;
+		req.str2 = portName;
+		req.str3 = modeName;
+		req.str4 = topic;
+		req.floatValue = frequency;
+		sendRequest(req, true);
+	}
+	
+	
 
 	@Override
 	public int sampleSize() {
