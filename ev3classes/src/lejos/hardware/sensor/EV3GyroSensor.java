@@ -5,10 +5,15 @@ import lejos.hardware.port.UARTPort;
 import lejos.robotics.SampleProvider;
 
 /**
- * Sensor driver for the Lego EV3 Gyro sensor.<br>
- * Please note that the Gyro sensor that the sensor can supply both rate and
- * angle. Everytime your program switches from rate to angle the sensor resets
- * automaticly and therefore should by motionless during this operation.
+ * Sensor driver for the Lego EV3 Gyro sensor.
+ * <OL>
+ * This sensor supports three modes:
+ * <li>Rate mode, provides the rate of turn in degrees per second</li>
+ * <li>Angle mode, provides the accumulated angle in degrees</li>
+ * <li>Rate and Angle mode, provides both of the previous</li>
+ * </OL>
+ * A positive angle or rate indicates a counter clockwise rotation. <br>
+ * Use reset() to recalibrate the sensor and to reset accumulated angle to zero. 
  * 
  * @author Andy, Aswin Bouwmeester
  */
