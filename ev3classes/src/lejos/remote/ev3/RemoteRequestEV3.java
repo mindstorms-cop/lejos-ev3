@@ -5,6 +5,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.net.Socket;
+import java.rmi.RemoteException;
 import java.util.ArrayList;
 
 import lejos.hardware.Audio;
@@ -143,6 +144,11 @@ public class RemoteRequestEV3 implements EV3, Serializable {
 	
 	public SampleProvider createSampleProvider(String portName, String sensorName, String modeName) {
 		return new RemoteRequestSampleProvider(is,os, portName, sensorName, modeName);
+	}
+	
+	public SampleProvider createSampleProvider(String portName,
+			String sensorName, String modeName, String topic, float frequency) throws RemoteException {
+		return new RemoteRequestSampleProvider(is, os, portName, sensorName, modeName, topic, frequency);
 	}
 	
 	public RegulatedMotor createRegulatedMotor(String portName, char motorType) {
