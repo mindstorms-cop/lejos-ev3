@@ -14,11 +14,11 @@ import lejos.robotics.SampleProvider;
  */
 public class EV3GyroSensor extends UARTSensor {
   private static final long SWITCHDELAY = 200;
-  private static final int  RESETMODE   = 4;
+  private short[] raw=new short[2];
 
   public EV3GyroSensor(Port port) {
     super(port);
-    setModes(new SensorMode[] { new RateMode(), new AngleMode() });
+    setModes(new SensorMode[] { new RateMode(), new AngleMode(), new RateAndAngleMode() });
   }
 
   public EV3GyroSensor(UARTPort port) {
@@ -48,17 +48,31 @@ public class EV3GyroSensor extends UARTSensor {
   }
 
   /**
-   * Hardware calibration of the Gyro sensor. <br>
+   * Returns an SampleProvider object representing the gyro sensor in both rate and mode. <br>
+   * In this mode the sensor measures both the speed of rotation expressed (degrees/second) and the 
+   * accumulated angle (degrees). A positive rate or angle  indicates a counterclockwise rotation. A
+   * negative rate indicates a clockwise rotation. <br>
+   * <OL>The sample contains: 
+   * <li> Accumulated angle in degrees</li>
+   * <li> Rate in degrees/second</li>
+   * </ol>
+   */
+  public SampleProvider getAngleAndRateMode() {
+    return getMode(2);
+  }
+
+  
+  /**
+   * Hardware calibration of the Gyro sensor and reset off accumulated angle to zero. <br>
    * The sensor should be motionless during calibration.
    */
   public void reset() {
-    // TODO: Test if angle is reset to zero due to calibration
-    // TODO: find out how to get out of calibration mode
-    switchMode(RESETMODE, SWITCHDELAY);
+    // Reset mode (4) is not used here as it behaves eratically. Instead the reset is done implicitly by going to mode 1.
+    switchMode(1, SWITCHDELAY);
   }
 
   private class AngleMode implements SampleProvider, SensorMode {
-    private static final int   MODE = 0;
+    private static final int   MODE = 3;
     private static final float toSI = -1;
 
     @Override
@@ -69,7 +83,8 @@ public class EV3GyroSensor extends UARTSensor {
     @Override
     public void fetchSample(float[] sample, int offset) {
       switchMode(MODE, SWITCHDELAY);
-      sample[offset] = port.getShort() * toSI;
+      port.getShorts(raw, 0, raw.length);
+      sample[offset] = raw[0] * toSI;
     }
 
     @Override
@@ -80,7 +95,7 @@ public class EV3GyroSensor extends UARTSensor {
   }
 
   private class RateMode implements SampleProvider, SensorMode {
-    private static final int   MODE = 1;
+    private static final int   MODE = 3;
     private static final float toSI = -1;
 
     @Override
@@ -91,7 +106,8 @@ public class EV3GyroSensor extends UARTSensor {
     @Override
     public void fetchSample(float[] sample, int offset) {
       switchMode(MODE, SWITCHDELAY);
-      sample[offset] = port.getShort() * toSI;
+      port.getShorts(raw, 0, raw.length);
+      sample[offset] = raw[1] * toSI;
     }
 
     @Override
@@ -101,4 +117,30 @@ public class EV3GyroSensor extends UARTSensor {
 
   }
 
+  private class RateAndAngleMode implements SampleProvider, SensorMode {
+    private static final int   MODE = 3;
+    private static final float toSI = -1;
+
+    @Override
+    public int sampleSize() {
+      return 2;
+    }
+
+    @Override
+    public void fetchSample(float[] sample, int offset) {
+      switchMode(MODE, SWITCHDELAY);
+      port.getShorts(raw, 0, raw.length);
+      for (int i=0;i<raw.length;i++) {
+        sample[offset+i] = raw[i] * toSI;
+      }
+    }
+
+    @Override
+    public String getName() {
+      return "Angle and Rate";
+    }
+
+  }
+
+  
 }
