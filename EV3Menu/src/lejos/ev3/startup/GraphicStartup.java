@@ -379,7 +379,7 @@ public class GraphicStartup implements Menu {
     		GraphicsLCD g = LocalEV3.get().getGraphicsLCD();
     		SampleProvider[] providers = new SampleProvider[4];
     		BaseSensor[] sensors = new BaseSensor[4];
-    		ArcRotateMoveController pilot = null;
+    		DifferentialPilot pilot = null;
     		int pilotLeftMotor = 0, pilotRightMotor = 0;
 
     		RegulatedMotor[] motors = new RegulatedMotor[4];
@@ -987,6 +987,9 @@ public class GraphicStartup implements Menu {
 			                		case PILOT_GET_MAX_ROTATE_SPEED:
 			                			reply.doubleReply = pilot.getRotateMaxSpeed();
 			                			os.writeObject(reply);
+			                			break;
+			                		case PILOT_STEER:
+			                			pilot.steer(request.doubleValue);
 			                			break;
 			                		}
 		                		} catch (Exception e) {

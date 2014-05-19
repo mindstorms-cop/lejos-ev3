@@ -202,6 +202,13 @@ public class RemoteRequestPilot implements ArcRotateMoveController {
 		req.flag = immediateReturn;
 		sendRequest(req, !immediateReturn);
 	}
+	
+	public void steer(double turnRate) {
+		EV3Request req = new EV3Request();
+		req.request = EV3Request.Request.PILOT_STEER;
+		req.doubleValue = turnRate;
+		sendRequest(req, false);
+	}
 
 	@Override
 	public void setRotateSpeed(double speed) {
