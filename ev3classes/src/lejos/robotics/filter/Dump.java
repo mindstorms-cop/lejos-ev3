@@ -26,7 +26,7 @@ public class Dump extends AbstractFilter {
 //    System.out.print(' ');
     LCD.drawString(f, 0, i);
   }
-  System.out.println();
+//  System.out.println();
   LCD.refresh();
 
   }
