@@ -43,8 +43,7 @@ public class ExternalJVMToolStarter implements ToolStarter {
 		
 		ArrayList<String> args2 = new ArrayList<String>();
 		args2.add(f.getAbsolutePath());
-		if (osName.startsWith("mac os x"))
-			args2.add("-d32");
+
 		args2.add("-Dev3.home="+ev3Home.getAbsolutePath());
 		args2.add("-classpath");
 		args2.add(LeJOSEV3Util.getClasspathString(pccp));

@@ -21,6 +21,7 @@ public class EV3Wrapper implements UncaughtExceptionHandler {
 
     static LCDLayer systemLayer;
     static EV3LCDManager manager = EV3LCDManager.getLocalLCDManager();
+    static PrintStream origErr;
     
 	public static void main(String[] args) throws Exception {
 		Thread.setDefaultUncaughtExceptionHandler(new EV3Wrapper());
@@ -34,6 +35,7 @@ public class EV3Wrapper implements UncaughtExceptionHandler {
         // redirect standard I/O streams
 		TextLCD stdOut = new EV3TextLCD("STDOUT");
 		OutputStream lcdOut = new LCDOutputStream(stdOut);
+		origErr = System.err;
 		System.setOut(new RedirectStream(System.out, lcdOut));
 		System.setErr(new RedirectStream(System.err, lcdOut));
 		// make sure everything can be seen
@@ -90,7 +92,8 @@ public class EV3Wrapper implements UncaughtExceptionHandler {
 		switchToLayer("EXCEPTION");
 		// Get rid of invocation exception
 	    if (t.getCause() != null) t = t.getCause();
-		//t.printStackTrace();
+	    // Send stack trace to the menu so it goes to EV3Console etc.
+		t.printStackTrace(origErr);
 	    int offset = 0;
 	    while (true)
 	    {
@@ -173,12 +176,14 @@ public class EV3Wrapper implements UncaughtExceptionHandler {
 		public void write(int x) {
 			super.write(x);
 			orig.write(x);
+			orig.flush();
 		}
 		
 		@Override
 		public void write(byte[] b, int o, int l) {
 			super.write(b,o,l);
 			orig.write(b,o,l);
+			orig.flush();
 		}
 		
 		@Override

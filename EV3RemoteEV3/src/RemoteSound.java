@@ -22,7 +22,7 @@ public class RemoteSound {
 		Audio sound = ev3.getAudio();
 		
 		for(int i=0;i<5;i++) {
-			Sound.systemSound(false, i);
+			sound.systemSound(i);
 			Delay.msDelay(1000);
 		}
 		

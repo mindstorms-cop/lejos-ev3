@@ -5,6 +5,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.net.Socket;
+import java.rmi.RemoteException;
 import java.util.ArrayList;
 
 import lejos.hardware.Audio;
@@ -20,6 +21,9 @@ import lejos.hardware.lcd.Font;
 import lejos.hardware.lcd.GraphicsLCD;
 import lejos.hardware.lcd.TextLCD;
 import lejos.hardware.port.Port;
+import lejos.robotics.RegulatedMotor;
+import lejos.robotics.SampleProvider;
+import lejos.robotics.navigation.ArcRotateMoveController;
 
 public class RemoteRequestEV3 implements EV3, Serializable {
 	private static final long serialVersionUID = -7784568187751439269L;
@@ -27,6 +31,7 @@ public class RemoteRequestEV3 implements EV3, Serializable {
 	private ObjectOutputStream os;
 	private Socket socket;
 	private ArrayList<RemoteRequestPort> ports = new ArrayList<RemoteRequestPort>();
+	private RemoteRequestKeys keys;
 	
 	private static final int PORT = 8002;
 	
@@ -35,6 +40,7 @@ public class RemoteRequestEV3 implements EV3, Serializable {
 		is = new ObjectInputStream(socket.getInputStream());
 		os = new ObjectOutputStream(socket.getOutputStream());
 		createPorts();
+		keys = new RemoteRequestKeys(is, os);
 	}
 	
 	private void createPorts() {
@@ -79,7 +85,6 @@ public class RemoteRequestEV3 implements EV3, Serializable {
 
 	@Override
 	public GraphicsLCD getGraphicsLCD() {
-		// TODO Auto-generated method stub
 		return new RemoteRequestGraphicsLCD(is, os);
 	}
 
@@ -124,16 +129,44 @@ public class RemoteRequestEV3 implements EV3, Serializable {
 
 	@Override
 	public Keys getKeys() {
-		return new RemoteRequestKeys(is, os);
+		return keys;
 	}
 
 	@Override
 	public Key getKey(String name) {
-		return new RemoteRequestKey(is, os);
+		return new RemoteRequestKey(is, os, keys, name);
 	}
 
 	@Override
 	public LED getLED() {
 		return new RemoteRequestLED(is,os);
+	}
+	
+	public SampleProvider createSampleProvider(String portName, String sensorName, String modeName) {
+		return new RemoteRequestSampleProvider(is,os, portName, sensorName, modeName);
+	}
+	
+	public SampleProvider createSampleProvider(String portName,
+			String sensorName, String modeName, String topic, float frequency) throws RemoteException {
+		return new RemoteRequestSampleProvider(is, os, portName, sensorName, modeName, topic, frequency);
+	}
+	
+	public RegulatedMotor createRegulatedMotor(String portName, char motorType) {
+		return new RemoteRequestRegulatedMotor(is, os, portName, motorType);
+	}
+	
+	
+	public ArcRotateMoveController createPilot(double wheelDiameter, double trackWidth, String leftMotor, String rightMotor) {
+		return new RemoteRequestPilot(is, os, leftMotor, rightMotor, wheelDiameter, trackWidth);
+	}
+	
+	public void disConnect() {
+		try {
+			is.close();
+			os.close();
+			socket.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 }

@@ -1341,10 +1341,11 @@ public class EV3Control implements ListSelectionListener, NXTProtocol, ConsoleVi
 	 * Download a file from the EV3
 	 */
 	private void getFile(File file, String fileName, int size) {
+		System.out.println("Fetching file " + fileName);
 		FileOutputStream out = null;
 		try {
 			out = new FileOutputStream(file);
-			byte[] data = menu.fetchFile(fileName);
+			byte[] data = menu.fetchFile(PROGRAMS_DIR + "/" + fileName);
 			out.write(data);
 			out.close();			
 		} catch (IOException e) {
