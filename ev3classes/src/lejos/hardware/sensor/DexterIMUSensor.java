@@ -3,6 +3,7 @@ package lejos.hardware.sensor;
 import lejos.hardware.port.I2CPort;
 import lejos.hardware.port.Port;
 import lejos.robotics.SampleProvider;
+import lejos.utility.Delay;
 import lejos.utility.EndianTools;
 
 /**
@@ -21,7 +22,7 @@ public class DexterIMUSensor extends BaseSensor implements SensorModes {
   // I2C Addresses for the gyro and acceleration chips with the default values
   protected int Accel_I2C_address = 0x3A;
   protected int Gyro_I2C_address  = 0xD2;
-
+  DexterIMUGyroSensor g;
   public DexterIMUSensor(I2CPort port) {
     DexterIMUGyroSensor gyro = new DexterIMUGyroSensor(port, Gyro_I2C_address);
     setModes(new SensorMode[] { gyro.getMode(0), new DexterIMUAccelerationSensor(port, Accel_I2C_address), gyro.getMode(1) });
@@ -30,6 +31,13 @@ public class DexterIMUSensor extends BaseSensor implements SensorModes {
   public DexterIMUSensor(Port port) {
     DexterIMUGyroSensor gyro = new DexterIMUGyroSensor(port, Gyro_I2C_address);
     setModes(new SensorMode[] { gyro.getMode(0), new DexterIMUAccelerationSensor(gyro.port, Accel_I2C_address), gyro.getMode(1) });
+    releaseOnClose(gyro);
+    g = gyro;
+  }
+  
+  public void init()
+  {
+      g.init();
   }
 
   /**
@@ -90,7 +98,7 @@ public class DexterIMUSensor extends BaseSensor implements SensorModes {
     private float[]          MULTIPLIERS = { 8.75f, 17.5f, 70f };
 
     private int              range       = 2;
-    private int              rate        = 2;
+    private int              rate        = 0;
     private float            toSI        = 1f/MULTIPLIERS[range] ;
 
     private byte[]           buf         = new byte[7];
@@ -108,44 +116,55 @@ public class DexterIMUSensor extends BaseSensor implements SensorModes {
     /**
      * This method configures the sensor
      */
-    private void init() {
+    public void init() {
       setModes(new SensorMode[] { new GyroMode(), new TemperatureMode() });
       int reg;
+      long st = System.currentTimeMillis();
       // put in sleep mode;
       sendData(CTRL_REG1, (byte) 0x08);
       // oHigh-pass cut off 1 Hz;
-      sendData(CTRL_REG2, (byte) 0x01);
+      //sendData(CTRL_REG2, (byte) 0x00);
+      sendData(CTRL_REG2, (byte) 0x19);
       // no interrupts, no fifo
-      sendData(CTRL_REG3, (byte) 0x08);
+      sendData(CTRL_REG3, (byte) 0x00);
       // set range
-      reg = RANGECODES[range] | 0x80;
+      reg = RANGECODES[range] | 0x80; 
       toSI = MULTIPLIERS[range] / 1000f;
       sendData(CTRL_REG4, (byte) reg);
       // disable fifo and high pass
-      sendData(CTRL_REG5, (byte) 0x00);
+      //sendData(CTRL_REG5, (byte) 0x00);
+      sendData(CTRL_REG5, (byte) 0x13);
       // stabilize output signal;
       // enable all axis, set output data rate ;
-      reg = RATECODES[rate] | 0xF;
+      //reg = RATECODES[rate] | 0x3F;
+      reg = RATECODES[rate] | 0x0F;
       // set sample rate, wake up
       sendData(CTRL_REG1, (byte) reg);
       float[] dummy = new float[3];
       SampleProvider gyro = getGyroMode();
+      System.out.println("init time 1 " + (System.currentTimeMillis() - st));
       for (int s = 1; s <= 15; s++) {
         while (!isNewDataAvailable())
           Thread.yield();
         gyro.fetchSample(dummy, 0);
       }
+      System.out.println("init time 2 " + (System.currentTimeMillis() - st));
     }
 
     /**
      * Returns true if new data is available from the sensor
      */
     private boolean isNewDataAvailable() {
-      getData(REG_STATUS, buf, 1);
-      if ((buf[0] & 0x08) == 0x08)
-        return true;
-      return false;
-    }
+        getData(REG_STATUS, buf, 1);
+        if ((buf[0] & 0x08) == 0x08)
+          return true;
+        return false;
+      }
+
+    private boolean dataOverrun() {
+        getData(REG_STATUS, buf, 1);
+        return ((buf[0] & 0x80) == 0);
+      }
 
     /**
      * Provides access to the temperature data on the Gyro sensor
@@ -213,15 +232,30 @@ public class DexterIMUSensor extends BaseSensor implements SensorModes {
       public void fetchSample(float[] sample, int offset) {
         buf[0] = 0;
         int attempts = 0;
-        // loop while no new data available or data overrun occured, break out
+        // loop while no new data available or data overrun occurred, break out
         // after 20 attempts
-        while (((buf[0] & 0x80) == 0x80 || (buf[0] & 0x08) != 0x08) && attempts++ <= 20) {
-          getData(DATA_REG, buf, 7);
-          if ((buf[0] & 0x08) != 0x08)
+        //while(!isNewDataAvailable())
+            //Delay.msDelay(1);
+       getData(DATA_REG, buf, 7);
+       /*
+        while(attempts++ <= 20)
+        {
+            getData(DATA_REG, buf, 7);
+            // make sure we have new data with no overrun
+            
+            if ((buf[0] & 0x88) == 0x08)
+                break;
+                
+            
+            //if ((buf[0] & 0x08) == 0x08 && !dataOverrun())
+              //  break;
+            
             Thread.yield();
-        }
-        if (attempts == 20) {
-          // No succesfull read, return NaN
+        }*/
+
+        if (attempts > 20) {
+            System.out.println("failed to get sample");
+          // No successful read, return NaN
           for (int i = 0; i < 3; i++) {
             sample[i + offset] = Float.NaN;
           }

@@ -21,11 +21,7 @@ public class RemoteRequestAudio implements Audio {
 		EV3Request req = new EV3Request();
 		req.request = EV3Request.Request.SYSTEM_SOUND;
 		req.intValue = aCode;
-		try {
-			os.writeObject(req);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		sendRequest(req, false);
 	}
 
 	@Override
@@ -48,11 +44,7 @@ public class RemoteRequestAudio implements Audio {
 		req.request = EV3Request.Request.PLAY_TONE;
 		req.intValue = freq;
 		req.intValue2 = duration;
-		try {
-			os.writeObject(req);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		sendRequest(req, false);
 	}
 
 	@Override
@@ -62,13 +54,7 @@ public class RemoteRequestAudio implements Audio {
 		req.replyRequired = true;
 		req.intValue = vol;
 		req.file = file;
-		try {
-			os.writeObject(req);
-			EV3Reply reply = (EV3Reply) is.readObject();
-			return reply.reply;
-		} catch (Exception e) {
-			return 0;
-		}
+		return sendRequest(req, true).reply;
 	}
 
 	@Override
@@ -77,13 +63,7 @@ public class RemoteRequestAudio implements Audio {
 		req.request = EV3Request.Request.PLAY_SAMPLE;
 		req.replyRequired = true;
 		req.file = file;
-		try {
-			os.writeObject(req);
-			EV3Reply reply = (EV3Reply) is.readObject();
-			return reply.reply;
-		} catch (Exception e) {
-			return 0;
-		}
+		return sendRequest(req, true).reply;
 	}
 
 	@Override
@@ -92,13 +72,7 @@ public class RemoteRequestAudio implements Audio {
 		req.request = EV3Request.Request.PLAY_SAMPLE_DATA;
 		req.replyRequired = true;
 		req.byteData = data;
-		try {
-			os.writeObject(req);
-			EV3Reply reply = (EV3Reply) is.readObject();
-			return reply.reply;
-		} catch (Exception e) {
-			return 0;
-		}
+		return sendRequest(req, true).reply;
 	}
 
 	@Override
@@ -108,10 +82,23 @@ public class RemoteRequestAudio implements Audio {
 		req.intData = inst;
 		req.intValue = freq;
 		req.intValue2 = len;
+		sendRequest(req, false);	
+	}
+	
+	private EV3Reply sendRequest(EV3Request req, boolean replyRequired) {
+		EV3Reply reply = null;
+		req.replyRequired = replyRequired;
 		try {
+			os.reset();
 			os.writeObject(req);
+			if (replyRequired) {
+				reply = (EV3Reply) is.readObject();
+				if (reply.e != null) throw new RemoteRequestException(reply.e);
+			}
+			return reply;
 		} catch (Exception e) {
-		}	
+			throw new RemoteRequestException(e);
+		}
 	}
 
 	@Override

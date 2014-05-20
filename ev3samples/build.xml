@@ -40,6 +40,7 @@
         <make-jar jar.file="PilotTester.jar" main.class="org.lejos.ev3.sample.pilottest.PilotTester"/>
         <make-jar jar.file="BumperCar.jar" main.class="org.lejos.ev3.sample.bumpercar.EV3BumperCar"/>
         <make-jar jar.file="SensorFilter.jar" main.class="org.lejos.ev3.sample.sensorfilter.SensorAndFilterSample"/>
+        <make-jar jar.file="Publish.jar" main.class="org.lejos.ev3.sample.publish.Publish"/>
     </target>
 
     <target name="upload" depends="pc.files">

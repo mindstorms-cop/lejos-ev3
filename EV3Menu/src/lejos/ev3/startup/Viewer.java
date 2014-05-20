@@ -18,7 +18,8 @@ public class Viewer {
    private static ArrayList<String> lines = new ArrayList<String>();
    private static TextLCD lcd = BrickFinder.getDefault().getTextLCD(Font.getSmallFont());
    
-   public static void view(String fileName) throws IOException {	
+   public static void view(String fileName) throws IOException {
+	   lines.clear();
 		InputStream in = null;
 		try {
 		    in = new FileInputStream(fileName);
@@ -47,6 +48,7 @@ public class Viewer {
 	    	
 		    switch (b) {
 		    case Button.ID_ESCAPE:
+		    	lines.clear();
 		    	return;
 		    case Button.ID_UP:
 		    	if  (startY > 0) {

@@ -41,7 +41,7 @@ public class RemoteRequestPort implements Port {
         switch(typ)
         {
         case SENSOR_PORT:
-            if (portclass == UARTPort.class)
+            if (portclass == RemoteRequestUARTPort.class || portclass == UARTPort.class)
                 p = new RemoteRequestUARTPort(is,os);
             if (portclass == RemoteRequestAnalogPort.class || portclass == AnalogPort.class)
                 p = new RemoteRequestAnalogPort(is, os);
