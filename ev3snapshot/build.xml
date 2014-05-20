@@ -30,7 +30,7 @@
     </target>
     
     <target name="subproject.jna">
-        <echo message="*** entering dbusjava project" />
+        <echo message="*** entering jna project" />
         <ant inheritAll="false" dir="../jna-3.2.7/jnalib" antfile="build.xml">
             <target name="pc.files" />
         </ant>
