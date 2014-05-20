@@ -177,14 +177,13 @@ public class EV3I2CPort extends EV3IOPort implements I2CPort
         iicdata.WrLng = (byte)(writeLen + 1);
         // note -ve value due to Lego's crazy reverse order stuff
         iicdata.RdLng = (byte)-readLen;
-        iicdata.write();
         while(timeout > System.currentTimeMillis())
         {
             iicdata.write();
             i2c.ioctl(IIC_SETUP, iicdata.getPointer());
             iicdata.read();
             //System.out.println("Ioctl result: " + iicdata.Result);
-            if (iicdata.Result < 0)
+            if (iicdata.Result == STATUS_FAIL)
                 throw new I2CException("I2C read error");
             if (iicdata.Result == STATUS_OK)
             {
@@ -192,7 +191,13 @@ public class EV3I2CPort extends EV3IOPort implements I2CPort
                     System.arraycopy(iicdata.RdData, 0, readBuf, readOffset,  readLen);
                 return;
             }
-            Thread.yield();
+            if (iicdata.Result < 0)
+            {
+                System.out.println("i2c error res is " + iicdata.Result);
+                throw new I2CException("I2C Unexpected error " + iicdata.Result);
+            }
+            Delay.msDelay(1);
+            //initSensor();
         }
         throw new I2CException("I2C timeout");
     }
