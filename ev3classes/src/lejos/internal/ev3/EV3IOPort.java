@@ -88,6 +88,10 @@ public abstract class EV3IOPort implements IOPort, BasicSensorPort, EV3SensorCon
                 this.port = port;
                 this.typ = typ;
                 this.ref = ref;
+                // Set into connected state and disable auto detection
+                setPinMode(CMD_CONNECTED);
+                // set sane pin states, automatic detection may have changed them. 
+                setPinMode(CMD_FLOAT);
                 return true;
             }
             return false;
@@ -105,6 +109,8 @@ public abstract class EV3IOPort implements IOPort, BasicSensorPort, EV3SensorCon
         {
             openPorts[typ][port] = null;
             port = -1;
+            // resume automatic type detection
+            setPinMode(CMD_AUTOMATIC);
         }
     }
     
