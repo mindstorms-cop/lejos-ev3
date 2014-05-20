@@ -8,6 +8,7 @@ public class EV3DeviceManager implements EV3SensorConstants
     protected static NativeDevice dev;
     
     protected static EV3DeviceManager localDeviceManager = new EV3DeviceManager();
+    protected int[] forcedPortType = new int[PORTS];
 
     /**
      * Return the device manager for the local EV3
@@ -35,8 +36,21 @@ public class EV3DeviceManager implements EV3SensorConstants
      */
     public int getPortType(int port)
     {
+        if (forcedPortType[port] != 0)
+            return forcedPortType[port];
+        else
+            return EV3AnalogPort.getPortType(port);
+    }
 
-        return EV3AnalogPort.getPortType(port);
+    /**
+     * Force the type of the specified port to be typ. This can be used if automatic sensor detection
+     * does not work for a particular hardware device. Setting a type of 0 resumes automatic detection.
+     * @param port the port to force
+     * @param typ the new typ
+     */
+    public void forcePortType(int port, int typ)
+    {
+        forcedPortType[port] = typ;
     }
 
     /**
@@ -100,5 +114,8 @@ public class EV3DeviceManager implements EV3SensorConstants
     private static void initDeviceIO()
     {
         dev = new NativeDevice("/dev/lms_dcm"); 
+        // set all ports to be auto detect
+        for(int port = 0; port < PORTS; port++)
+            localDeviceManager.setPortMode(port,  CMD_AUTOMATIC);
     }
 }

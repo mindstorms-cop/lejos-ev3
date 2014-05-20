@@ -52,6 +52,8 @@ public interface EV3SensorConstants
     public static final byte CMD_NONE = (byte)'-';
     public static final byte CMD_FLOAT = (byte)'f';
     public static final byte CMD_SET = (byte)'0';
+    public static final byte CMD_AUTOMATIC = (byte) 'a';
+    public static final byte CMD_CONNECTED = (byte) 'c';
     public static final byte CMD_COL_COL = 0xd;
     public static final byte CMD_COL_RED = 0xe;
     public static final byte CMD_COL_GRN = 0xf;
