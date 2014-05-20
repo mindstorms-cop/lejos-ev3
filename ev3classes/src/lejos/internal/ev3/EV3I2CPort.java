@@ -23,9 +23,6 @@ import lejos.utility.Delay;
 public class EV3I2CPort extends EV3IOPort implements I2CPort
 {
     protected static NativeDevice i2c;
-    protected static Pointer pIic;
-    protected static ByteBuffer iicStatus;
-    protected static ByteBuffer iicChanged;
     static {
         initDeviceIO();
     }
@@ -73,16 +70,6 @@ public class EV3I2CPort extends EV3IOPort implements I2CPort
     
     protected EV3DeviceManager ldm = EV3DeviceManager.getLocalDeviceManager();
 
-    protected boolean getChanged()
-    {
-        return iicChanged.get(port) != 0;
-    }
-    
-    protected byte getStatus()
-    {
-        return iicStatus.get(port);
-    }
-
     protected void reset()
     {
         i2c.ioctl(IIC_SET_CONN, devCon(port, CONN_NONE, 0, 0));        
@@ -98,18 +85,7 @@ public class EV3I2CPort extends EV3IOPort implements I2CPort
         //setPinMode(CMD_FLOAT);
         reset();
         Delay.msDelay(100);
-        iicChanged.put(port, (byte)0);
         setOperatingMode(TYPE_IIC_UNKNOWN, 255);
-        //System.out.println("Status " + getStatus() + " changed " + getChanged());
-        /*
-        while (!getChanged())
-        {
-            Delay.msDelay(100);
-            System.out.println("Status " + getStatus() + " changed " + getChanged());
-        }*/
-        Delay.msDelay(100);
-        setOperatingMode(TYPE_IIC_UNKNOWN, 0);        
-        //System.out.println("Status " + getStatus() + " changed " + getChanged());
         Delay.msDelay(100);
         //System.out.println("Status " + getStatus() + " changed " + getChanged());
         return true;
@@ -175,8 +151,7 @@ public class EV3I2CPort extends EV3IOPort implements I2CPort
         System.arraycopy(writeBuf, writeOffset, iicdata.WrData, 1, writeLen);
         iicdata.WrData[0] = (byte)(deviceAddress >> 1);
         iicdata.WrLng = (byte)(writeLen + 1);
-        // note -ve value due to Lego's crazy reverse order stuff
-        iicdata.RdLng = (byte)-readLen;
+        iicdata.RdLng = (byte)readLen;
         while(timeout > System.currentTimeMillis())
         {
             iicdata.write();
@@ -206,9 +181,6 @@ public class EV3I2CPort extends EV3IOPort implements I2CPort
     private static void initDeviceIO()
     {
         i2c = new NativeDevice("/dev/lms_iic");
-        pIic = i2c.mmap(IIC_SIZE);
-        iicStatus = pIic.getByteBuffer(IIC_STATUS_OFF, PORTS);
-        iicChanged = pIic.getByteBuffer(IIC_CHANGED_OFF, PORTS*2);
     }
     
 }
