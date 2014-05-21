@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="header">Press Connect, then Speak</string>
+    <string name="app_name">SpeechControl</string>
+    <string name="speech">Speak</string>
+    <string name="commands_intro">Suggested commands …</string>
+    <string name="connect">Connect</string>
+    <string name="disconnect">Disconnect</string>
+    <string name="stop">Stop</string>
+</resources>
