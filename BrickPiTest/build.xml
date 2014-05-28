@@ -2,7 +2,7 @@
 <project name="Test" basedir="." default="copy">
     <property file="local.properties" />
     <property name="source.dir"     value="src"/>
-    <property name="lib.dir"        value="c:/Users/Lawrie/git/BrickPiJava/libs"/>
+    <property name="lib.dir"        value="../../brickpi/BrickPiJava/libs"/>
     <property name="ev3classes.dir"  value="../ev3classes"/>
     <property name="brickpi.dir"  value="../brickpiclasses"/>
     <property name="class.dir"      value="build"/>
