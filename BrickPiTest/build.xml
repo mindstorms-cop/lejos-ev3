@@ -3,11 +3,11 @@
     <property file="local.properties" />
     <property name="source.dir"     value="src"/>
     <property name="lib.dir"        value="c:/Users/Lawrie/git/BrickPiJava/libs"/>
-    <property name="ev3classes.dir"  value="../ev3/ev3classes"/>
+    <property name="ev3classes.dir"  value="../ev3classes"/>
     <property name="brickpi.dir"  value="../brickpiclasses"/>
     <property name="class.dir"      value="build"/>
     <property name="jar.dir"        value="dist"/>
-    <property name="main-class"     value="MotorTest"/>
+    <property name="main-class"     value="SoundTest"/>
     <property name="brickpi.home"   value="/home/pi/BrickPiJava"/>
     <property name="brickpi.host"   value="192.168.0.31"/>
 
