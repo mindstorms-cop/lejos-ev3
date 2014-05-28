@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<project name="brickpiclasses" basedir="." default="upload">
+    <property file="local.properties" />
+    <property file="build.properties" />
+    
+    <path id="libraries.path">    
+        <fileset dir="${ev3classes.dir}">
+            <include name="*.jar"/>
+        </fileset>
+        <fileset dir="${brickpijava.dir}">
+            <include name="*.jar"/>
+        </fileset>
+    </path>
+    
+    <path id="src.path">
+  		<pathelement location="${source.dir}" />
+  		<pathelement location="${brickpijava.src}" />
+	</path>
+
+    <target name="clean" description="delete old files">
+        <delete dir="${classes.dir}"/>
+    </target>
+
+    <target name="compile" description="build class files" depends="clean">
+        <mkdir dir="${classes.dir}"/>
+        <javac destdir="${classes.dir}">
+            <src refid="src.path" />
+            <classpath refid="libraries.path"/>
+        </javac>
+    </target>
+
+    <target name="jar" depends="compile">
+        <jar destfile="${classes.jar}" basedir="${classes.dir}">
+        </jar>  
+    </target>
+
+    <target name="upload" depends="jar">
+    	<scp todir="${credentials}@${brickpi.host}:${lejos.lib.dir}" trust="true">
+    	    <fileset file="${ev3classes.jar}"/>
+    	    <fileset file="${classes.jar}"/>
+    	</scp>
+    </target>
+    
+    <!-- generate javadocs -->
+	<target name="docs" description="generate javadocs">
+		<delete dir="${docs.dir}" />
+		<mkdir dir="${docs.dir}" />
+		<javadoc
+			destdir="${docs.dir}"
+			encoding="utf-8"
+			charset="utf-8"
+			locale="en_US"
+			author="true"
+			access="protected"
+			windowtitle="leJOS EV3 API documentation"
+			verbose="false"
+		>
+			<arg value="-quiet"/>
+			
+			<packageset dir="${source.dir}" excludes="${docs.exclude}" />
+			<classpath refid="libraries.path"/>
+		</javadoc>
+	</target>
+	
+	<!-- zip the javadocs -->
+	<target name="docs.zip" description="generate zip of javadocs" depends="docs">
+    	<zip
+			destfile="${docs.zip}"
+    		basedir="${docs.dir}"
+    	/>
+	</target>
+	
+	<target name="src.zip" description="generate zip of sources">
+		<zip destfile="${classes.src.zip}">
+			<fileset dir="${source.dir}" />
+		</zip>
+	</target>
+	
+	<target name="pc.files" description="Generate the pc files but do not copy to EV3" depends="jar,src.zip"/>
+</project>
