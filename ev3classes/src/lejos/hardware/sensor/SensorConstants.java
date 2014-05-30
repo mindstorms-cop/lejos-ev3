@@ -8,14 +8,18 @@ public interface SensorConstants {
 
 	/**
      * Colors used as the output value when in full mode. Values are
-     * compatible with LEGO firmware.
+     * compatible with LEGO firmware. Note that these color values
+     * are normally converted to use the standard leJOS colors
+     * as defined in the Color class.
      */
+
     public static final int BLACK = 1;
     public static final int BLUE = 2;
     public static final int GREEN = 3;
     public static final int YELLOW = 4;
     public static final int RED = 5;
     public static final int WHITE = 6;
+    public static final int BROWN = 7;
     /** Color sensor data RED value index. */
     public static final int RED_INDEX = 0;
     /** Color sensor data GREEN value index. */
@@ -24,7 +28,7 @@ public interface SensorConstants {
     public static final int BLUE_INDEX = 2;
     /** Color sensor data BLANK/Background value index. */
     public static final int BLANK_INDEX = 3;
-	
+
 	public static final int TYPE_NO_SENSOR = 0;
 	public static final int TYPE_SWITCH = 1;
 	public static final int TYPE_TEMPERATURE = 2;
@@ -43,19 +47,15 @@ public interface SensorConstants {
     public static final int TYPE_COLORGREEN = 15;
     public static final int TYPE_COLORBLUE = 16;
     public static final int TYPE_COLORNONE = 17;
+    // additional leJOS types for the EV3
+    public static final int TYPE_HIGHSPEED = 18;
+    public static final int TYPE_HIGHSPEED_9V = 19;
     
     public static final int MIN_TYPE = 0;
-    public static final int MAX_TYPE = 17;
-	  
-	public static final int MODE_RAW = 0x00;
-	public static final int MODE_BOOLEAN = 0x20;
-	public static final int MODE_TRANSITIONCNT = 0x40;
-	public static final int MODE_PERIODCOUNTER = 0x60;
-	public static final int MODE_PCTFULLSCALE = 0x80;
-	public static final int MODE_CELSIUS = 0xA0;
-	public static final int MODE_FARENHEIT = 0xC0;
-	public static final int MODE_ANGLESTEP = 0xE0;
+    public static final int MAX_TYPE = 19;
 
+    // Only RAW mode on the EV3
+	public static final int MODE_RAW = 0x00;
     /** MAX value returned as a RAW sensor reading for standard NXT A/D sensors */
     public static final int NXT_ADC_RES = 1023;
 }

@@ -57,7 +57,7 @@ public abstract class EV3IOPort implements IOPort, BasicSensorPort, EV3SensorCon
     @Override
     public boolean setType(int type)
     {
-        throw new UnsupportedOperationException("This operation is for legacy modes only");
+        throw new UnsupportedOperationException("This operation is not supported by this sensor");
 
     }
 

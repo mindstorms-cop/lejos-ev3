@@ -225,12 +225,11 @@ public class EV3Audio implements Audio
             int len = dataLen - offset;
             int written = dev.write(buf, offset, len + 1);
             //System.out.println("Written " + written);
-            if (written == 0)
+            if (written < (len + 1))
             {
-                Delay.msDelay(1);
+                Delay.msDelay(5);
             }
-            else
-                offset += written;
+            offset += written;
         }        
     }
     
@@ -328,18 +327,14 @@ public class EV3Audio implements Audio
             sz -= 16;
             while (sz-- > 0)
                 d.readByte();
-            System.out.println("Opening");
             startPCMPlayback(sampleSize == RIFF_FMT_16BITS ? 16 : 8, sampleRate, vol);
             playing = true;
-            System.out.println("Open");;
-            Delay.msDelay(3000);
             int dataLen;
             // Skip/process chunks until we  hit eof!
             for(;;)
             {
                 int chunk = d.readInt();
                 dataLen = readLSBInt(d); 
-                System.out.println("Chunk " + chunk + " Length " + dataLen);
                 if (chunk == RIFF_DATA_SIG)
                 {
                     int read;
@@ -374,12 +369,10 @@ public class EV3Audio implements Audio
         }
         catch (EOFException e)
         {
-            System.out.println("Eof");
             return 0;
         }
         catch (IOException e)
         {
-            System.out.println("Error");
             return -1;
         }
         finally
@@ -389,8 +382,6 @@ public class EV3Audio implements Audio
                     d.close();
                 if (f != null)
                     f.close();
-                Delay.msDelay(4000);
-                System.out.println("closing");
                 if (playing)
                     endPCMPlayback();
             }
