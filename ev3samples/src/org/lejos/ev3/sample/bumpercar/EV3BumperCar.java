@@ -45,7 +45,7 @@ public class EV3BumperCar
 		  g.drawString("independently controlled", 2, 50, 0);
 		  g.drawString("motors connected to motor", 2, 60, 0);
 		  g.drawString("ports B and C, and an", 2, 70, 0); 
-		  g.drawString("ultrasonic sensor connected", 2, 80, 0);
+		  g.drawString("infrared sensor connected", 2, 80, 0);
 		  g.drawString("to port 4.", 2, 90, 0);
 		  
 	  	// Quit GUI button:
