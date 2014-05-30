@@ -11,14 +11,34 @@ import lejos.hardware.sensor.SensorConstants;
  */
 public interface BasicSensorPort extends SensorConstants {
 
+    /**
+     * Get the current operating mode of the sensor
+     * @return the current mode
+     */
     public int getMode();
 	
-    @Deprecated
+    /**
+     * Get the current type setting. Note that types are typically used to 
+     * control the operation of Legacy and i2c sensors. They are normally not
+     * used for EV3 sensors. 
+     * @return the current sensor type
+     */
     public int getType();
-	
+
+    /**
+     * Set the current operating mode for the sensor attached to the port.
+     * @param new mode
+     * @return true if the mode has been accepted
+     */
     public boolean setMode(int mode);
-	
-    @Deprecated
+
+    /**
+     * Set the operating type for the attached sensor. Normally type setting is
+     * only used with legacy sensors and for i2c devices (to set the speed and
+     * operating voltage). It is not normally used with EV3 sensors.
+     * @param type
+     * @return
+     */
     public boolean setType(int type);
 	
     @Deprecated

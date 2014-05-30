@@ -9,16 +9,7 @@ import lejos.hardware.sensor.EV3SensorConstants;
  *
  */
 public interface I2CPort extends IOPort, BasicSensorPort {
-	
-    public static final int STANDARD_MODE = 0;
-    public static final int LEGO_MODE = 1;
-    public static final int ALWAYS_ACTIVE = 2;
-    
-    /** Do not release the i2c bus between requests */
-    public static final int NO_RELEASE = 4;
-    /** Use high speed I/O (125KHz) */
-    public static final int HIGH_SPEED = 8;
-    /** Maximum read/write request length */
+	    /** Maximum read/write request length */
     public static final int MAX_IO = EV3SensorConstants.IIC_DATA_LENGTH;
     
     /**
