@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<project name="Test" basedir="." default="copy">
+    <property file="local.properties" />
+    <property name="source.dir"     value="src"/>
+    <property name="lib.dir"        value="../../brickpi/BrickPiJava/libs"/>
+    <property name="ev3classes.dir"  value="../ev3classes"/>
+    <property name="brickpi.dir"  value="../brickpiclasses"/>
+    <property name="class.dir"      value="build"/>
+    <property name="jar.dir"        value="dist"/>
+    <property name="main-class"     value="SoundTest"/>
+    <property name="brickpi.home"   value="/home/pi/BrickPiJava"/>
+    <property name="brickpi.host"   value="192.168.0.31"/>
+
+    <path id="libraries.path">    
+        <fileset dir="${lib.dir}">
+            <include name="*.jar"/>
+        </fileset>
+        <fileset dir="${ev3classes.dir}">
+            <include name="*.jar"/>
+        </fileset>
+        <fileset dir="${brickpi.dir}">
+            <include name="*.jar"/>
+        </fileset>
+    </path>
+    
+    <path id="src.path">
+  		<pathelement location="src" />
+  		<pathelement location="c:/Users/Lawrie/git/BrickPiJava/src" />
+	</path>
+
+    <target name="clean" description="delete old files">
+        <delete dir="${class.dir}"/>
+        <delete dir="${jar.dir}"/>
+    </target>
+
+    <target name="compile" description="build class files" depends="clean">
+        <mkdir dir="${class.dir}"/>
+        <javac destdir="${class.dir}">
+            <src refid="src.path" />
+            <classpath refid="libraries.path"/>
+        </javac>
+    </target>
+
+    <target name="jar" depends="compile">
+        <mkdir dir="${jar.dir}"/>
+        <jar destfile="${jar.dir}/${ant.project.name}.jar" basedir="${class.dir}">
+            <manifest>
+                <attribute name="Main-Class" value="${main-class}"/>
+                <attribute name="Class-Path" value="${brickpi.home}/libs/pi4j-core-0.0.5.jar ${brickpi.home}/libs/brickpiclasses.jar ${brickpi.home}/libs/ev3classes.jar"/>
+            </manifest>
+        </jar>  
+    </target>
+
+    <target name="copy" depends="jar">
+    	<scp todir="pi:raspberry@${brickpi.host}:${brickpi.home}/" trust="true">
+    	    <fileset file="${jar.dir}/${ant.project.name}.jar"/>
+    	</scp>
+    </target>
+</project>
