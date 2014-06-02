@@ -125,5 +125,8 @@
     	<scp todir="root:@${ev3.host}:/home/root/lejos/samples/" trust="true">
     	    <fileset file="samples/*.jar"/>
     	</scp>
+    	<scp todir="root:@${ev3.host}:/home/root/lejos/tools/" trust="true">
+    	    <fileset file="tools/*.jar"/>
+    	</scp>
     </target>
 </project>
