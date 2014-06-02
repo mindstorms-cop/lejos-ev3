@@ -22,7 +22,6 @@ public class DexterIMUSensor extends BaseSensor implements SensorModes {
   // I2C Addresses for the gyro and acceleration chips with the default values
   protected int Accel_I2C_address = 0x3A;
   protected int Gyro_I2C_address  = 0xD2;
-  DexterIMUGyroSensor g;
   public DexterIMUSensor(I2CPort port) {
     DexterIMUGyroSensor gyro = new DexterIMUGyroSensor(port, Gyro_I2C_address);
     setModes(new SensorMode[] { gyro.getMode(0), new DexterIMUAccelerationSensor(port, Accel_I2C_address), gyro.getMode(1) });
@@ -32,13 +31,8 @@ public class DexterIMUSensor extends BaseSensor implements SensorModes {
     DexterIMUGyroSensor gyro = new DexterIMUGyroSensor(port, Gyro_I2C_address);
     setModes(new SensorMode[] { gyro.getMode(0), new DexterIMUAccelerationSensor(gyro.port, Accel_I2C_address), gyro.getMode(1) });
     releaseOnClose(gyro);
-    g = gyro;
   }
   
-  public void init()
-  {
-      g.init();
-  }
 
   /**
    * Gives a SampleProvider thst returns acceleration (m/s) samples.
@@ -50,11 +44,11 @@ public class DexterIMUSensor extends BaseSensor implements SensorModes {
   }
 
   /**
-   * Gives a SampleProvider thst returns rate (degree/s) samples.
+   * Gives a SampleProvider that returns rate (degree/s) samples.
    * 
    * @return a SampleProvider
    */
-  public SampleProvider getGyroMode() {
+  public SampleProvider getRateMode() {
     return getMode(0);
   }
 
@@ -116,8 +110,8 @@ public class DexterIMUSensor extends BaseSensor implements SensorModes {
     /**
      * This method configures the sensor
      */
-    public void init() {
-      setModes(new SensorMode[] { new GyroMode(), new TemperatureMode() });
+    private void init() {
+      setModes(new SensorMode[] { new RateMode(), new TemperatureMode() });
       int reg;
       long st = System.currentTimeMillis();
       // put in sleep mode;
@@ -142,18 +136,17 @@ public class DexterIMUSensor extends BaseSensor implements SensorModes {
       sendData(CTRL_REG1, (byte) reg);
       float[] dummy = new float[3];
       SampleProvider gyro = getGyroMode();
-      System.out.println("init time 1 " + (System.currentTimeMillis() - st));
       for (int s = 1; s <= 15; s++) {
-        while (!isNewDataAvailable())
-          Thread.yield();
+//        while (!isNewDataAvailable())
+//          Thread.yield();
         gyro.fetchSample(dummy, 0);
       }
-      System.out.println("init time 2 " + (System.currentTimeMillis() - st));
     }
 
     /**
      * Returns true if new data is available from the sensor
      */
+    @SuppressWarnings("unused")
     private boolean isNewDataAvailable() {
         getData(REG_STATUS, buf, 1);
         if ((buf[0] & 0x08) == 0x08)
@@ -220,7 +213,7 @@ public class DexterIMUSensor extends BaseSensor implements SensorModes {
      * @author Aswin
      * 
      */
-    private class GyroMode implements SampleProvider, SensorMode {
+    private class RateMode implements SampleProvider, SensorMode {
       private static final int DATA_REG = 0x27 | 0x80;
 
       @Override
@@ -228,46 +221,19 @@ public class DexterIMUSensor extends BaseSensor implements SensorModes {
         return 3;
       }
 
+
+
       @Override
       public void fetchSample(float[] sample, int offset) {
-        buf[0] = 0;
-        int attempts = 0;
-        // loop while no new data available or data overrun occurred, break out
-        // after 20 attempts
-        //while(!isNewDataAvailable())
-            //Delay.msDelay(1);
-       getData(DATA_REG, buf, 7);
-       /*
-        while(attempts++ <= 20)
-        {
-            getData(DATA_REG, buf, 7);
-            // make sure we have new data with no overrun
-            
-            if ((buf[0] & 0x88) == 0x08)
-                break;
-                
-            
-            //if ((buf[0] & 0x08) == 0x08 && !dataOverrun())
-              //  break;
-            
-            Thread.yield();
-        }*/
-
-        if (attempts > 20) {
-            System.out.println("failed to get sample");
-          // No successful read, return NaN
-          for (int i = 0; i < 3; i++) {
-            sample[i + offset] = Float.NaN;
-          }
-        }
-        else {
+          buf[0] = 0;
+          getData(DATA_REG, buf, 7);
           // a correction for misalignment of the gyro sensor is made here
           sample[offset] = EndianTools.decodeShortLE(buf, 3) * toSI;
           sample[1 + offset] = EndianTools.decodeShortLE(buf, 1) * toSI;
           sample[2 + offset] = EndianTools.decodeShortLE(buf, 5) * toSI;
-        }
       }
 
+      
       @Override
       public String getName() {
         return "Rate";
@@ -301,24 +267,16 @@ public class DexterIMUSensor extends BaseSensor implements SensorModes {
       return 3;
     }
 
-    @SuppressWarnings("unused")
-    // 10 bit data seems not to be working correctly for the Y-axis. 
-    // modified new way (see below seems to work).
     private void fetchSample10(float[] sample, int offset) {
       getData(DATA_10BIT_REG, buf, 6);
       for (int i = 0; i < 3; i++) {
-        // old way
-        //int x = ((buf[i + 1]) << 8) | (buf[i] & 0xFF) & 0x03ff;
-        //if (x > 512)
-          //x -= 1024;
-        //sample[i + offset] = x * TOSI;
-        // new way
          buf[i*2+1] = (byte)((byte)(buf[i*2+1] << 6) >> 6);
          sample[i + offset] = EndianTools.decodeShortLE(buf, i*2);
          sample[i + offset] *= TOSI;
       }
     }
 
+    @SuppressWarnings("unused")
     private void fetchSample8(float[] sample, int offset) {
       getData(DATA_8BIT_REG, buf, 3);
       for (int i = 0; i < 3; i++) {
