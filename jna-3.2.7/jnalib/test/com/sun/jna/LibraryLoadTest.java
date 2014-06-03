@@ -40,7 +40,8 @@ public class LibraryLoadTest extends TestCase {
         try {
             // FIXME: this works as a test, but fails in ShapedWindowDemo
             // if the JAWT load workaround is not used
-            Native.getWindowPointer(f);
+            // leJOS: Removed for Java 8 compact profile
+            //Native.getWindowPointer(f);
         }
         finally {
             f.dispose();
