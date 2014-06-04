@@ -77,7 +77,17 @@ public class EV3I2CPort extends EV3IOPort implements I2CPort
         setPinMode(CMD_FLOAT);
         return true;
     }
+
+    /** {@inheritDoc}
+     */    
+    @Override
+    public void close()
+    {
+        reset();
+        super.close();
+    }
     
+
     @Override
     public boolean setType(int type)
     {

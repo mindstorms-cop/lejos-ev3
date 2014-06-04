@@ -80,6 +80,13 @@ public class RemotePort implements Port
     }
 
     @Override
+    public void forcePortType(int typ)
+    {
+        // TODO Should this method work for a remote port?
+        throw new UnsupportedOperationException("can't force a remote port");
+    }
+
+    @Override
     public int getSensorType()
     {
         // TODO Should this method work for a remote port?

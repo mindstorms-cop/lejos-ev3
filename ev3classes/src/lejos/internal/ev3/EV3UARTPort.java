@@ -43,6 +43,10 @@ public class EV3UARTPort extends EV3IOPort implements UARTPort
     protected static final int UART_READ_MODE_INFO = 0xc03c7501;
     protected static final int UART_NACK_MODE_INFO = 0xc03c7502;
     protected static final int UART_CLEAR_CHANGED = 0xc03c7503;
+    protected static final int UART_SET_CONFIG = 0xc0087504;
+    protected static final int UART_RAW_READ = 0xc0047505;
+    protected static final int UART_RAW_WRITE = 0xc0047506;
+            
     
     protected static final byte UART_PORT_CHANGED = 1;
     protected static final byte UART_DATA_READY = 8;
@@ -52,6 +56,8 @@ public class EV3UARTPort extends EV3IOPort implements UARTPort
     protected static final int INIT_DELAY = 5;
     protected static final int INIT_RETRY = 100;
     protected static final int OPEN_RETRY = 5;
+    
+    protected static final int RAW_BUFFER_SIZE = 255;
     
     static {
         initDeviceIO();
@@ -142,8 +148,24 @@ public class EV3UARTPort extends EV3IOPort implements UARTPort
 
     }
     
+    public static class UARTCONFIG extends Structure
+    {
+        public int Port;
+        public int BitRate;
+        @Override
+        protected List getFieldOrder()
+        {
+            // TODO Auto-generated method stub
+            return Arrays.asList(new String[] {
+            "Port",
+            "BitRate"});
+        }
+    }
+    
     protected TYPES[] modeInfo = new TYPES[UART_MAX_MODES];
     protected int modeCnt = 0;
+    protected byte[] rawInput;
+    protected byte[] rawOutput;
 
     /**
      * return the current status of the port
@@ -221,18 +243,7 @@ public class EV3UARTPort extends EV3IOPort implements UARTPort
      */
     protected void setOperatingMode(int mode)
     {
-        int serial = actual.getShort(0);
-        //setStatus(getStatus() & ~(UART_DATA_READY));
-        //System.out.println("Status is " + getStatus());
         uart.ioctl(UART_SET_CONN, devCon(port, CONN_INPUT_UART, 0, mode));
-        if (actual.getShort(0) == serial)
-        {
-            //System.out.println("not in sync");
-            while (actual.getShort(0) == serial)
-                Thread.yield();
-            //System.out.println("sync");
-        }
-        //System.out.println("Status is " + getStatus());
     }
 
     /**
@@ -582,6 +593,44 @@ public class EV3UARTPort extends EV3IOPort implements UARTPort
         String format = "%" + info.Figures + "." + info.Decimals + "f" + new String(info.Symbol);
         return String.format(format, val);        
     }
+    
+    public void setBitRate(int bitRate)
+    {
+        UARTCONFIG uc = new UARTCONFIG();
+        uc.Port = port;
+        uc.BitRate = bitRate;
+        uc.write();
+        uart.ioctl(UART_SET_CONFIG, uc.getPointer());        
+    }
+    
+    public int rawRead(byte[] buffer, int offset, int len)
+    {
+        if (rawInput == null)
+            rawInput = new byte[RAW_BUFFER_SIZE+2];
+        rawInput[0] = (byte)port;
+        if (len > RAW_BUFFER_SIZE)
+            len = RAW_BUFFER_SIZE;
+        rawInput[1] = (byte)len;
+        len = uart.ioctl(UART_RAW_READ, rawInput);
+        System.arraycopy(rawInput, 2, buffer, offset, len);
+        return len;
+    }
+    
+    public int rawWrite(byte[] buffer, int offset, int len)
+    {
+        if (rawInput == null)
+            rawOutput = new byte[RAW_BUFFER_SIZE+2];
+        rawOutput[0] = (byte)port;
+        if (len > RAW_BUFFER_SIZE)
+            len = RAW_BUFFER_SIZE;
+        rawOutput[1] = (byte)len;
+        System.arraycopy(buffer, offset, rawOutput, 2, len);
+        len = uart.ioctl(UART_RAW_WRITE, rawOutput);
+        System.out.println("write len " + len);
+        return len;
+    }
+    
+
 
     /**
      * Reset all of the ports

@@ -23,7 +23,7 @@ public interface Port
     
     /**
      * Get the type classification for the port. If a sensor is attached to the port
-     * this will identify the connection type (UART/IIC/Analog, etc.). Note that not
+     * this will identify the connection type (UART/IIC/Analog, etc.). Note that not all
      * platforms may be able to support this method.
      * @return The type of the port. 
      */
@@ -37,6 +37,13 @@ public interface Port
      * @return the sensor type
      */
     public int getSensorType();
+    
+    /**
+     * Force the type of the specified port to be typ. This can be used if automatic sensor detection
+     * does not work for a particular hardware device. Setting a type of 0 resumes automatic detection.
+     * @param typ the new typ
+     */
+    public void forcePortType(int typ);
 
 
 
