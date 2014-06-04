@@ -83,6 +83,14 @@ public class EV3Port implements Port
     /** {@inheritDoc}
      */    
     @Override
+    public void forcePortType(int typ)
+    {
+        devMan.forcePortType(portNum, typ);
+    }
+
+    /** {@inheritDoc}
+     */    
+    @Override
     public int getSensorType()
     {
         return devMan.getSensorType(portNum);

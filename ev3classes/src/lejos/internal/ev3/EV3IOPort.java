@@ -107,10 +107,10 @@ public abstract class EV3IOPort implements IOPort, BasicSensorPort, EV3SensorCon
             throw new IllegalStateException("Port is not open");
         synchronized (openPorts)
         {
-            openPorts[typ][port] = null;
-            port = -1;
             // resume automatic type detection
             setPinMode(CMD_AUTOMATIC);
+            openPorts[typ][port] = null;
+            port = -1;
         }
     }
     
