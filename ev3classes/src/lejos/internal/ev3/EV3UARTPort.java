@@ -13,7 +13,11 @@ import lejos.internal.io.NativeDevice;
 import lejos.utility.Delay;
 
 /**
- * Provide access to EV3 sensor ports operating in UART mode.<p><p>
+ * Provide access to EV3 sensor ports operating in UART mode.<p>
+ * A mechanism is provided to allow access to the RAW UART device
+ * allowing simple read/write operations. This RAW mode disables 
+ * the normal Lego protocol used to communicate with Lego UART
+ * sensors<p>
  * NOTE: This code is not pretty! The interface uses a number of structures mapped
  * into memory from the device. I am not aware of any clean way to implement this
  * interface in Java. So for now multiple pointers to bytes/ints array etc. are used this
@@ -593,7 +597,11 @@ public class EV3UARTPort extends EV3IOPort implements UARTPort
         String format = "%" + info.Figures + "." + info.Decimals + "f" + new String(info.Symbol);
         return String.format(format, val);        
     }
-    
+
+    /**
+     * Set the bit rate of the port when operating in RAW mode.
+     * @param bitRate The new bit rate
+     */
     public void setBitRate(int bitRate)
     {
         UARTCONFIG uc = new UARTCONFIG();
@@ -602,7 +610,15 @@ public class EV3UARTPort extends EV3IOPort implements UARTPort
         uc.write();
         uart.ioctl(UART_SET_CONFIG, uc.getPointer());        
     }
-    
+
+    /**
+     * Read bytes from the uart port. If no bytes are available return 0.<p>
+     * Note: The port must have been set into RAW mode to use this method.
+     * @param buffer The buffer to store the read bytes
+     * @param offset The offset at which to start storing the bytes
+     * @param len The maximum number of bytes to read
+     * @return The actual number of bytes read
+     */
     public int rawRead(byte[] buffer, int offset, int len)
     {
         if (rawInput == null)
@@ -615,7 +631,18 @@ public class EV3UARTPort extends EV3IOPort implements UARTPort
         System.arraycopy(rawInput, 2, buffer, offset, len);
         return len;
     }
-    
+
+    /**
+     * Attempt to write a series of bytes to the uart port. This call
+     * is non-blocking if there is no space in the write buffer a count
+     * of 0 is returned.<p>
+     * Note: The port must have been set into RAW mode before attempting
+     * to use the method.
+     * @param buffer The buffer containing the bytes to write
+     * @param offset The offset of the first byte
+     * @param len The number of bytes to attempt to write
+     * @return The actual number of bytes written
+     */
     public int rawWrite(byte[] buffer, int offset, int len)
     {
         if (rawInput == null)
@@ -626,7 +653,6 @@ public class EV3UARTPort extends EV3IOPort implements UARTPort
         rawOutput[1] = (byte)len;
         System.arraycopy(buffer, offset, rawOutput, 2, len);
         len = uart.ioctl(UART_RAW_WRITE, rawOutput);
-        System.out.println("write len " + len);
         return len;
     }
     

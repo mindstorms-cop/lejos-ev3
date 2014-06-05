@@ -39,7 +39,7 @@ public class RemoteRequestI2CPort extends RemoteRequestIOPort implements I2CPort
 			int writeOffset, int writeLen, byte[] readBuf, int readOffset,
 			int readLen) {
 		EV3Request req = new EV3Request();
-		req.request = EV3Request.Request.SYSTEM_SOUND;
+		req.request = EV3Request.Request.I2C_TRANSACTION;
 		req.intValue2 = deviceAddress;
 		req.intValue3 = writeOffset;
 		req.intValue4 = writeLen;

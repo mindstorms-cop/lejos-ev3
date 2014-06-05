@@ -153,7 +153,10 @@ public class EV3Request implements Serializable {
 		PILOT_STEER,
 		CREATE_PILOT,
 		CLOSE_PILOT,
-		CREATE_SAMPLE_PROVIDER_PUBLISH
+		CREATE_SAMPLE_PROVIDER_PUBLISH,
+		UART_RAW_READ,
+		UART_RAW_WRITE,
+		UART_SET_BIT_RATE
 	}
 	
 	public Request request;
