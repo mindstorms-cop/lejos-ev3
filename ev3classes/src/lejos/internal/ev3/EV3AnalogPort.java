@@ -27,6 +27,8 @@ public class EV3AnalogPort extends EV3IOPort implements AnalogPort
     protected static final int ANALOG_BAT_V_OFF = 30;
     protected static final int ANALOG_INDCM_OFF = 5156;
     protected static final int ANALOG_INCONN_OFF = 5160;
+    protected static final int ANALOG_OUTDCM_OFF = 5164;
+    protected static final int ANALOG_OUTCONN_OFF = 5168;    
     protected static final int ANALOG_NXTCOL_OFF = 4856;
     protected static final int ANALOG_NXTCOL_SZ = 72;
     protected static final int ANALOG_NXTCOL_RAW_OFF = 54;
@@ -34,6 +36,8 @@ public class EV3AnalogPort extends EV3IOPort implements AnalogPort
     protected static Pointer pAnalog;
     protected static ByteBuffer inDcm;
     protected static ByteBuffer inConn;
+    protected static ByteBuffer outDcm;
+    protected static ByteBuffer outConn;
     protected static ByteBuffer shortVals;
     
     // NXT Color sensor stuff
@@ -338,7 +342,7 @@ public class EV3AnalogPort extends EV3IOPort implements AnalogPort
      * @param port
      * @return
      */
-    public static int getPortType(int port)
+    protected static int getPortType(int port)
     {
         if (port > PORTS || port < 0)
             return CONN_ERROR;
@@ -350,11 +354,36 @@ public class EV3AnalogPort extends EV3IOPort implements AnalogPort
      * @param port
      * @return
      */
-    public static int getAnalogSensorType(int port)
+    protected static int getAnalogSensorType(int port)
     {
         if (port > PORTS || port < 0)
             return CONN_ERROR;
         return inDcm.get(port);
+    }
+        
+    
+    /**
+     * get the type of the motor port
+     * @param port
+     * @return
+     */
+    protected static int getMotorPortType(int port)
+    {
+        if (port > MOTORS || port < 0)
+            return CONN_ERROR;
+        return outConn.get(port);
+    }
+
+    /**
+     * Get the type of analog sensor (if any) attached to the port
+     * @param port
+     * @return
+     */
+    protected static int getMotorType(int port)
+    {
+        if (port > MOTORS || port < 0)
+            return CONN_ERROR;
+        return outDcm.get(port);
     }
         
     
@@ -364,6 +393,8 @@ public class EV3AnalogPort extends EV3IOPort implements AnalogPort
         pAnalog = dev.mmap(ANALOG_SIZE);
         inDcm = pAnalog.getByteBuffer(ANALOG_INDCM_OFF, PORTS);
         inConn = pAnalog.getByteBuffer(ANALOG_INCONN_OFF, PORTS);
+        outDcm = pAnalog.getByteBuffer(ANALOG_OUTDCM_OFF, PORTS);
+        outConn = pAnalog.getByteBuffer(ANALOG_OUTCONN_OFF, PORTS);
         shortVals = pAnalog.getByteBuffer(0, ANALOG_SIZE);
     }
 }

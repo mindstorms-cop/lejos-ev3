@@ -67,6 +67,27 @@ public class EV3DeviceManager implements EV3SensorConstants
     }
 
     /**
+     * Get the type classification of the specified motor port based upon the connected
+     * output device. 
+     * @param port
+     * @return
+     */
+    public int getMotorPortType(int port)
+    {
+        return EV3AnalogPort.getMotorPortType(port);
+    }
+
+    /**
+     * Return the type of motor attached to the specified port.
+     * @param port
+     * @return
+     */
+    public int getMotorType(int port)
+    {
+        return EV3AnalogPort.getMotorType(port);
+    }
+
+    /**
      * Set the basic operating mode of the various sensor pins to allow correct
      * operation of the attached sensor.
      * @param port port to set
