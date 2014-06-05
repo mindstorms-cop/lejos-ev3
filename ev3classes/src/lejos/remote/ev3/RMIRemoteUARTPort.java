@@ -3,9 +3,7 @@ import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 
 import lejos.hardware.ev3.LocalEV3;
-import lejos.hardware.port.AnalogPort;
 import lejos.hardware.port.UARTPort;
-import lejos.remote.ev3.RMIAnalogPort;
 import lejos.remote.ev3.RMIUARTPort;
 
 
@@ -70,4 +68,24 @@ public class RMIRemoteUARTPort extends UnicastRemoteObject implements RMIUARTPor
 	public boolean setMode(int mode) throws RemoteException {
 		return port.setMode(mode);
 	}
+
+    @Override
+    public int rawRead(byte[] buffer, int offset, int len)
+            throws RemoteException
+    {
+        return port.rawRead(buffer, offset, len);
+    }
+
+    @Override
+    public int rawWrite(byte[] buffer, int offset, int len)
+            throws RemoteException
+    {
+        return port.rawWrite(buffer, offset, len);
+    }
+
+    @Override
+    public void setBitRate(int bitRate) throws RemoteException
+    {
+        port.setBitRate(bitRate);
+    }
 }

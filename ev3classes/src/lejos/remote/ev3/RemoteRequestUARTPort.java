@@ -80,7 +80,7 @@ public class RemoteRequestUARTPort extends RemoteRequestIOPort implements UARTPo
 	public boolean initialiseSensor(int mode) {
 		System.out.println("Initialise sensor");
 		EV3Request req = new EV3Request();
-		req.request = EV3Request.Request.UART_GET_BYTES;
+		req.request = EV3Request.Request.UART_INITIALISE_SENSOR;
 		req.intValue2 = mode;
 		return sendRequest(req, true).result;
 	}
@@ -117,4 +117,35 @@ public class RemoteRequestUARTPort extends RemoteRequestIOPort implements UARTPo
 			throw new RemoteRequestException(e);
 		}
 	}
+
+    @Override
+    public int rawRead(byte[] buffer, int offset, int len)
+    {
+        EV3Request req = new EV3Request();
+        req.request = EV3Request.Request.UART_RAW_READ;
+        req.intValue2 = len;
+        EV3Reply reply = sendRequest(req,true);
+        for(int i=0;i<len;i++) buffer[offset+i] = reply.contents[i];
+        return reply.reply;
+    }
+
+    @Override
+    public int rawWrite(byte[] buffer, int offset, int len)
+    {
+        EV3Request req = new EV3Request();
+        req.request = EV3Request.Request.UART_RAW_READ;
+        req.intValue2 = offset;
+        req.intValue3 = len;
+        req.byteData = buffer;
+        return sendRequest(req,true).reply;
+    }
+
+    @Override
+    public void setBitRate(int bitRate)
+    {
+        EV3Request req = new EV3Request();
+        req.request = EV3Request.Request.UART_SET_BIT_RATE;
+        req.intValue2 = bitRate;
+        sendRequest(req, false);
+    }
 }
