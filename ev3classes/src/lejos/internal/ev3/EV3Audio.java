@@ -200,11 +200,7 @@ public class EV3Audio implements Audio
         PCMSampleSize = 0;         
         byte [] buf = new byte[6];
         buf[0] = OP_BREAK;
-        while (dev.write(buf, 1) == 0)
-        {
-            Delay.msDelay(10);
-            System.out.println("Wait for close");
-        }
+        dev.write(buf, 1);
         PCMBuffer = null;
     }
 
@@ -214,23 +210,25 @@ public class EV3Audio implements Audio
      * @param buffer
      * @param cnt
      */
-    private synchronized void writePCMBuffer(byte[] buf, int dataLen)
+    private synchronized int writePCMBuffer(byte[] buf, int dataLen)
     {
         // check for playback aborted
-        if (PCMSampleSize == 0) return;
+        if (PCMSampleSize == 0) return -1;
         int offset = 0;
         while (offset < dataLen)
         {
             buf[offset] = OP_SERVICE;
             int len = dataLen - offset;
             int written = dev.write(buf, offset, len + 1);
+            if (written < 0) return -1;
             //System.out.println("Written " + written);
             if (written < (len + 1))
             {
                 Delay.msDelay(5);
             }
             offset += written;
-        }        
+        }
+        return dataLen;
     }
     
     public void writePCMSamples(byte[] data, int offset, int dataLength)
@@ -253,7 +251,7 @@ public class EV3Audio implements Audio
                     PCMBuffer[outOffset++] = (byte)sample;
                     PCMBuffer[outOffset++] = (byte)(sample >> 8);
                 }
-                writePCMBuffer(PCMBuffer, len*2);
+                if (writePCMBuffer(PCMBuffer, len*2) < 0) return;
                 offset += len;
             }
         }
@@ -266,7 +264,7 @@ public class EV3Audio implements Audio
                 if (len > PCM_BUFFER_SIZE)
                    len = PCM_BUFFER_SIZE;
                 System.arraycopy(data, offset, PCMBuffer, 1, len);
-                writePCMBuffer(PCMBuffer, len);
+                if (writePCMBuffer(PCMBuffer, len) < 0) return;
                 offset += len;
             }
             
