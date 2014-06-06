@@ -1,4 +1,5 @@
 /build
-/build.eclipse
+build.eclipse
 /build.number
 /doc
+bin
