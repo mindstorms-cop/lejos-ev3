@@ -592,7 +592,8 @@ public class WindowUtils {
     private static class W32WindowUtils extends NativeWindowUtils {
         private HWND getHWnd(Component w) {
             HWND hwnd = new HWND();
-            hwnd.setPointer(Native.getComponentPointer(w));
+            // TODO: leJOS commented out to avoid error
+            //hwnd.setPointer(Native.getComponentPointer(w));
             return hwnd;
         }
 
@@ -1293,10 +1294,13 @@ public class WindowUtils {
         }
 
         private static X11.Window getDrawable(Component w) {
-            int id = (int)Native.getComponentID(w);
-            if (id == X11.None)
-                return null;
-            return new X11.Window(id);
+            // TODO: leJOS commented out to avoid error
+            //int id = (int)Native.getComponentID(w);
+            //if (id == X11.None)
+              //  return null;
+            //return new X11.Window(id);
+            return null;
+                
         }
 
         private static final long OPAQUE = 0xFFFFFFFFL;
