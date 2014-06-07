@@ -69,4 +69,24 @@ public class RMIRemoteUARTPort extends UnicastRemoteObject implements RMIUARTPor
 	public boolean setMode(int mode) throws RemoteException {
 		return port.setMode(mode);
 	}
+
+	@Override
+	public int rawRead(byte[] buffer, int offset, int len)
+			throws RemoteException {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public int rawWrite(byte[] buffer, int offset, int len)
+			throws RemoteException {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public void setBitRate(int bitRate) throws RemoteException {
+		// TODO Auto-generated method stub
+		
+	}
 }
