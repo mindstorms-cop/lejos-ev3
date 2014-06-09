@@ -97,4 +97,22 @@ public class BrickPiUARTPort extends BrickPiIOPort implements UARTPort {
 		
 	}
 
+	@Override
+	public int rawRead(byte[] buffer, int offset, int len) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public int rawWrite(byte[] buffer, int offset, int len) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public void setBitRate(int bitRate) {
+		// TODO Auto-generated method stub
+		
+	}
+
 }

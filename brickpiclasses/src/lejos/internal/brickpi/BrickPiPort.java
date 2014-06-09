@@ -73,4 +73,10 @@ public class BrickPiPort implements Port {
 		return 0;
 	}
 
+	@Override
+	public void forcePortType(int typ) {
+		// TODO Auto-generated method stub
+		
+	}
+
 }
