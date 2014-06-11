@@ -2,4 +2,6 @@
 /build
 /dist
 local.properties
+*.jar
+
 

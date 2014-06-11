@@ -1,6 +1,8 @@
+import lejos.hardware.Button;
 import lejos.hardware.lcd.LCD;
 import lejos.hardware.port.I2CPort;
 import lejos.hardware.port.SensorPort;
+import lejos.hardware.sensor.SensorConstants;
 import lejos.remote.rcx.LLC;
 
 /**
@@ -17,9 +19,9 @@ import lejos.remote.rcx.LLC;
  */
 public class LLCMonitor {
 	public static void main(String[] args) throws Exception {
-		LLC.init(SensorPort.S1.open(I2CPort.class));
+		LLC.init(SensorPort.S1);
 		
-		while (true) {
+		while (Button.ESCAPE.isUp()) {
 			int b = LLC.read();
 			
 			if (b >= 0) {
