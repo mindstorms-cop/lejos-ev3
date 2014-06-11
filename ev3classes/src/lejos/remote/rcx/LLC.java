@@ -2,6 +2,7 @@ package lejos.remote.rcx;
 
 import lejos.hardware.device.RCXLink;
 import lejos.hardware.port.I2CPort;
+import lejos.hardware.port.Port;
 
 /**
  * Emulates RCX LLC class using the RCXLink class.
@@ -18,6 +19,15 @@ public class LLC {
    * Initialize LLC and set port
    **/
   public static void init(I2CPort port){
+	  link = new RCXLink(port);
+	  link.setDefaultSpeed();
+	  link.flush();
+  }
+  
+  /** 
+   * Initialize LLC and set port
+   **/
+  public static void init(Port port){
 	  link = new RCXLink(port);
 	  link.setDefaultSpeed();
 	  link.flush();
