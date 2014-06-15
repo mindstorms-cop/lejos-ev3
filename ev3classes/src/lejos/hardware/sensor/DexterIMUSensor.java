@@ -99,6 +99,7 @@ public class DexterIMUSensor extends BaseSensor implements SensorModes {
 
     public DexterIMUGyroSensor(I2CPort port, int address) {
       super(port, address);
+      if (port.getType()==I2CPort.TYPE_HIGHSPEED) rate=2;
       init();
     }
 
@@ -154,6 +155,7 @@ public class DexterIMUSensor extends BaseSensor implements SensorModes {
         return false;
       }
 
+    @SuppressWarnings("unused")
     private boolean dataOverrun() {
         getData(REG_STATUS, buf, 1);
         return ((buf[0] & 0x80) == 0);
