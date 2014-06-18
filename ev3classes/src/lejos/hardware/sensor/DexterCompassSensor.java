@@ -2,6 +2,7 @@ package lejos.hardware.sensor;
 
 import lejos.hardware.port.I2CPort;
 import lejos.hardware.port.Port;
+import lejos.robotics.SampleProvider;
 import lejos.utility.Delay;
 import lejos.utility.EndianTools;
 
@@ -55,8 +56,12 @@ public class DexterCompassSensor extends I2CSensor implements SensorMode {
   }
 
   public DexterCompassSensor(Port port) {
-    super(port, I2C_ADDRESS,  TYPE_LOWSPEED_9V);
+    super(port, I2C_ADDRESS,  TYPE_LOWSPEED);
     init();
+  }
+  
+  public SampleProvider getMagneticMode() {
+    return this;
   }
 
   protected void init() {
@@ -69,32 +74,15 @@ public class DexterCompassSensor extends I2CSensor implements SensorMode {
    * settings
    */
   private void configureSensor() {
-    // TODO: remove debug code
-    System.out.println("rate: "+rate);
-    System.out.println("measurementMode: "+measurementMode);
-    System.out.println("range: "+range);
-    System.out.println("operatingMode: "+operatingMode);
     
     buf[0] = (byte) ((3 << 5) | (rate << 2) | measurementMode);
     buf[1] = (byte) (range << 5);
     buf[2] = (byte) (operatingMode);
     
-    // TODO: remove debug code
-    System.out.println("Buffer to send");
-    for(int i=0;i<3;i++) {
-      System.out.println(String.format("%8s", Integer.toBinaryString(buf[i] & 0xFF)).replace(' ', '0'));
-    }
     
     sendData(REG_CONFIG, buf, 3);
     
-    // TODO: remove debug code
-    Delay.msDelay(200);
-    System.out.println("Actual value of registers");
-    getData(REG_CONFIG, buf, 3);
-    for(int i=0;i<3;i++) {
-      System.out.println(String.format("%8s", Integer.toBinaryString(buf[i] & 0xFF)).replace(' ', '0'));
-    }
-    
+   
     Delay.msDelay(6);
     
     multiplier = 1.0f / RANGEMULTIPLIER[range];
@@ -159,7 +147,7 @@ public class DexterCompassSensor extends I2CSensor implements SensorMode {
    *         positive and negative bias mode should only be used for testing the
    *         sensor.
    */
-  public int getMeasurementMode() {
+  protected int getMeasurementMode() {
     return measurementMode;
   }
 
@@ -167,7 +155,7 @@ public class DexterCompassSensor extends I2CSensor implements SensorMode {
    * @return The operating mode of the sensor (single measurement, continuous or
    *         Idle)
    */
-  public int getOperatingMode() {
+  protected int getOperatingMode() {
     return operatingMode;
   }
 
@@ -198,7 +186,7 @@ public class DexterCompassSensor extends I2CSensor implements SensorMode {
    * 
    * @return True if new data available
    */
-  public boolean newDataAvailable() {
+  protected boolean newDataAvailable() {
     getData(REG_STATUS, buf, 1);
     return ((buf[0] & 0x01) != 0);
   }
@@ -223,7 +211,7 @@ public class DexterCompassSensor extends I2CSensor implements SensorMode {
    *          <p>
    *          Idle is to stop the sensor and conserve energy
    */
-  public void setOperatingMode(int operatingMode) {
+  protected void setOperatingMode(int operatingMode) {
     this.operatingMode = operatingMode;
     configureSensor();
   }

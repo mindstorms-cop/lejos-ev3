@@ -138,6 +138,20 @@ public class OffsetCorrectionFilter extends AbstractFilter {
     ;
     m2[i] -= delta * (x - mean[i]);
   }
+  
+  
+  
+  /**
+   * Resets the filter
+   */
+  public void reset() {
+    for (int i=0;i<sampleSize;i++) {
+      buffer[i].clear();
+      mean[i]=0;
+      m2[i]=0;
+    }
+    
+  }
 
   @SuppressWarnings("unused")
   private float getVariance(int i) {
