@@ -131,7 +131,15 @@ public abstract class AbstractCalibrationFilter extends AbstractFilter implement
     return new File(DIRECTORY + filename + EXT);
   }
 
-  protected void load(String filename) {
+  /** Loads calibration parameters from the file system. <br>
+   * This method raises an exception when the stored calibration parameters do not match the sensor or the calibration class.
+   * @param filename
+   * filename of the stored calibration parameters
+   * @return
+   * True when calibration parameters are sccesfully loaded
+   * False when the file does not exist
+   */
+  protected boolean load(String filename) {
     props.clear();
     try {
       File f = getFile(filename);
@@ -144,13 +152,20 @@ public abstract class AbstractCalibrationFilter extends AbstractFilter implement
         if (Integer.parseInt(props.getProperty("sampleSize"))!=sampleSize) 
           throw new CalibrationFileException("Invalid Calibration file. Sample size does not match.");
       }
-      else throw new CalibrationFileException("Calibration file "+filename+" does not exist");
+      else return false;
     }
     catch (IOException e) {
       e.printStackTrace();
+      return false;
     }
+    return true;
   }
 
+  /** Saves the current set of calibration parameters to the file system. <p>
+   * Calibration files are stored in  /home/root/sensorCalibration/filename  
+   * @param filename
+   * Name of the file to store calibration parameters in. 
+   */
   protected void store(String filename) {
     try {
       new File(DIRECTORY).mkdir();

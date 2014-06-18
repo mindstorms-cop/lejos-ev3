@@ -226,10 +226,10 @@ public class LinearCalibrationFilter extends AbstractCalibrationFilter {
   @Override
   public void stopCalibration() {
     super.stopCalibration();
-    System.out.println("End calibration using " + numberOfSamplesInCalibration + " samples.");
-    for (int i = 0; i < sampleSize; i++) {
-      System.out.println("min: " + min[i] + " max: " + max[i] + " sum: " + sum[i] + " lowerbound: " + lowerBound[i] + " upperbound: " + upperBound[i] + " offset: " + offset[i] + "scale: " + scale[i]);
-    }
+//    System.out.println("End calibration using " + numberOfSamplesInCalibration + " samples.");
+//    for (int i = 0; i < sampleSize; i++) {
+//      System.out.println("min: " + min[i] + " max: " + max[i] + " sum: " + sum[i] + " lowerbound: " + lowerBound[i] + " upperbound: " + upperBound[i] + " offset: " + offset[i] + "scale: " + scale[i]);
+//    }
   }
 
   /**

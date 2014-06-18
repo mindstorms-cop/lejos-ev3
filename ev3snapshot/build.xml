@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
 <project name="snapshot" basedir="." default="all">
+    <property file="local.properties" />
+    <property file="build.properties" />
     
     <target name="all" depends="subproject.jna,subproject.ev3classes,subproject.ev3menu,subproject.ev3samples,subproject.ev3pcsamples,subproject.ev3tools,subproject.ev3scripts, subproject.ev3menutools">
 		<echo message="Done." />
@@ -118,7 +120,7 @@
     	    <fileset file="lib/ev3classes.jar"/>
     	    <fileset file="lib/dbusjava.jar"/>
     	</scp>
-    	<scp todir="root:@${ev3.host}:/home/root/lejos/bin/util/" trust="true">
+    	<scp todir="root:@${ev3.host}:/home/root/lejos/bin/utils/" trust="true">
     	    <fileset file="bin/utils/EV3Menu.jar"/>
     	    <fileset file="bin/utils/wpa_supplicant.txt"/>
     	</scp>

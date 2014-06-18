@@ -232,7 +232,7 @@ public class DexterIMUSensor extends BaseSensor implements SensorModes {
 
           // a correction for misalignment of the gyro sensor is made here
           sample[offset] = EndianTools.decodeShortLE(buf, 3) * toSI;
-          sample[1 + offset] = EndianTools.decodeShortLE(buf, 1) * toSI;
+          sample[1 + offset] = - EndianTools.decodeShortLE(buf, 1) * toSI;
           sample[2 + offset] = EndianTools.decodeShortLE(buf, 5) * toSI;
       }
 
