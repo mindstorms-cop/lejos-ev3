@@ -6,15 +6,36 @@ import lejos.robotics.SampleProvider;
 import lejos.utility.Delay;
 import lejos.utility.EndianTools;
 
+
 /**
- * Represents the Dexter Industries dIMU sensor.<br>
- * The IMU sensor provider acceleration (m/s), rate (degrees/sec) and
- * temperature (Celcius) data. <br>
- * <a href="http://dexterindustries.com/files/dIMU_Datasheets.zip">IMU sensor
- * datasheets</a>
+ * <b>Dexter Industries dIMU Sensor</b><br>
+ * An accelerometer and gyroscope for the LEGO® MINDSTORMS® NXT and EV3.
  * 
- * @author Aswin
  * 
+ * <p><table border=1>
+ * <tr> <th colspan=4>Supported modes</th> </tr>
+ * <tr> <th> Mode name </th> <th> Description </th> <th> unit(s) </th> <th> Getter </th> </tr>
+ * <tr> <td> Rate </td> <td> The Rate mode measures the angular speed of the sensor over three axes </td> <td> Degrees/second </td> <td> {@link #getRateMode() } </td> </tr>
+ * <tr> <td> Acceleration </td> <td> The Acceleration mode measures the linear acceleration of the sensor over three axes </td> <td> Metres/second^2 </td> <td> {@link #getAccelerationMode() } </td> </tr>
+ * <tr> <td> Temperature </td> <td> The Temperature mode measures the internal temperature of the sensors gyroscope IC </td> <td> Degrees Celcius </td> <td> {@link #getTemperatureMode() } </td> </tr>
+ * </table>
+ * 
+ * 
+ * <p><b>Sensor configuration</b><br>
+ * The sensor cannot be configured directly. The internal update frequency of the sensor is adjusted automaticly to match the I2C port speed.
+ * 
+ * <p>
+ * 
+ * @see <a href="http://dexterindustries.com/files/dIMU_Datasheets.zip"> Sensor datasheet </a>
+ * @see <a href="http://www.dexterindustries.com/dIMU.html"> Sensor Product page </a>
+ * @see <a href="http://sourceforge.net/p/lejos/wiki/Sensor%20Framework/"> The leJOS sensor framework</a>
+ * @see {@link lejos.robotics.SampleProvider leJOS conventions for SampleProviders}
+ * 
+ * <p>
+ * 
+ * 
+ * @author Aswin Bouwmeester
+ *
  */
 public class DexterIMUSensor extends BaseSensor implements SensorModes {
   // TODO: Add support for sensor configuration
@@ -39,25 +60,92 @@ public class DexterIMUSensor extends BaseSensor implements SensorModes {
    * 
    * @return a SampleProvider
    */
+  
+  
+  
+  /**
+   * <b>Dexter Industries dIMU Sensor, Acceleration Mode</b><br>
+   * The Acceleration mode measures the linear acceleration of the sensor over three axes 
+   * 
+   * <p><b>Size and content of the sample</b><br>
+   * The sample contains three elements. Each element gives the linear acceleration (in metres/second^2) of the sensor over a single axis. The order of the axes  in the sample is X, Y and Z. 
+   * <p><b>Special values</b><br>
+   * None
+   * <p><b>Update frequency</b><br>
+   * Internally the sensor updates the rate measurement 125 times a second.
+   *
+   * <p><b>Range</b><br>
+   * The measurement range is -2G to 2G ( 1G = 9.81 metres/second^2) by default. 
+   *
+   * <p><b>Resolution</b><br>
+   * The sensors resultion depends on the dynamic range. For the default settings it is 1/64 G.
+   *
+   * <p><b>Configuration</b><br>
+   * Currently there are no configurable settings.
+   * 
+   *  @return
+   *  A sampleProvider 
+   *   @see {@link lejos.robotics.SampleProvider leJOS conventions for SampleProviders}
+   * @see <a href="http://www.freescale.com/files/sensors/doc/data_sheet/MMA7455L.pdf"> Freescale MMA7455L datasheet </a>
+   */
   public SampleProvider getAccelerationMode() {
     return getMode(1);
   }
 
   /**
-   * Gives a SampleProvider that returns rate (degree/s) samples.
+   * <b>Dexter Industries dIMU Sensor, Rate Mode</b><br>
+   * The Rate mode measures the angular speed of the sensor over three axes
    * 
-   * @return a SampleProvider
+   * <p><b>Size and content of the sample</b><br>
+   * The sample contains three elements. Each element gives the angular speed (in degrees/second) of the sensor over a single axis. The order of the axes  in the sample is X, Y and Z. 
+   * <p><b>Special values</b><br>
+   * None
+   * <p><b>Update frequency</b><br>
+   * Internally the sensor updates the rate measurement 100 times a second. when the sensor port is configured for default speed. When the port is configured for high speed the rate measurements are updates 400 times a second.
+   *
+   * <p><b>Range</b><br>
+   * The measurement range is -2000 to 2000 degrees/second by default.
+   *
+   * <p><b>Resolution</b><br>
+   * The sensors resolution depends on the dynamic range. For the default settings it is 0.070 of a degree.
+   *
+   * <p><b>Configuration</b><br>
+   * Currently there are no configurable settings.
+   * 
+   *  @return
+   *  A sampleProvider 
+   *   @see {@link lejos.robotics.SampleProvider leJOS conventions for SampleProviders}
+   * @see <a href="http://www.st.com/st-web-ui/static/active/en/resource/technical/document/datasheet/CD00265057.pdf">ST L3G4200D datasheet </a>
    */
   public SampleProvider getRateMode() {
     return getMode(0);
   }
 
   /**
-   * Gives a SampleProvider thst returns temperature (degree Celcius) samples.<br>
-   * Note that this is the temperature of the gyro chip. This does not have to
-   * correspond to the temperture of the surrounding.
+   * <b>Dexter Industries dIMU Sensor, Temperature Mode</b><br>
+   * The Acceleration mode measures the linear acceleration of the sensor over three axes 
    * 
-   * @return a SampleProvider
+   * <p><b>Size and content of the sample</b><br>
+   * The sample contains one elements providing the internal temperature  (in gegrees Celcius) of the gyro sensors. 
+   * Please note that the internal temperature of the sensor will exceed the temperature of the environment when the sensor is in use. 
+   * <p><b>Special values</b><br>
+   * None
+   * <p><b>Update frequency</b><br>
+   * Internally the sensor updates the temperature measurement once a second. 
+   *
+   * <p><b>Range</b><br>
+   * The measurement range is -40 to 85 degrees.
+   *
+   * <p><b>Resolution</b><br>
+   * The sensors resolution is one degree.
+   *
+   * <p><b>Configuration</b><br>
+   * There are no configurable settings.
+   * 
+   *  @return
+   *  A sampleProvider 
+   *   @see {@link lejos.robotics.SampleProvider leJOS conventions for SampleProviders}
+   * @see <a href="http://www.st.com/st-web-ui/static/active/en/resource/technical/document/datasheet/CD00265057.pdf">ST L3G4200D datasheet </a>
    */
   public SampleProvider getTemperatureMode() {
     return getMode(2);
