@@ -69,19 +69,9 @@ public class DexterIMUSensor extends BaseSensor implements SensorModes {
    * 
    * <p><b>Size and content of the sample</b><br>
    * The sample contains three elements. Each element gives the linear acceleration (in metres/second^2) of the sensor over a single axis. The order of the axes  in the sample is X, Y and Z. 
-   * <p><b>Special values</b><br>
-   * None
-   * <p><b>Update frequency</b><br>
-   * Internally the sensor updates the rate measurement 125 times a second.
-   *
-   * <p><b>Range</b><br>
-   * The measurement range is -2G to 2G ( 1G = 9.81 metres/second^2) by default. 
-   *
-   * <p><b>Resolution</b><br>
-   * The sensors resultion depends on the dynamic range. For the default settings it is 1/64 G.
    *
    * <p><b>Configuration</b><br>
-   * Currently there are no configurable settings.
+   * The sensor is configured for a dynamic range of -2G tot 2G and an internal update rate of 125 Hertz. Currently there are no configurable settings.
    * 
    *  @return
    *  A sampleProvider 
@@ -98,19 +88,9 @@ public class DexterIMUSensor extends BaseSensor implements SensorModes {
    * 
    * <p><b>Size and content of the sample</b><br>
    * The sample contains three elements. Each element gives the angular speed (in degrees/second) of the sensor over a single axis. The order of the axes  in the sample is X, Y and Z. 
-   * <p><b>Special values</b><br>
-   * None
-   * <p><b>Update frequency</b><br>
-   * Internally the sensor updates the rate measurement 100 times a second. when the sensor port is configured for default speed. When the port is configured for high speed the rate measurements are updates 400 times a second.
-   *
-   * <p><b>Range</b><br>
-   * The measurement range is -2000 to 2000 degrees/second by default.
-   *
-   * <p><b>Resolution</b><br>
-   * The sensors resolution depends on the dynamic range. For the default settings it is 0.070 of a degree.
    *
    * <p><b>Configuration</b><br>
-   * Currently there are no configurable settings.
+   * The sensor is configured for a dynamic range from -2000 to 2000 degrees/second. The internal sample rate is 100 Hertz by default and 400 Hertz when the sensor port is configured for high speed.  Currently there are no configurable settings.
    * 
    *  @return
    *  A sampleProvider 
@@ -128,19 +108,9 @@ public class DexterIMUSensor extends BaseSensor implements SensorModes {
    * <p><b>Size and content of the sample</b><br>
    * The sample contains one elements providing the internal temperature  (in gegrees Celcius) of the gyro sensors. 
    * Please note that the internal temperature of the sensor will exceed the temperature of the environment when the sensor is in use. 
-   * <p><b>Special values</b><br>
-   * None
-   * <p><b>Update frequency</b><br>
-   * Internally the sensor updates the temperature measurement once a second. 
-   *
-   * <p><b>Range</b><br>
-   * The measurement range is -40 to 85 degrees.
-   *
-   * <p><b>Resolution</b><br>
-   * The sensors resolution is one degree.
-   *
+   * 
    * <p><b>Configuration</b><br>
-   * There are no configurable settings.
+   * The temperature range of the sensor is -40 to 85 degrees Celcius. The update rate is 1 Hertz. There are no configurable settings.
    * 
    *  @return
    *  A sampleProvider 
