@@ -28,6 +28,7 @@ public class EV3GyroSensor extends UARTSensor {
 
   public EV3GyroSensor(UARTPort port) {
     super(port);
+    setModes(new SensorMode[] { new RateMode(), new AngleMode(), new RateAndAngleMode() });
   }
 
   /**
