@@ -2,17 +2,52 @@ package lejos.hardware.sensor;
 
 import lejos.hardware.port.AnalogPort;
 import lejos.hardware.port.Port;
+import lejos.robotics.SampleProvider;
 
 /**
- * Support for Dexter Industries DPressure500
- * Not tested.
+ * <b>Dexter Industries DPressure500</b><br>
+ * Pressure sensor for LEGO® MINDSTORMS® EV3 and NXT.
  * 
- * See http://www.dexterindustries.com/Products-dPressure.html.
+ * <p style="color:red;">
+ * The code for this sensor has not been tested. Please report test results to
+ * the <A href="http://www.lejos.org/forum/"> leJOS forum</a>.
+ * </p>
+ * 
+ * <p>
+ * <table border=1>
+ * <tr>
+ * <th colspan=4>Supported modes</th>
+ * </tr>
+ * <tr>
+ * <th>Mode name</th>
+ * <th>Description</th>
+ * <th>unit(s)</th>
+ * <th>Getter</th>
+ * </tr>
+ * <tr>
+ * <td>Pressure</td>
+ * <td>Measures the pressure </td>
+ * <td>Pascal</td>
+ * <td> {@link #getPressureMode() }</td>
+ * </tr>
+ * </table>
+ * 
+ * 
+ * <p>
+ * 
+ * @see <a href="http://www.dexterindustries.com/manual/dpressure/"> Sensor datasheet </a>
+ * @see <a href="http://www.dexterindustries.com/Products-dPressure.html"> Sensor Product page </a>
+ * @see <a href="http://sourceforge.net/p/lejos/wiki/Sensor%20Framework/"> The
+ *      leJOS sensor framework</a>
+ * @see {@link lejos.robotics.SampleProvider leJOS conventions for
+ *      SampleProviders}
+ * 
+ *      <p>
+ * 
  * 
  * @author Lawrie Griffiths
- *
- */
-public class DexterPressureSensor500 extends AnalogSensor implements SensorConstants, SensorMode {
+ * 
+ */public class DexterPressureSensor500 extends AnalogSensor implements SensorConstants {
 	/*
 	 * 
 	 * Formula from DPRESS-driver.h:
@@ -41,30 +76,49 @@ public class DexterPressureSensor500 extends AnalogSensor implements SensorConst
     }
     
     protected void init() {
-    	setModes(new SensorMode[]{ this });
+    	setModes(new SensorMode[]{ new PressureMode() });
     	port.setTypeAndMode(TYPE_CUSTOM, MODE_RAW);
     }
     
     
+
+	
     /**
-     * Return a sample provider for pressure mode.
+     * <b>Dexter Industries DPressure500, Pressure mode</b><br>
+     * Measures the pressure
+     * 
+     * <p>
+     * <b>Size and content of the sample</b><br>
+     * The sample contains one element containing the pressure (in PA) measured by the sensor.
+     * 
+     * <p>
+     * 
+     * @return A sampleProvider
+     * @see {@link lejos.robotics.SampleProvider leJOS conventions for
+     *      SampleProviders}
+     * @see <a href="http://www.dexterindustries.com/manual/dpressure/"> Sensor datasheet </a>
      */
-    public SensorMode getPressureMode() {
-    	return this;
+    public SampleProvider getPressureMode() {
+        return getMode(0);
+
     }
 
-	@Override
-	public int sampleSize() {
-		return 1;
-	}
+    private class PressureMode implements SensorMode {
 
-	@Override
-	public void fetchSample(float[] sample, int offset) {
-		sample[offset] = (normalize(NXTRawValue(port.getPin1())) * DPRESS_MULT - DPRESS_OFFSET) * 1000f; // in pascals
-	}
+        @Override
+        public int sampleSize() {
+            return 1;
+        }
 
-	@Override
-	public String getName() {
-		return "Pressure";
-	}
+        @Override
+        public void fetchSample(float[] sample, int offset) {
+            sample[offset] = (NXTRawValue(normalize(port.getPin1())) * DPRESS_MULT - DPRESS_OFFSET)* 1000f; // in pascals
+       }
+
+        @Override
+        public String getName() {
+            return "Pressure";
+        }
+
+    }
 }
