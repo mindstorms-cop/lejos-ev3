@@ -6,7 +6,6 @@ import lejos.robotics.SampleProvider;
 import lejos.utility.Delay;
 import lejos.utility.EndianTools;
 
-
 /**
  * <b>Dexter Industries dCompass sensor</b><br>
  * A three axis magnetometer
