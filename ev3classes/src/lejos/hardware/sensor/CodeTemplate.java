@@ -4,12 +4,14 @@ import lejos.hardware.port.Port;
 import lejos.hardware.port.UARTPort;
 import lejos.robotics.SampleProvider;
 
-
 /**
  * <b>Sensor name</b><br>
  * Description
  * 
- * <p style="color:red;">The code for this sensor has not been tested. Please report test results to the <A href="http://www.lejos.org/forum/"> leJOS forum</a>.</p>
+ * <p style="color:red;">
+ * The code for this sensor has not been tested. Please report test results to
+ * the <A href="http://www.lejos.org/forum/"> leJOS forum</a>.
+ * </p>
  * 
  * <p>
  * <table border=1>
@@ -54,75 +56,78 @@ import lejos.robotics.SampleProvider;
  */
 public class CodeTemplate extends UARTSensor {
 
-  /** Constructor using a unopened port 
+  /**
+   * Constructor using a unopened port
+   * 
    * @param port
    */
   public CodeTemplate(Port port) {
     super(port);
     init();
   }
-  
-  /** Constructor using a opened and configured port 
+
+  /**
+   * Constructor using a opened and configured port
+   * 
    * @param port
    */
   public CodeTemplate(UARTPort port) {
     super(port);
     init();
   }
-  
-  /** Configures the sensor for first use and registers the supported modes
+
+  /**
+   * Configures the sensor for first use and registers the supported modes
    * 
    */
   protected void init() {
-    setModes(new SensorMode[] { new SomeMode()});
+    setModes(new SensorMode[] { new SomeMode() });
   }
-  
+
   /**
    * <b>Sensor name, mode</b><br>
-   * Mode description 
+   * Mode description
    * 
-   * <p><b>Size and content of the sample</b><br>
-   * The sample contains # elements. Each element gives Something (in some unit).  
-   *
-   * <p><b>Configuration</b><br>
-   * The sensor is configured for.... . Currently there are no configurable settings.
+   * <p>
+   * <b>Size and content of the sample</b><br>
+   * The sample contains # elements. Each element gives Something (in some
+   * unit).
    * 
-   *  @return
-   *  A sampleProvider 
-   *   @see {@link lejos.robotics.SampleProvider leJOS conventions for SampleProviders}
+   * <p>
+   * <b>Configuration</b><br>
+   * The sensor is configured for.... . Currently there are no configurable
+   * settings.
+   * 
+   * @return A sampleProvider
+   * @see {@link lejos.robotics.SampleProvider leJOS conventions for
+   *      SampleProviders}
    * @see <a href=""> Sensor datasheet </a>
    */
   public SampleProvider getSomeMode() {
     return getMode(0);
-    
-  }
-  
-  
-private class SomeMode implements SensorMode {
 
-  @Override
-  public int sampleSize() {
-    // TODO Auto-generated method stub
-    return 0;
   }
 
-  @Override
-  public void fetchSample(float[] sample, int offset) {
-    // TODO Auto-generated method stub
-    
+  private class SomeMode implements SensorMode {
+
+    @Override
+    public int sampleSize() {
+      // TODO Auto-generated method stub
+      return 0;
+    }
+
+    @Override
+    public void fetchSample(float[] sample, int offset) {
+      // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public String getName() {
+      // TODO Auto-generated method stub
+      return "Some";
+    }
+
   }
 
-  @Override
-  public String getName() {
-    // TODO Auto-generated method stub
-    return "Some";
-  }
-  
 }
-
-
-  
-  
-}
-
-
