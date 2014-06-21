@@ -103,7 +103,7 @@ public class DexterIMUSensor extends BaseSensor implements SensorModes {
 
   /**
    * <b>Dexter Industries dIMU Sensor, Temperature Mode</b><br>
-   * The Acceleration mode measures the linear acceleration of the sensor over three axes 
+   * The Temperature mode measures the internal temperature of the sensors gyroscope IC 
    * 
    * <p><b>Size and content of the sample</b><br>
    * The sample contains one elements providing the internal temperature  (in gegrees Celcius) of the gyro sensors. 
