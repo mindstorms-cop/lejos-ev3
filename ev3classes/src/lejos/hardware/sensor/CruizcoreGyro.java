@@ -5,13 +5,66 @@ import lejos.hardware.port.Port;
 import lejos.utility.Delay;
 import lejos.utility.EndianTools;
 
+
 /**
- * This Class manages the Micro Infinity Cruizcore XG1300L
+ * <b>Micro Infinity Cruizcore XG1300L</b><br>
+ * The XG1300L is a fully self-contained digital MEMS gyroscope and accelerometer.
+ * <p style="color:red;">The code for this sensor has not been tested. Please report test results to the <A href="http://www.lejos.org/forum/"> leJOS forum</a>.</p>
  * 
- * @author Daniele Benedettelli, February 2011
- * @version 1.0
+ * 
+ * 
+ * <p>
+ * <table border=1>
+ * <tr>
+ * <th colspan=4>Supported modes</th>
+ * </tr>
+ * <tr>
+ * <th>Mode name</th>
+ * <th>Description</th>
+ * <th>unit(s)</th>
+ * <th>Getter</th>
+ * </tr>
+ * <tr>
+ * 
+ * <td>Acceleration</td>
+ * <td>Measures linear acceleration over three axes</td>
+ * <td></td>
+ * <td> {@link #getAccelerationMode() }</td>
+ * </tr>
+ * <tr>
+ * Rate
+ * <td>Rate</td>
+ * <td>Measures rate of turn over the Z-axis</td>
+ * <td></td>
+ * <td> {@link #getRateMode() }</td>
+ * </tr>
+ * <tr>
+ * Angle
+ * <td></td>
+ * <td>Measures angle over the Z-axis</td>
+ * <td></td>
+ * <td> {@link #getAngleMode() }</td>
+ * </tr>
+ * </table>
+ * 
+ * 
+ * 
+ * <p>
+ * 
+ * @see <a href="http://www.minfinity.com/Manual/CruizCore_XG1300L_User_Manual.pdf"> Sensor datasheet </a>
+ * @see <a href="http://www.minfinity.com/eng/page.php?Main=1&sub=1&tab=5"> Sensor Product page </a>
+ * @see <a href="http://sourceforge.net/p/lejos/wiki/Sensor%20Framework/"> The
+ *      leJOS sensor framework</a>
+ * @see {@link lejos.robotics.SampleProvider leJOS conventions for
+ *      SampleProviders}
+ * 
+ *      <p>
+ * 
+ * 
+ * @author Daniele Benedettelli
+ * 
  */
-public class CruizcoreGyro extends I2CSensor implements SensorMode {
+public class CruizcoreGyro extends I2CSensor  {
 
 	/*
 	 * Documentation can be obtained here: http://www.minfinity.com/Manual/CruizCore_XG1300L_User_Manual.pdf
@@ -58,7 +111,7 @@ public class CruizcoreGyro extends I2CSensor implements SensorMode {
     
     protected void init() {
       setAccScale2G();
-    	setModes(new SensorMode[]{ this, new RateMode(),  new AngleMode() });
+    	setModes(new SensorMode[]{ new AccelerationMode(), new RateMode(),  new AngleMode() });
     }
     
  
@@ -110,28 +163,64 @@ public class CruizcoreGyro extends I2CSensor implements SensorMode {
 		Delay.msDelay(750);		
 	}
 
-	@Override
-	public int sampleSize() {
-		return 3;
-	}
 
-	@Override
-	public void fetchSample(float[] sample, int offset) {
-		getData(ACCEL_X,inBuf,6);
-		sample[0+offset] = EndianTools.decodeShortLE(inBuf, 2) * scale;
-		sample[1+offset] = EndianTools.decodeShortLE(inBuf, 0) * scale;
-		sample[2+offset] = - EndianTools.decodeShortLE(inBuf, 4) * scale;		
-	}
 	
-	@Override
-	public String getName() {
-		return "Acceleration";
-	}
-	
+  /**
+   * <b>Cruizcore XG1300L, Acceleration mode</b><br>
+   * Measures linear acceleration over three axes 
+   * 
+   * <p><b>Size and content of the sample</b><br>
+   * The sample contains 3 elements. Each element gives linear acceleration (in metres/second^2). Axis order in sample is X, Y, Z.  
+   *
+   * <p><b>Configuration</b><br>
+   * The sensor can be configured for range using the setAccScale#G() methods of the sensor class.
+   * 
+   *  @return
+   *  A sampleProvider 
+   *   @see {@link lejos.robotics.SampleProvider leJOS conventions for SampleProviders}
+   * @see <a href="http://www.minfinity.com/Manual/CruizCore_XG1300L_User_Manual.pdf"> Sensor datasheet </a>
+   */	
 	public SensorMode getAccelerationMode() {
-		return this;
+		return getMode(0);
 	}
 	
+	private class AccelerationMode implements SensorMode {
+
+	  @Override
+	  public int sampleSize() {
+	    return 3;
+	  }
+
+	  @Override
+	  public void fetchSample(float[] sample, int offset) {
+	    getData(ACCEL_X,inBuf,6);
+	    sample[0+offset] = EndianTools.decodeShortLE(inBuf, 2) * scale;
+	    sample[1+offset] = EndianTools.decodeShortLE(inBuf, 0) * scale;
+	    sample[2+offset] = - EndianTools.decodeShortLE(inBuf, 4) * scale;   
+	  }
+	  
+	  @Override
+	  public String getName() {
+	    return "Acceleration";
+	  }
+	}
+	
+	
+  /**
+   * <b>Cruizcore XG1300L, Acceleration mode</b><br>
+   * Measures rate of turn over the Z-axis 
+   * 
+   * <p><b>Size and content of the sample</b><br>
+   * The sample contains one element, the rate of turn (in degrees / second) over the Z-axis.  
+   *
+   * <p><b>Configuration</b><br>
+   * There are no configurable parameters.
+   * 
+   *  @return
+   *  A sampleProvider 
+   *   @see {@link lejos.robotics.SampleProvider leJOS conventions for SampleProviders}
+   * @see <a href="http://www.minfinity.com/Manual/CruizCore_XG1300L_User_Manual.pdf"> Sensor datasheet </a>
+   */
 	public SensorMode getRateMode() {
 		return getMode(1);
 	}
@@ -154,6 +243,23 @@ public class CruizcoreGyro extends I2CSensor implements SensorMode {
 		}		
 	}
 	
+	
+	
+  /**
+   * <b>Cruizcore XG1300L, Angle mode</b><br>
+   * Measures angle over the Z-axis 
+   * 
+   * <p><b>Size and content of the sample</b><br>
+   * The sample contains one element, the accumulated angle (in degrees). .  
+   *
+   * <p><b>Configuration</b><br>
+   * The accumulated angle can be reset to zero using the reset() method of the sensor class.
+   * 
+   *  @return
+   *  A sampleProvider 
+   *   @see {@link lejos.robotics.SampleProvider leJOS conventions for SampleProviders}
+   * @see <a href="http://www.minfinity.com/Manual/CruizCore_XG1300L_User_Manual.pdf"> Sensor datasheet </a>
+   */
 	public SensorMode getAngleMode() {
 		return getMode(2);
 	}

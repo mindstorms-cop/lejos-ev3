@@ -6,15 +6,56 @@ import lejos.robotics.SampleProvider;
 import lejos.utility.Delay;
 import lejos.utility.EndianTools;
 
+
 /**
- * Driver for the Dexter Industries compass sensor. <br>
- * This sensor uses the Honeywell HMC5883L 3-Axis digital compass IC.
+ * <b>Dexter Industries dCompass sensor</b><br>
+ * A three axis magnetometer
  * 
- * @author Aswin
- * @version 1.0
+ * 
+ * <p>
+ * <table border=1>
+ * <tr>
+ * <th colspan=4>Supported modes</th>
+ * </tr>
+ * <tr>
+ * <th>Mode name</th>
+ * <th>Description</th>
+ * <th>unit(s)</th>
+ * <th>Getter</th>
+ * </tr>
+ * <tr>
+ * <td>Magnetic</td>
+ * <td>Measures the strength of the magnetic field over three axes</td>
+ * <td></td>
+ * <td> {@link #getMagneticMode() }</td>
+ * </tr>
+ * </table>
+ * 
+ * 
+ * <p>
+ * <b>Sensor configuration</b><br>
+ * Range can be set Using getRanges() and setRange methods. Internal update
+ * frequency of the sensor can be set using getRates and setRate methods.
+ * 
+ * <p>
+ * 
+ * @see <a
+ *      href="http://www.adafruit.com/datasheets/HMC5883L_3-Axis_Digital_Compass_IC.pdf">
+ *      Sensor datasheet </a>
+ * @see <a href="http://www.dexterindustries.com/dCompass.html"> Sensor Product
+ *      page </a>
+ * @see <a href="http://sourceforge.net/p/lejos/wiki/Sensor%20Framework/"> The
+ *      leJOS sensor framework</a>
+ * @see {@link lejos.robotics.SampleProvider leJOS conventions for
+ *      SampleProviders}
+ * 
+ *      <p>
+ * 
+ * 
+ * @author Aswin Bouwmeester
  * 
  */
-public class DexterCompassSensor extends I2CSensor implements SensorMode {
+public class DexterCompassSensor extends I2CSensor {
 
   // sensor configuration
   static final int             MODE_NORMAL        = 0;
@@ -46,7 +87,7 @@ public class DexterCompassSensor extends I2CSensor implements SensorMode {
   private float                multiplier;
 
   /**
-   * Constructor for the driver. 
+   * Constructor for the driver.
    * 
    * @param port
    */
@@ -56,16 +97,38 @@ public class DexterCompassSensor extends I2CSensor implements SensorMode {
   }
 
   public DexterCompassSensor(Port port) {
-    super(port, I2C_ADDRESS,  TYPE_LOWSPEED);
+    super(port, I2C_ADDRESS, TYPE_LOWSPEED);
     init();
   }
-  
+
+  /**
+   * <b>Dexter Industries dCompass sensor, magnetic mode</b><br>
+   * Measures the strength of the magnetic field over three axes
+   * 
+   * <p>
+   * <b>Size and content of the sample</b><br>
+   * The sample contains 3 elements. Each element gives the strength of the
+   * magnetic field (in Gueass). Axis order is X, Y, Z.
+   * 
+   * <p>
+   * <b>Configuration</b><br>
+   * By default the sensor is configured for a range of 5.6 Gauss and an update
+   * frequency of 30 Hertz. <br>
+   * The sensor can be tested using the test method.
+   * 
+   * @return A sampleProvider
+   * @see {@link lejos.robotics.SampleProvider leJOS conventions for
+   *      SampleProviders}
+   * @see <a
+   *      href="http://www.adafruit.com/datasheets/HMC5883L_3-Axis_Digital_Compass_IC.pdf">
+   *      Sensor datasheet </a>
+   */
   public SampleProvider getMagneticMode() {
-    return this;
+    return getMode(0);
   }
 
   protected void init() {
-    setModes(new SensorMode[] { this });
+    setModes(new SensorMode[] { new MagneticMode() });
     configureSensor();
   }
 
@@ -74,58 +137,19 @@ public class DexterCompassSensor extends I2CSensor implements SensorMode {
    * settings
    */
   private void configureSensor() {
-    
+
     buf[0] = (byte) ((3 << 5) | (rate << 2) | measurementMode);
     buf[1] = (byte) (range << 5);
     buf[2] = (byte) (operatingMode);
-    
-    
+
     sendData(REG_CONFIG, buf, 3);
-    
-   
+
     Delay.msDelay(6);
-    
+
     multiplier = 1.0f / RANGEMULTIPLIER[range];
     // first measurement after configuration is not yet configured properly;
     Delay.msDelay(6);
-    fetchSample(dummy, 0);
-  }
-
-  /**
-   * Fills an array of floats with measurements from the sensor in the specified
-   * unit.
-   * <p>
-   * The array order is X, Y, Z
-   * <P>
-   * When the sensor is idle zeros will be returned.
-   */
-  public void fetchSample(float[] sample, int offset) {
-    // get raw data
-    switch (operatingMode) {
-      case (SINGLE):
-        fetchSingleMeasurementMode(sample, offset);
-        break;
-      case (CONTINUOUS):
-        fetch(sample, offset);
-        break;
-      default:
-        for (int axis = 0; axis < 3; axis++)
-          sample[axis + offset] = Float.NaN;
-        break;
-    }
-  }
-
-  /**
-   * Returns the raw values from the data registers of the sensor
-   * 
-   * @param ret
-   */
-  private void fetch(float[] ret, int offset) {
-    // The order of data registers seems to be X,Z,Y. (Aswin).
-    getData(REG_MAGNETO, buf, 6);
-    ret[0 + offset] = EndianTools.decodeShortBE(buf, 0) * multiplier;
-    ret[1 + offset] = EndianTools.decodeShortBE(buf, 4) * multiplier;
-    ret[2 + offset] = EndianTools.decodeShortBE(buf, 2) * multiplier;
+    getMode(0).fetchSample(dummy, 0);
   }
 
   /**
@@ -164,21 +188,6 @@ public class DexterCompassSensor extends I2CSensor implements SensorMode {
    */
   public float getMaximumRange() {
     return RANGES[range];
-  }
-
-  @Override
-  public String getProductID() {
-    return "DiCompass";
-  }
-
-  @Override
-  public String getVendorID() {
-    return "Dexter";
-  }
-
-  @Override
-  public String getVersion() {
-    return "1.0";
   }
 
   /**
@@ -268,15 +277,6 @@ public class DexterCompassSensor extends I2CSensor implements SensorMode {
     return ret;
   }
 
-  public int sampleSize() {
-    return 3;
-  }
-
-  public float fetchSample() {
-    fetchSample(dummy, 0);
-    return dummy[0];
-  }
-
   public void setSampleRate(float rate) {
     for (int i = 0; i < RATES.length; i++)
       if (RATES[i] == rate)
@@ -311,9 +311,49 @@ public class DexterCompassSensor extends I2CSensor implements SensorMode {
     return RANGES;
   }
 
-  @Override
-  public String getName() {
-    return "Magnetic";
+  private void fetch(float[] ret, int offset) {
+    // The order of data registers seems to be X,Z,Y. (Aswin).
+    getData(REG_MAGNETO, buf, 6);
+    ret[0 + offset] = EndianTools.decodeShortBE(buf, 0) * multiplier;
+    ret[1 + offset] = EndianTools.decodeShortBE(buf, 4) * multiplier;
+    ret[2 + offset] = EndianTools.decodeShortBE(buf, 2) * multiplier;
+  }
+
+  private class MagneticMode implements SensorMode {
+
+    /**
+     * Fills an array of floats with measurements from the sensor in the
+     * specified unit.
+     * <p>
+     * The array order is X, Y, Z
+     * <P>
+     * When the sensor is idle zeros will be returned.
+     */
+    public void fetchSample(float[] sample, int offset) {
+      // get raw data
+      switch (operatingMode) {
+        case (SINGLE):
+          fetchSingleMeasurementMode(sample, offset);
+          break;
+        case (CONTINUOUS):
+          fetch(sample, offset);
+          break;
+        default:
+          for (int axis = 0; axis < 3; axis++)
+            sample[axis + offset] = Float.NaN;
+          break;
+      }
+    }
+
+    public int sampleSize() {
+      return 3;
+    }
+
+    @Override
+    public String getName() {
+      return "Magnetic";
+    }
+
   }
 
 }

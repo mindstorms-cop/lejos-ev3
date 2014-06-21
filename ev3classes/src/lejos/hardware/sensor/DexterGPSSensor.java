@@ -2,29 +2,78 @@ package lejos.hardware.sensor;
 
 import lejos.hardware.port.I2CPort;
 import lejos.hardware.port.Port;
+import lejos.robotics.SampleProvider;
 import lejos.utility.EndianTools;
 
 
 /**
- * <p>Class for controlling dGPS sensor from Dexter Industries. Documentation for this sensor
- * can be found at <a href="http://www.dexterindustries.com/download.html#dGPS">Dexter Industries</a>.</p>
- * 
- * <p>The sensor uses an integer-based representation of latitude and longitude values.
- * Assume that you want to convert the value of 77 degrees, 2 minutes and 54.79 seconds
- * to the integer-based representation. The integer value is computed as follows:
- * <code>R = 1000000 * (D + M / 60 + S / 3600)</code>
- * where <code>D=77</code>, <code>M=2</code>, and <code>S=54.79</code>.
- * For the given values, the formula yields the integer value 77048553.
- * Basically, this is equivalent to decimal degrees times a million.</p>
- * 
- * @author Mark Crosbie  <mark@mastincrosbie.com>
- * 22 January, 2011
- *
+ 
+/**
+ * <b>Dexter dGPS sensor</b><br>
+* Sends GPS coordinates to your robot and calculates navigation information
+* <p style="color:red;">The code for this sensor has not been tested. Please report test results to the <A href="http://www.lejos.org/forum/"> leJOS forum</a>.</p>
+
+* 
+* 
+* <p>
+* <table border=1>
+* <tr>
+* <th colspan=4>Supported modes</th>
+* </tr>
+* <tr>
+* <th>Mode name</th>
+* <th>Description</th>
+* <th>unit(s)</th>
+* <th>Getter</th>
+* </tr>
+* <tr>
+* <td>Position</td>
+* <td>Gets the coordinates of the sensor </td>
+* <td>latitude and longitude</td>
+* <td> {@link #getPositionMode() }</td>
+* </tr>
+* <tr>
+* <td>Angle</td>
+* <td>Gets the heading of the sensor</td>
+* <td>degrees</td>
+* <td> {@link #getAngleMode() }</td>
+* </tr>
+* <tr>
+* <td>Velocity</td>
+* <td>Gets the velocity (speed) of the sensor</td>
+* <td>metres/second</td>
+* <td> {@link #getVelocityMode() }</td>
+* </tr>
+* <tr>
+* <td>Time</td>
+* <td>gets the time</td>
+* <td>UTC (hhmmss)</td>
+* <td> {@link #getTimeMode() }</td>
+* </tr>
+* </table>
+* 
+* 
+* <p>
+* <b>Sensor configuration</b><br>
+* There are no configurable parameters.<br>
+* The status of the sensor can be checked using the {@link linkStatus()} method. 
+* 
+* <p>
+* 
+* @see <a href="http://www.dexterindustries.com/manual/dgps-2/"> Sensor datasheet </a>
+* @see <a href="http://www.dexterindustries.com/dGPS.html"> Sensor Product page </a>
+* @see <a href="http://sourceforge.net/p/lejos/wiki/Sensor%20Framework/"> The
+*      leJOS sensor framework</a>
+* @see {@link lejos.robotics.SampleProvider leJOS conventions for
+*      SampleProviders}
+* 
+*      <p>
+* 
+* 
+* @author Mark Crosbie  <mark@mastincrosbie.com>
+* 
 */
-public class DexterGPSSensor extends I2CSensor implements SensorMode {
-	/*
-	 * Documentation can be found here: http://www.dexterindustries.com/download.html#dGPS
-	 */
+public class DexterGPSSensor extends I2CSensor  {
 	
 	public static final byte DGPS_I2C_ADDR   = 0x06;      /*!< Barometric sensor device address */
 	public static final byte DGPS_CMD_UTC    = 0x00;      /*!< Fetch UTC */
@@ -60,7 +109,7 @@ public class DexterGPSSensor extends I2CSensor implements SensorMode {
     }
     
     protected void init() {
-    	setModes(new SensorMode[]{ this });
+    	setModes(new SensorMode[]{ new PositionMode(), new AngleMode(), new VelocityMode(), new TimeMode()});
     }
     
     /**
@@ -73,39 +122,165 @@ public class DexterGPSSensor extends I2CSensor implements SensorMode {
     	return (reply[0] == 1);
     }
     
+	
     /**
-     * Return a sample provider in GPS mode
+     * <b>Dexter dGPS sensor, Position mode</b><br>
+     * Gets the coordinates of the sensor 
+     * 
+     * <p><b>Size and content of the sample</b><br>
+     * The sample contains 2 elements. The first element is latitude, the second longitude. <br>
+     * The sensor uses an integer-based representation of latitude and longitude values.
+     * Assume that you want to convert the value of 77 degrees, 2 minutes and 54.79 seconds
+     * to the integer-based representation. The integer value is computed as follows:
+     * <code>R = 1000000 * (D + M / 60 + S / 3600)</code>
+     * where <code>D=77</code>, <code>M=2</code>, and <code>S=54.79</code>.
+     * For the given values, the formula yields the integer value 77048553.
+     * Basically, this is equivalent to decimal degrees times a million.
+     *   
+     *
+      *  @return
+     *  A sampleProvider 
+     *   @see {@link lejos.robotics.SampleProvider leJOS conventions for SampleProviders}
+     * @see <a href="http://www.dexterindustries.com/manual/dgps-2/"> Sensor datasheet </a>
      */
-    public SensorMode getGPSMode() {
-    	return this;
+SampleProvider getPositionMode() {
+  return getMode(0);
+}
+	
+	private class PositionMode implements SensorMode {
+
+    @Override
+    public int sampleSize() {
+      return 2;
     }
 
-	@Override
-	public int sampleSize() {
-		return 5;
-	}
+    @Override
+    public void fetchSample(float[] sample, int offset) {
+      getData(DGPS_CMD_LAT, reply, 0, 4);   
+      sample[0+offset] = EndianTools.decodeIntBE(reply, 0) / 1000000f;
+      
+      getData(DGPS_CMD_LONG, reply, 0, 4);
+      sample[1+offset] = EndianTools.decodeIntBE(reply, 0) / 1000000f;
+      
+    }
 
-	@Override
-	public void fetchSample(float[] sample, int offset) {
-    	getData(DGPS_CMD_LAT, reply, 0, 4); 	
-    	sample[0+offset] = EndianTools.decodeIntBE(reply, 0) / 1000000f;
-    	
-    	getData(DGPS_CMD_LONG, reply, 0, 4);
-    	sample[1+offset] = EndianTools.decodeIntBE(reply, 0) / 1000000f;
-    	
-    	getData(DGPS_CMD_HEAD, reply, 0, 2);
-    	sample[2+offset] = EndianTools.decodeUShortBE(reply, 0);
-    	
-    	getData(DGPS_CMD_VELO, reply, 1, 3);
-    	reply[0] = 0;
-    	sample[3+offset] =  EndianTools.decodeIntBE(reply, 0) / 10f;
-  
-    	getData(DGPS_CMD_UTC, reply, 0, 4);
-    	sample[4+offset] = EndianTools.decodeIntBE(reply, 0);
+    @Override
+    public String getName() {
+      return "Position";
+    }
+ 
 	}
+	
+  /**
+   * <b>Dexter dGPS sensor, Angle mode</b><br>
+   * Gets the heading of the sensor 
+   * 
+   * <p><b>Size and content of the sample</b><br>
+   * The sample contains one element representing the heading (in degrees) of the sensor. Accurate heading information can only be given when the sensor is in motion.  
+   *
+   *  @return
+   *  A sampleProvider 
+   *   @see {@link lejos.robotics.SampleProvider leJOS conventions for SampleProviders}
+     * @see <a href="http://www.dexterindustries.com/manual/dgps-2/"> Sensor datasheet </a>
+   */
+	SampleProvider getAngleMode() {
+	  return getMode(1);
+	}
+	  
+	  private class AngleMode implements SensorMode {
 
-	@Override
-	public String getName() {
-		return "GPS";
-	}
+	    @Override
+	    public int sampleSize() {
+	      return 1;
+	    }
+
+	    @Override
+	    public void fetchSample(float[] sample, int offset) {
+	      getData(DGPS_CMD_HEAD, reply, 0, 2);
+	      sample[offset] = - EndianTools.decodeUShortBE(reply, 0);
+	    }
+
+	    @Override
+	    public String getName() {
+	      return "Angle";
+	    }
+	 
+	  }
+	  
+	  
+	  /**
+	   * <b>Dexter dGPS sensor, Velocity mode</b><br>
+	   * Gets the velocity (speed) of the sensor
+	   * 
+	   * <p><b>Size and content of the sample</b><br>
+	   * The sample contains one elements giving the speed of the sensor (in metres/second).  
+	   *
+	   * 
+	   *  @return
+	   *  A sampleProvider 
+	   *   @see {@link lejos.robotics.SampleProvider leJOS conventions for SampleProviders}
+     * @see <a href="http://www.dexterindustries.com/manual/dgps-2/"> Sensor datasheet </a>
+	   */
+	  SampleProvider getVelocityMode() {
+	    return getMode(2);
+	  }
+	    
+	    private class VelocityMode implements SensorMode {
+
+	      @Override
+	      public int sampleSize() {
+	        return 1;
+	      }
+
+	      @Override
+	      public void fetchSample(float[] sample, int offset) {
+	        getData(DGPS_CMD_VELO, reply, 1, 3);
+	        reply[0] = 0;
+	        sample[offset] =  EndianTools.decodeIntBE(reply, 0) / 100f;
+	   	      }
+
+	      @Override
+	      public String getName() {
+	        return "Velocity";
+	      }
+	   
+	    }
+
+	    /**
+	     * <b>Dexter dGPS sensor, Time mode</b><br>
+	     * gets the UTC time from the sensor
+	     * 
+	     * <p><b>Size and content of the sample</b><br>
+	     * The sample contains one elements representing the UTC time (hhmmss) .   
+	     *
+	     *  @return
+	     *  A sampleProvider 
+	     *   @see {@link lejos.robotics.SampleProvider leJOS conventions for SampleProviders}
+     * @see <a href="http://www.dexterindustries.com/manual/dgps-2/"> Sensor datasheet </a>
+	     */
+	    SampleProvider getTimeMode() {
+	      return getMode(3);
+	    }
+	      
+	      private class TimeMode implements SensorMode {
+
+	        @Override
+	        public int sampleSize() {
+	          return 1;
+	        }
+
+	        @Override
+	        public void fetchSample(float[] sample, int offset) {
+	          getData(DGPS_CMD_UTC, reply, 0, 4);
+	          sample[offset] = EndianTools.decodeIntBE(reply, 0);
+	            }
+
+	        @Override
+	        public String getName() {
+	          return "Time";
+	        }
+	     
+	      }
+
+	    
 }
