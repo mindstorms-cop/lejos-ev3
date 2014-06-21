@@ -25,8 +25,7 @@ import lejos.robotics.SampleProvider;
  * <th>Getter</th>
  * </tr>
  * <tr>
- * Some
- * <td></td>
+ * <td>Some</td>
  * <td></td>
  * <td></td>
  * <td> {@link #getSomeMode() }</td>
@@ -56,78 +55,78 @@ import lejos.robotics.SampleProvider;
  */
 public class CodeTemplate extends UARTSensor {
 
-  /**
-   * Constructor using a unopened port
-   * 
-   * @param port
-   */
-  public CodeTemplate(Port port) {
-    super(port);
-    init();
-  }
-
-  /**
-   * Constructor using a opened and configured port
-   * 
-   * @param port
-   */
-  public CodeTemplate(UARTPort port) {
-    super(port);
-    init();
-  }
-
-  /**
-   * Configures the sensor for first use and registers the supported modes
-   * 
-   */
-  protected void init() {
-    setModes(new SensorMode[] { new SomeMode() });
-  }
-
-  /**
-   * <b>Sensor name, mode</b><br>
-   * Mode description
-   * 
-   * <p>
-   * <b>Size and content of the sample</b><br>
-   * The sample contains # elements. Each element gives Something (in some
-   * unit).
-   * 
-   * <p>
-   * <b>Configuration</b><br>
-   * The sensor is configured for.... . Currently there are no configurable
-   * settings.
-   * 
-   * @return A sampleProvider
-   * @see {@link lejos.robotics.SampleProvider leJOS conventions for
-   *      SampleProviders}
-   * @see <a href=""> Sensor datasheet </a>
-   */
-  public SampleProvider getSomeMode() {
-    return getMode(0);
-
-  }
-
-  private class SomeMode implements SensorMode {
-
-    @Override
-    public int sampleSize() {
-      // TODO Auto-generated method stub
-      return 0;
+    /**
+     * Constructor using a unopened port
+     * 
+     * @param port
+     */
+    public CodeTemplate(Port port) {
+        super(port);
+        init();
     }
 
-    @Override
-    public void fetchSample(float[] sample, int offset) {
-      // TODO Auto-generated method stub
+    /**
+     * Constructor using a opened and configured port
+     * 
+     * @param port
+     */
+    public CodeTemplate(UARTPort port) {
+        super(port);
+        init();
+    }
+
+    /**
+     * Configures the sensor for first use and registers the supported modes
+     * 
+     */
+    protected void init() {
+        setModes(new SensorMode[] { new SomeMode() });
+    }
+
+    /**
+     * <b>Sensor name, mode</b><br>
+     * Mode description
+     * 
+     * <p>
+     * <b>Size and content of the sample</b><br>
+     * The sample contains # elements. Each element gives Something (in some
+     * unit).
+     * 
+     * <p>
+     * <b>Configuration</b><br>
+     * The sensor is configured for.... . Currently there are no configurable
+     * settings.
+     * 
+     * @return A sampleProvider
+     * @see {@link lejos.robotics.SampleProvider leJOS conventions for
+     *      SampleProviders}
+     * @see <a href=""> Sensor datasheet </a>
+     */
+    public SampleProvider getSomeMode() {
+        return getMode(0);
 
     }
 
-    @Override
-    public String getName() {
-      // TODO Auto-generated method stub
-      return "Some";
-    }
+    private class SomeMode implements SensorMode {
 
-  }
+        @Override
+        public int sampleSize() {
+            // TODO Auto-generated method stub
+            return 0;
+        }
+
+        @Override
+        public void fetchSample(float[] sample, int offset) {
+            // TODO Auto-generated method stub
+
+        }
+
+        @Override
+        public String getName() {
+            // TODO Auto-generated method stub
+            return "Some";
+        }
+
+    }
 
 }
