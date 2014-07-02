@@ -3,14 +3,54 @@ package lejos.hardware.sensor;
 import lejos.hardware.port.Port;
 import lejos.hardware.port.UARTPort;
 
+
 /**
- * Basic sensor driver for the Lego EV3 Infra Red sensor.<br>
- * TODO: Need to implement other modes. Consider adding support for some of the
- * Range* interfaces.
+ * <b>EV3 Infra Red sensor</b><br>
+ * The digital EV3 Infrared Seeking Sensor detects proximity to the robot and reads signals emitted by the EV3 Infrared Beacon. The sensor can alse be used as a receiver for a Lego Ev3 IR remote control.
+ * 
+ * 
+ * <p>
+ * <table border=1>
+ * <tr>
+ * <th colspan=4>Supported modes</th>
+ * </tr>
+ * <tr>
+ * <th>Mode name</th>
+ * <th>Description</th>
+ * <th>unit(s)</th>
+ * <th>Getter</th>
+ * </tr>
+ * <tr>
+ * <td>Distance</td>
+ * <td>Measures the distance to an object in front of the sensor</td>
+ * <td>Undefined</td>
+ * <td> {@link #getDistanceMode() }</td>
+ * </tr>
+ * <tr>
+ * <td>Seek</td>
+ * <td>Locates up to four beacons</td>
+ * <td>Undefined, undefined</td>
+ * <td> {@link #getSeekMode() }</td>
+ * </tr>
+ * </table><p>
+ * 
+ * <b>EV3 Infra Red sensor</b><br>
+ * 
+ * The sensor can be used as a receiver for up to four Lego Ev3 IR remote controls using the {@link #getRemoteCommand} and {@link #getRemoteCommands} methods.
+*  
+ * 
+ * @see <a href="http://www.ev-3.net/en/archives/848"> Sensor Product page </a>
+ * @see <a href="http://sourceforge.net/p/lejos/wiki/Sensor%20Framework/"> The
+ *      leJOS sensor framework</a>
+ * @see {@link lejos.robotics.SampleProvider leJOS conventions for
+ *      SampleProviders}
+ * 
+ *      <p>
+ * 
+ * 
  * @author andy
- *
- */
-public class EV3IRSensor extends UARTSensor implements SensorMode
+ * 
+ */public class EV3IRSensor extends UARTSensor 
 {
     protected final static int IR_PROX = 0;
     protected final static int IR_SEEK = 1;
@@ -19,65 +59,16 @@ public class EV3IRSensor extends UARTSensor implements SensorMode
     protected final static int SWITCH_DELAY = 250;
     
     public final static int IR_CHANNELS = 4;
-    private static final float toSI = 1;
     
     protected byte [] remoteVals = new byte[IR_CHANNELS];
     
 
 
-    @Override
-    public int sampleSize() 
-    {
-        return 1;
-    }
 
-    @Override
-    public void fetchSample(float[] sample, int offset) 
-    {
-        switchMode(IR_PROX, SWITCH_DELAY);
-        sample[offset] = ((int)port.getByte() & 0xff) * toSI;
-    }
-
-    @Override
-    public String getName() 
-    {
-        return "Distance";
-    }
-
-    private class SeekMode implements SensorMode 
-    {
-        private static final float toSI = 1;
-        byte []seekVals = new byte[8];
-
-        @Override
-        public int sampleSize() 
-        {
-            return 8;
-        }
-
-        @Override
-        public void fetchSample(float[] sample, int offset) 
-        {
-              switchMode(IR_SEEK, SWITCH_DELAY);
-              port.getBytes(seekVals, 0, seekVals.length);
-              for(int i = 0; i < seekVals.length; i += 2)
-              {
-                  sample[offset++] = seekVals[i];
-                  sample[offset++] = (int)seekVals[i+1] & 0xff;
-              }
-        }
-
-        @Override
-        public String getName() 
-        {
-            return "Seek";
-        }
-
-    }
 
     protected void init()
     {
-        setModes(new SensorMode[] {this, new SeekMode()});
+        setModes(new SensorMode[] {new DistanceMode(), new SeekMode()});
     }
     
     public EV3IRSensor(UARTPort port)
@@ -91,38 +82,8 @@ public class EV3IRSensor extends UARTSensor implements SensorMode
         super(port, IR_PROX);
         init();
     }
-
-    /**
-     * return a sample provider for the IR sensor operating in distance mode.
-     * TODO: Add better doc of the actual values
-     * @return the sample provider
-     */
-    public SensorMode getDistanceMode()
-    {
-        return getMode(0);
-    }
-
-    /**
-     * return a sample provider for the IR sensor operating in seek mode
-     * The provider returns the bearing and distance to one or more IR beacons.
-     * Up to four
-     * beacons (on different channels 0-3) can be detected. Each beacon has an
-     * associated two byte value (so the beacon on channel 0 will have values
-     * in locations 0 and 1 in the array. The first location contains the relative
-     * bearing to the beacon, the second the distance.<br>
-     * The bearing values range from -12 to +12 (with values increasing clockwise
-     * when looking from behind the sensor. A bearing of 0 indicates the beacon is
-     * directly in front of the sensor. Distance values (0-100) are in cm and if no
-     * beacon is detected a bearing of 0 and a distance of 255 is returned.
-     * TODO: add better doc of the actual values.
-     * @return the sample provider
-     */
-    public SensorMode getSeekMode()
-    {
-        return getMode(1);
-    }
     
-
+    
     /**
      * Return the current remote command from the specified channel. Remote commands
      * are a single numeric value  which represents which button on the Lego IR
@@ -161,6 +122,123 @@ public class EV3IRSensor extends UARTSensor implements SensorMode
         switchMode(IR_REMOTE, SWITCH_DELAY);
         port.getBytes(cmds, offset, len);
     }
+    
+    
+    
+
+    /**
+     * <b>EV3 Infra Red sensor, Distance mode</b><br>
+     * Measures the distance to an object in front of the sensor.
+     * 
+     * <p>
+     * <b>Size and content of the sample</b><br>
+     * The sample contains one element giving the distance to an object in front of the sensor. The distance provided is very roughly equivalent to meters
+     * but needs conversion to give better distance. See product page for details. <br>
+     * The effective range of the sensor in Distance mode  is about 5 to 50 centimeter. Outside this range a Float.NaN is returned.
+     * 
+     * 
+     * @return A sampleProvider
+     * @see {@link lejos.robotics.SampleProvider leJOS conventions for
+     *      SampleProviders}
+     * @see <a href="http://www.ev-3.net/en/archives/848"> Sensor Product page </a>
+     */    public SensorMode getDistanceMode()
+    {
+        return getMode(0);
+    }
+    
+    
+    private class DistanceMode implements SensorMode {
+        private static final float toSI = 1f;
+
+        @Override
+        public int sampleSize() 
+        {
+            return 1;
+        }
+
+        @Override
+        public void fetchSample(float[] sample, int offset) 
+        {
+            switchMode(IR_PROX, SWITCH_DELAY);
+            int raw=((int)port.getByte() & 0xff);
+            if (raw<5 || raw>55 ) sample[offset]=Float.NaN;
+            else sample[offset]=raw*toSI;
+        }
+
+        @Override
+        public String getName() 
+        {
+            return "Distance";
+        }
+        
+    }
+
+
+
+    /**
+     * <b>EV3 Infra Red sensor, Seek mode</b><br>
+     * In seek mode the sensor locates up to four beacons and provides bearing and distance of each beacon.
+     * 
+     * <p>
+     * <b>Size and content of the sample</b><br>
+     * The sample contains four pairs of elements in a single sample. Each pair gives bearing of  and distance to the beacon. 
+     * The first pair of elements is associated with a beacon transmitting on channel 0, the second pair with a beacon transmitting on channel 1 etc.<br>
+     * The bearing values range from -25 to +25 (with values increasing clockwise
+     * when looking from behind the sensor). A bearing of 0 indicates the beacon is
+     * directly in front of the sensor. <br>
+     * Distance values are not to scale. Al increasing values indicate increasing distance. <br>
+     * If no beacon is detected both bearing and distance are Float.NaN.
+     * 
+     * <p>
+     * 
+     * @return A sampleProvider
+     * @see {@link lejos.robotics.SampleProvider leJOS conventions for
+     *      SampleProviders}
+     * @see <a href="http://www.ev-3.net/en/archives/848"> Sensor Product page </a>
+     */    public SensorMode getSeekMode()
+    {
+        return getMode(1);
+    }
+
+    private class SeekMode implements SensorMode 
+    {
+        private static final float toSI = 1f;
+        byte []seekVals = new byte[8];
+
+        @Override
+        public int sampleSize() 
+        {
+            return 8;
+        }
+
+        @Override
+        public void fetchSample(float[] sample, int offset) 
+        {
+              switchMode(IR_SEEK, SWITCH_DELAY);
+              port.getBytes(seekVals, 0, seekVals.length);
+              for(int i = 0; i < seekVals.length; i += 2)
+              {
+                  int raw=(int)seekVals[i+1] & 0xff;
+                  if (raw == 128) {
+                      sample[offset++]=Float.NaN; 
+                      sample[offset++]=Float.NaN; 
+                  }
+                  else {
+                  sample[offset++] = seekVals[i] * toSI;
+                  sample[offset++] = (int)seekVals[i+1] & 0xff;
+                  }
+              }
+        }
+
+        @Override
+        public String getName() 
+        {
+            return "Seek";
+        }
+
+    }
+
+
 
 
 }
