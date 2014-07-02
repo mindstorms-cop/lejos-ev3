@@ -139,7 +139,7 @@ public class DexterGPSSensor extends I2CSensor {
      * @see {@link lejos.robotics.SampleProvider leJOS conventions for SampleProviders}
      * @see <a href="http://www.dexterindustries.com/manual/dgps-2/"> Sensor datasheet </a>
      */
-    SampleProvider getPositionMode() {
+    public SampleProvider getPositionMode() {
         return getMode(0);
     }
 
@@ -179,7 +179,7 @@ public class DexterGPSSensor extends I2CSensor {
      * @see {@link lejos.robotics.SampleProvider leJOS conventions for SampleProviders}
      * @see <a href="http://www.dexterindustries.com/manual/dgps-2/"> Sensor datasheet </a>
      */
-    SampleProvider getAngleMode() {
+    public SampleProvider getAngleMode() {
         return getMode(1);
     }
 
@@ -216,7 +216,7 @@ public class DexterGPSSensor extends I2CSensor {
      * @see {@link lejos.robotics.SampleProvider leJOS conventions for SampleProviders}
      * @see <a href="http://www.dexterindustries.com/manual/dgps-2/"> Sensor datasheet </a>
      */
-    SampleProvider getVelocityMode() {
+    public SampleProvider getVelocityMode() {
         return getMode(2);
     }
 
@@ -253,7 +253,7 @@ public class DexterGPSSensor extends I2CSensor {
      * @see {@link lejos.robotics.SampleProvider leJOS conventions for SampleProviders}
      * @see <a href="http://www.dexterindustries.com/manual/dgps-2/"> Sensor datasheet </a>
      */
-    SampleProvider getTimeMode() {
+    public SampleProvider getTimeMode() {
         return getMode(3);
     }
 

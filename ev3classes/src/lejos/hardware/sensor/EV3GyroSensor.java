@@ -5,17 +5,60 @@ import lejos.hardware.port.UARTPort;
 import lejos.robotics.SampleProvider;
 
 /**
- * Sensor driver for the Lego EV3 Gyro sensor.
- * <OL>
- * This sensor supports three modes:
- * <li>Rate mode, provides the rate of turn in degrees per second</li>
- * <li>Angle mode, provides the accumulated angle in degrees</li>
- * <li>Rate and Angle mode, provides both of the previous</li>
- * </OL>
- * A positive angle or rate indicates a counter clockwise rotation. <br>
- * Use reset() to recalibrate the sensor and to reset accumulated angle to zero. 
+ * <b>EV3 Gyro sensor</b><br>
+ * The digital EV3 Gyro Sensor measures the sensors rotational motion and changes in its orientation. 
+ * 
+ * 
+ * <p>
+ * <table border=1>
+ * <tr>
+ * <th colspan=4>Supported modes</th>
+ * </tr>
+ * <tr>
+ * <th>Mode name</th>
+ * <th>Description</th>
+ * <th>unit(s)</th>
+ * <th>Getter</th>
+ * </tr>
+ * <tr>
+ * <td>Angle</td>
+ * <td>Measures the orientation of the sensor</td>
+ * <td>Degrees</td>
+ * <td> {@link #getAngleMode() }</td>
+ * </tr>
+ * <tr>
+ * <td>Rate</td>
+ * <td>Measures the angular velocity of the sensor</td>
+ * <td>Degrees / second</td>
+ * <td> {@link #getRateMode() }</td>
+ * </tr>
+ * <tr>
+ * <td>Rate and Angle</td>
+ * <td>Measures both angle and angular velocity</td>
+ * <td>Degrees, Degrees / second</td>
+ * <td> {@link #getAngleAndRateMode() }</td>
+ * </tr>
+ * </table>
+ * 
+ * 
+ * <p>
+ * <b>Sensor configuration</b><br>
+ * Use {@link #reset()} to recalibrate the sensor and to reset accumulated angle to zero. Keep the sensor motionless during a reset. 
+ * The sensor shuld also be motionless during initialization.
+ * 
+ * <p>
+ * 
+ * @see <a href="http://www.ev-3.net/en/archives/849"> Sensor Product page </a>
+ * @see <a href="http://sourceforge.net/p/lejos/wiki/Sensor%20Framework/"> The
+ *      leJOS sensor framework</a>
+ * @see {@link lejos.robotics.SampleProvider leJOS conventions for
+ *      SampleProviders}
+ * 
+ *      <p>
+ * 
  * 
  * @author Andy, Aswin Bouwmeester
+ * 
  */
 public class EV3GyroSensor extends UARTSensor {
   private static final long SWITCHDELAY = 200;
@@ -31,37 +74,64 @@ public class EV3GyroSensor extends UARTSensor {
     setModes(new SensorMode[] { new RateMode(), new AngleMode(), new RateAndAngleMode() });
   }
 
+
   /**
-   * Returns an SampleProvider object representing the gyro sensor in angle
-   * mode. <br>
-   * In rate mode the sensor measures the orientation of the sensor in repect to
-   * its start position. A positive angle indicates a orientation to the left. A
-   * negative rate indicates a rotation to the right. Angles are expressed in
-   * degrees.<br>
+   * <b>EV3 Gyro sensor, Angle mode</b><br>
+   * Measures the orientation of the sensor in respect to its start orientation. 
+   * 
+   * <p>
+   * <b>Size and content of the sample</b><br>
+   * The sample contains one elements representing the orientation (in Degrees) of the sensor in respect to its start position. 
+   * 
+   * <p>
+   * <b>Configuration</b><br>
+   * The start position can be set to the current position using the reset method of the sensor.
+   * 
+   * @return A sampleProvider
+   * @see {@link lejos.robotics.SampleProvider leJOS conventions for
+   *      SampleProviders}
    */
   public SampleProvider getAngleMode() {
     return getMode(1);
   }
 
+ 
   /**
-   * Returns an SampleProvider object representing the gyro sensor in rate mode. <br>
-   * In rate mode the sensor measures the speed of rotation expressed in
-   * degrees/second. A positive rate indicates a counterclockwise rotation. A
-   * negative rate indicates a clockwise rotation.
+   * <b>EV3 Gyro sensor, Rate mode</b><br>
+   * Measures angular velocity of the sensor. 
+   * 
+   * <p>
+   * <b>Size and content of the sample</b><br>
+   * The sample contains one elements representing the angular velocity (in Degrees / second) of the sensor. 
+   * 
+   * <p>
+   * <b>Configuration</b><br>
+   * The sensor can be recalibrated using the reset method of the sensor.
+   * 
+   * @return A sampleProvider
+   * @see {@link lejos.robotics.SampleProvider leJOS conventions for
+   *      SampleProviders}
    */
   public SampleProvider getRateMode() {
     return getMode(0);
   }
 
+
   /**
-   * Returns an SampleProvider object representing the gyro sensor in both rate and mode. <br>
-   * In this mode the sensor measures both the speed of rotation expressed (degrees/second) and the 
-   * accumulated angle (degrees). A positive rate or angle  indicates a counterclockwise rotation. A
-   * negative rate indicates a clockwise rotation. <br>
-   * <OL>The sample contains: 
-   * <li> Accumulated angle in degrees</li>
-   * <li> Rate in degrees/second</li>
-   * </ol>
+   * <b>EV3 Gyro sensor, Rate mode</b><br>
+   * Measures both angle and angular velocity of the sensor. 
+   * 
+   * <p>
+   * <b>Size and content of the sample</b><br>
+   * The sample contains two elements. The first element contains angular velocity (in degrees / second). The second element contain angle (in degrees).  
+   * 
+   * <p>
+   * <b>Configuration</b><br>
+   * The sensor can be recalibrated using the reset method of the sensor.
+   * 
+   * @return A sampleProvider
+   * @see {@link lejos.robotics.SampleProvider leJOS conventions for
+   *      SampleProviders}
    */
   public SampleProvider getAngleAndRateMode() {
     return getMode(2);

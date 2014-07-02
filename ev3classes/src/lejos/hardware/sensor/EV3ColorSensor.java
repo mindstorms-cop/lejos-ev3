@@ -6,15 +6,71 @@ import lejos.robotics.Color;
 import lejos.robotics.ColorIdentifier;
 import lejos.robotics.LampController;
 
+
 /**
- * Basic sensor driver for the Lego EV3 color sensor <BR>
- * TODO: Add extra methods to make it more compatible with the NXT, check SWITCH_DELAY
- * TODO: RGB mode seems to cause the sensor to crash!
- * @author andy
- *
+ * <b>EV3 color sensor</b><br>
+ * The digital EV3 Color Sensor distinguishes between eight different colors. It also serves as a light sensor by detecting light intensities. 
+ * 
+ * 
+ * <p>
+ * <table border=1>
+ * <tr>
+ * <th colspan=4>Supported modes</th>
+ * </tr>
+ * <tr>
+ * <th>Mode name</th>
+ * <th>Description</th>
+ * <th>unit(s)</th>
+ * <th>Getter</th>
+ * </tr>
+ * <tr>
+ * <td>Color ID</td>
+ * <td>Measures the color ID of a surface</td>
+ * <td>Color ID</td>
+ * <td> {@link #getColorIDMode() }</td>
+ * </tr>
+ * <tr>
+ * <td>Red</td>
+ * <td>Measures the intensity of a reflected red light </td>
+ * <td>N/A, Normalized to (0-1) </td>
+ * <td> {@link #getRedMode() }</td>
+ * </tr>
+ * <tr>
+ * <td>RGB</td>
+ * <td>Measures the RGB color of a surface</td>
+ * <td>N/A, Normalized to (0-1)</td>
+ * <td> {@link #getRGBMode() }</td>
+ * </tr>
+ * <tr>
+ * <td>Ambient</td>
+ * <td>Measures the ambient light level</td>
+ * <td>N/A, Normalized to (0-1)</td>
+ * <td> {@link #getAmbientMode() }</td>
+ * </tr>
+ * </table>
+ * 
+ * 
+ * <p>
+ * <b>Sensor configuration</b><br>
+ * The flood light of the sensor can be put on or off using the {@link setFloodLight} methods.
+ * 
+ * <p>
+ * 
+ * @see <a href="http://www.ev-3.net/en/archives/847"> Sensor Product page </a>
+ * @see <a href="http://sourceforge.net/p/lejos/wiki/Sensor%20Framework/"> The
+ *      leJOS sensor framework</a>
+ * @see {@link lejos.robotics.SampleProvider leJOS conventions for
+ *      SampleProviders}
+ * 
+ *      <p>
+ * 
+ * 
+ * @author Andy
+ * 
  */
-public class EV3ColorSensor extends UARTSensor implements LampController, ColorIdentifier, SensorMode
+public class EV3ColorSensor extends UARTSensor implements LampController, ColorIdentifier
 {
+    // TODO: decide what to do to the LampController and ColorIdentifier interfaces
     protected static int[] colorMap =
     {
         Color.NONE, Color.BLACK, Color.BLUE, Color.GREEN, Color.YELLOW, Color.RED, Color.WHITE, Color.BROWN
@@ -29,6 +85,7 @@ public class EV3ColorSensor extends UARTSensor implements LampController, ColorI
     protected static final int COL_RGBRAW = 4;
     protected static final int COL_CAL = 5;
     // following maps operating mode to lamp color
+    // NONE, BLACK, BLUE, GREEN, YELLOW, RED, WHITE, BROWN
     protected static final int []lightColor = {Color.NONE, Color.RED, Color.BLUE, Color.WHITE, Color.WHITE, Color.WHITE, Color.WHITE};
     protected short[]raw = new short[3];
     
@@ -75,7 +132,7 @@ public class EV3ColorSensor extends UARTSensor implements LampController, ColorI
 
     protected void initModes()
     {
-        setModes(new SensorMode[]{getColorIDMode(), getRedMode(), getRGBMode(), getAmbientMode() });        
+        setModes(new SensorMode[]{new ColorIDMode(), new ModeProvider("Red", COL_REFLECT, 1), new ModeProvider("RGB", COL_RGBRAW, 3), new ModeProvider("Ambient", COL_AMBIENT, 1) });        
     }
     
     public EV3ColorSensor(UARTPort port)
@@ -149,38 +206,87 @@ public class EV3ColorSensor extends UARTSensor implements LampController, ColorI
             throw new IllegalArgumentException("Invalid color specified");
         }
         switchMode(mode, SWITCH_DELAY);
-        // TODO Auto-generated method stub
         return true;
     }
 
+    
     /**
-     * get a sample provider in color ID mode
-     * @return the sample provider
+     * <b>EV3 color sensor, Color ID mode</b><br>
+     * Measures the color ID of a surface. The sensor can identify 8 unique colors (NONE, BLACK, BLUE, GREEN, YELLOW, RED, WHITE, BROWN).
+     * 
+     * <p>
+     * <b>Size and content of the sample</b><br>
+     * The sample contains one element containing the ID (0-7) of the detected color.
+     * 
+     * <p>
+     * 
+     * @return A sampleProvider
+     * @see {@link lejos.robotics.SampleProvider leJOS conventions for
+     *      SampleProviders}
      */
     public SensorMode getColorIDMode()
     {
-        return this;
+        return getMode(0);
     }
     
+    private class ColorIDMode implements SensorMode{
+
+        @Override
+        public int sampleSize() {
+            return 1;
+        }
+
+        @Override
+        public void fetchSample(float[] sample, int offset) {
+            switchMode(COL_COLOR, SWITCH_DELAY);
+            sample[offset]=colorMap[port.getByte()];
+        }
+
+        @Override
+        public String getName() {
+            return "ColorID";
+        }
+        
+    }
+    
+ 
     /**
-     * get a sample provider the returns the light value when illuminated with a
-     * Red light source.
-     * @return the sample provider
+     * <b>EV3 color sensor, Red mode</b><br>
+     * Measures the level of reflected light from the sensors RED LED. 
+     * 
+     * <p>
+     * <b>Size and content of the sample</b><br>
+     * The sample contains one element containing the intensity level (Normalized between 0 and 1) of reflected light.
+     * 
+     * <p>
+     * 
+     * @return A sampleProvider
+     * @see {@link lejos.robotics.SampleProvider leJOS conventions for
+     *      SampleProviders}
      */
     public SensorMode getRedMode()
     {
-        return new ModeProvider("Red", COL_REFLECT, 1);
+        return getMode(1);
     }
 
 
     /**
-     * get a sample provider the returns the light value when illuminated without a
-     * light source.
-     * @return the sample provider
+     * <b>EV3 color sensor, Ambient mode</b><br>
+     * Measures the level of ambient light while the sensors lights are off. 
+     * 
+     * <p>
+     * <b>Size and content of the sample</b><br>
+     * The sample contains one element containing the intensity level (Normalized between 0 and 1) of ambient light.
+     * 
+     * <p>
+     * 
+     * @return A sampleProvider
+     * @see {@link lejos.robotics.SampleProvider leJOS conventions for
+     *      SampleProviders}
      */
     public SensorMode getAmbientMode()
     {
-        return new ModeProvider("Ambient", COL_AMBIENT, 1);
+        return getMode(3);
     }
     
     /**
@@ -188,37 +294,26 @@ public class EV3ColorSensor extends UARTSensor implements LampController, ColorI
      * white light source.
      * @return the sample provider
      */
+    /**
+     * <b>EV3 color sensor, RGB mode</b><br>
+     * Measures the level of red, green and blue light when illuminated by a white light source.. 
+     * 
+     * <p>
+     * <b>Size and content of the sample</b><br>
+     * The sample contains 3 elements containing the intensity level (Normalized between 0 and 1) of red, green and blue light respectivily.
+     * 
+     * <p>
+     * 
+     * @return A sampleProvider
+     * @see {@link lejos.robotics.SampleProvider leJOS conventions for
+     *      SampleProviders}
+     */
     public SensorMode getRGBMode()
     {
-        //TODO: Should this return 3 or 4 values, 4 values would require an extra
-        // mode switch to get ambient value.
-        //TODO: This mode seems to crash the sensor. So return values have not been
-        // verified
-        return new ModeProvider("RGB", COL_RGBRAW, 3);
+        //TODO: Should this return 3 or 4 values, 4 values would require an extra mode switch to get ambient value.
+        return getMode(2);
     }
     
 
-    /** {@inheritDoc}
-     */    
-    @Override
-    public int sampleSize()
-    {
-        // TODO Auto-generated method stub
-        return 1;
-    }
-
-    /** {@inheritDoc}
-     */    
-    @Override
-    public void fetchSample(float[] sample, int offset)
-    {
-        sample[offset] = getColorID();        
-    }
-
-    @Override
-    public String getName()
-    {
-        return "ColorID";
-    }
-
+ 
 }
