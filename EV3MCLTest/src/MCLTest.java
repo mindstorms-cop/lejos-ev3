@@ -58,7 +58,7 @@ public class MCLTest {
     	robot.setRotateSpeed(ROTATE_SPEED);
     	robot.setTravelSpeed(TRAVEL_SPEED);
     	EV3IRSensor ir = new EV3IRSensor(SensorPort.S1);
-    	RangeFinder rf = new RangeFinderAdaptor(ir);
+    	RangeFinder rf = new RangeFinderAdaptor(ir.getDistanceMode());
     	RangeFeatureDetector detector = new RangeFeatureDetector(rf, MAX_DISTANCE, DETECTOR_DELAY);
     	RangeScanner scanner;
     	if (ROTATING_RANGE_SCANNER)scanner = new RotatingRangeScanner(HEAD_MOTOR, rf, GEAR_RATIO);
