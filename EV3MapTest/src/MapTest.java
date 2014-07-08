@@ -63,7 +63,7 @@ public class MapTest implements NavEventListener {
     	final DifferentialPilot robot = new DifferentialPilot(wheelDiameter,trackWidth,leftMotor,rightMotor,reverse);
     	final Navigator navigator = new Navigator(robot);
     	EV3IRSensor ir = new EV3IRSensor(SensorPort.S1);
-    	RangeFeatureDetector detector = new RangeFeatureDetector(new RangeFinderAdaptor(ir), MAX_DISTANCE, DETECTOR_DELAY);
+    	RangeFeatureDetector detector = new RangeFeatureDetector(new RangeFinderAdaptor(ir.getDistanceMode()), MAX_DISTANCE, DETECTOR_DELAY);
 		
     	// Adding the navigator, adds the pilot and pose provider as well
     	model.addNavigator(navigator);

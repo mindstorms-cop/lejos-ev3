@@ -10,6 +10,7 @@ import lejos.hardware.sensor.EV3GyroSensor;
 import lejos.hardware.sensor.EV3TouchSensor;
 import lejos.hardware.sensor.NXTSoundSensor;
 import lejos.remote.ev3.RemoteRequestEV3;
+import lejos.robotics.SampleProvider;
 import lejos.utility.Delay;
 
 public class RemoteRequest {
@@ -79,8 +80,9 @@ public class RemoteRequest {
 		
 		System.out.println("Touch sensor opened");
 		
-		float[] sample = new float[touch.sampleSize()];
-		touch.fetchSample(sample, 0);
+		SampleProvider sp = touch.getTouchMode();
+		float[] sample = new float[sp.sampleSize()];
+		sp.fetchSample(sample, 0);
 		System.out.println("Touch: " + sample[0]);
 		touch.close();
 		
