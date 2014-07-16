@@ -2,6 +2,7 @@ package lejos.robotics.navigation;
 
 import lejos.robotics.RegulatedMotor;
 import lejos.robotics.RegulatedMotorListener;
+
 import java.util.ArrayList;
 
 /**
@@ -61,8 +62,7 @@ import java.util.ArrayList;
  * 
  **/
 public class DifferentialPilot implements RegulatedMotorListener,
-		ArcRotateMoveController
-{
+		ArcRotateMoveController {
 	/**
 	 * Allocates a DifferentialPilot object, and sets the physical parameters of
 	 * the NXT robot.<br>
@@ -81,8 +81,7 @@ public class DifferentialPilot implements RegulatedMotorListener,
 	 */
 	public DifferentialPilot(final double wheelDiameter,
 			final double trackWidth, final RegulatedMotor leftMotor,
-			final RegulatedMotor rightMotor)
-	{
+			final RegulatedMotor rightMotor) {
 		this(wheelDiameter, trackWidth, leftMotor, rightMotor, false);
 	}
 
@@ -106,8 +105,7 @@ public class DifferentialPilot implements RegulatedMotorListener,
 	 */
 	public DifferentialPilot(final double wheelDiameter,
 			final double trackWidth, final RegulatedMotor leftMotor,
-			final RegulatedMotor rightMotor, final boolean reverse)
-	{
+			final RegulatedMotor rightMotor, final boolean reverse) {
 		this(wheelDiameter, wheelDiameter, trackWidth, leftMotor, rightMotor,
 				reverse);
 	}
@@ -147,8 +145,7 @@ public class DifferentialPilot implements RegulatedMotorListener,
 	public DifferentialPilot(final double leftWheelDiameter,
 			final double rightWheelDiameter, final double trackWidth,
 			final RegulatedMotor leftMotor, final RegulatedMotor rightMotor,
-			final boolean reverse)
-	{
+			final boolean reverse) {
 		_left = leftMotor;
 		_left.addListener(this);
 		_leftWheelDiameter = (float) leftWheelDiameter;
@@ -167,17 +164,16 @@ public class DifferentialPilot implements RegulatedMotorListener,
 		setRotateSpeed(.8f * getMaxRotateSpeed());
 		setAcceleration((int) (_robotTravelSpeed * 4));
 		new Monitor().start();
+//	    System.out.println("Differential pilot ");
 	}
 
-	
 	/**
 	 * Returns the tachoCount of the left motor
 	 * 
 	 * @return tachoCount of left motor. Positive value means motor has moved
 	 *         the robot forward.
 	 */
-	private int getLeftCount()
-	{
+	private int getLeftCount() {
 		return _parity * _left.getTachoCount();
 	}
 
@@ -187,16 +183,14 @@ public class DifferentialPilot implements RegulatedMotorListener,
 	 * @return tachoCount of the right motor. Positive value means motor has
 	 *         moved the robot forward.
 	 */
-	private int getRightCount()
-	{
+	private int getRightCount() {
 		return _parity * _right.getTachoCount();
 	}
 
 	/*
 	 * public int getRightActualSpeed() { return _right.getRotationSpeed(); }
 	 */
-	private void setSpeed(final int leftSpeed, final int rightSpeed)
-	{
+	private void setSpeed(final int leftSpeed, final int rightSpeed) {
 		_left.setSpeed(leftSpeed);
 		_right.setSpeed(rightSpeed);
 	}
@@ -207,15 +201,12 @@ public class DifferentialPilot implements RegulatedMotorListener,
 	 * @param travelSpeed
 	 *            : speed in distance (wheel diameter)units/sec
 	 */
-	public void setTravelSpeed(final double travelSpeed)
-	{
-		if (!isMoving())
-		{
+	public void setTravelSpeed(final double travelSpeed) {
+		if (!isMoving()) {
 			_robotTravelSpeed = (float) travelSpeed;
 			setSpeed((int) Math.round(travelSpeed * _leftDegPerDistance),
 					(int) Math.round(travelSpeed * _rightDegPerDistance));
-		} else
-		{
+		} else {
 			float speedRatio = (float) travelSpeed / _robotTravelSpeed;
 			_left.setSpeed((int) Math.round(_left.getSpeed() * speedRatio));
 			_right.setSpeed((int) Math.round(_right.getSpeed() * speedRatio));
@@ -223,8 +214,7 @@ public class DifferentialPilot implements RegulatedMotorListener,
 		}
 	}
 
-	public double getTravelSpeed()
-	{
+	public double getTravelSpeed() {
 		return _robotTravelSpeed;
 	}
 
@@ -235,8 +225,7 @@ public class DifferentialPilot implements RegulatedMotorListener,
 	 * 
 	 * @param acceleration
 	 */
-	public void setAcceleration(int acceleration)
-	{
+	public void setAcceleration(int acceleration) {
 		_acceleration = acceleration;
 		setMotorAccel(_acceleration);
 	}
@@ -246,14 +235,12 @@ public class DifferentialPilot implements RegulatedMotorListener,
 	 * 
 	 * @param acceleration
 	 */
-	private void setMotorAccel(int acceleration)
-	{
-		_left.setAcceleration((int)(acceleration*_leftDegPerDistance));
-		_right.setAcceleration((int)(acceleration*_rightDegPerDistance));
+	private void setMotorAccel(int acceleration) {
+		_left.setAcceleration((int) (acceleration * _leftDegPerDistance));
+		_right.setAcceleration((int) (acceleration * _rightDegPerDistance));
 	}
 
-	public double getMaxTravelSpeed()
-	{
+	public double getMaxTravelSpeed() {
 		return Math.min(_left.getMaxSpeed(), _right.getMaxSpeed())
 				/ Math.max(_leftDegPerDistance, _rightDegPerDistance);
 		// max degree/second divided by degree/unit = unit/second
@@ -264,35 +251,31 @@ public class DifferentialPilot implements RegulatedMotorListener,
 	 * 
 	 * @param rotateSpeed
 	 */
-	public void setRotateSpeed(double rotateSpeed)
-	{
+	public void setRotateSpeed(double rotateSpeed) {
 		_robotRotateSpeed = (float) rotateSpeed;
 		setSpeed((int) Math.round(rotateSpeed * _leftTurnRatio),
 				(int) Math.round(rotateSpeed * _rightTurnRatio));
 	}
 
-	public double getRotateSpeed()
-	{
+	public double getRotateSpeed() {
 		return _robotRotateSpeed;
 	}
 
-	public float getMaxRotateSpeed()
-	{
+	public float getMaxRotateSpeed() {
 		return Math.min(_left.getMaxSpeed(), _right.getMaxSpeed())
 				/ Math.max(_leftTurnRatio, _rightTurnRatio);
 		// max degree/second divided by degree/unit = unit/second
 	}
 
-	public double getRotateMaxSpeed()
-	{
+	public double getRotateMaxSpeed() {
 		return getMaxRotateSpeed();
 	}
 
 	/**
 	 * Starts the NXT robot moving forward.
 	 */
-	public void forward()
-	{
+	public void forward() {
+		waitForActiveMove();
 		_type = Move.MoveType.TRAVEL;
 		_angle = 0;
 		_distance = Double.POSITIVE_INFINITY;
@@ -301,11 +284,9 @@ public class DifferentialPilot implements RegulatedMotorListener,
 		movementStart();
 		setSpeed(Math.round(_robotTravelSpeed * _leftDegPerDistance),
 				Math.round(_robotTravelSpeed * _rightDegPerDistance));
-		if (_parity == 1)
-		{
+		if (_parity == 1) {
 			fwd();
-		} else
-		{
+		} else {
 			bak();
 		}
 	}
@@ -313,8 +294,8 @@ public class DifferentialPilot implements RegulatedMotorListener,
 	/**
 	 * Starts the NXT robot moving backward.
 	 */
-	public void backward()
-	{
+	public void backward() {
+		waitForActiveMove();
 		_type = Move.MoveType.TRAVEL;
 		_distance = Double.NEGATIVE_INFINITY;
 		_angle = 0;
@@ -323,11 +304,9 @@ public class DifferentialPilot implements RegulatedMotorListener,
 		movementStart();
 		setSpeed(Math.round(_robotTravelSpeed * _leftDegPerDistance),
 				Math.round(_robotTravelSpeed * _rightDegPerDistance));
-		if (_parity == 1)
-		{
+		if (_parity == 1) {
 			bak();
-		} else
-		{
+		} else {
 			fwd();
 		}
 	}
@@ -336,8 +315,7 @@ public class DifferentialPilot implements RegulatedMotorListener,
 	 * Motors backward. This is called by forward() and backward(), depending on
 	 * parity.
 	 */
-	private void bak()
-	{
+	private void bak() {
 		_left.backward();
 		_right.backward();
 	}
@@ -346,43 +324,38 @@ public class DifferentialPilot implements RegulatedMotorListener,
 	 * Motors forward. This is called by forward() and backward() depending on
 	 * parity.
 	 */
-	private void fwd()
-	{
+	private void fwd() {
 		_left.forward();
 		_right.forward();
 	}
 
-	public void rotateLeft()
-	{
+	public void rotateLeft() {
+		waitForActiveMove();
 		_type = Move.MoveType.ROTATE;
 		_distance = 0;
 		_angle = Double.POSITIVE_INFINITY;
 		setMotorAccel(_acceleration);
 		movementStart();
-		if (_parity > 0)
-		{
+		if (_parity > 0) {
 			_right.forward();
 			_left.backward();
-		} else
-		{
+		} else {
 			_left.forward();
 			_right.backward();
 		}
 	}
 
-	public void rotateRight()
-	{
+	public void rotateRight() {
+		waitForActiveMove();
 		_type = Move.MoveType.ROTATE;
 		_distance = 0;
 		_angle = Double.NEGATIVE_INFINITY;
 		movementStart();
 		setMotorAccel(_acceleration);
-		if (_parity > 0)
-		{
+		if (_parity > 0) {
 			_left.forward();
 			_right.backward();
-		} else
-		{
+		} else {
 			_right.forward();
 			_left.backward();
 		}
@@ -398,8 +371,7 @@ public class DifferentialPilot implements RegulatedMotorListener,
 	 *            The wanted angle of rotation in degrees. Positive angle rotate
 	 *            left (anti-clockwise), negative right.
 	 */
-	public void rotate(final double angle)
-	{
+	public void rotate(final double angle) {
 		rotate(angle, false);
 	}
 
@@ -415,12 +387,12 @@ public class DifferentialPilot implements RegulatedMotorListener,
 	 * @param immediateReturn
 	 *            If true this method returns immediately.
 	 */
-	public void rotate(final double angle, final boolean immediateReturn)
-	{
+	public void rotate(final double angle, final boolean immediateReturn) {
+		waitForActiveMove();
 		_type = Move.MoveType.ROTATE;
 		_distance = 0;
 		_angle = angle;
-		
+
 		setMotorAccel(_acceleration);
 		movementStart();
 		setSpeed(Math.round(_robotRotateSpeed * _leftTurnRatio),
@@ -428,9 +400,9 @@ public class DifferentialPilot implements RegulatedMotorListener,
 		int rotateAngleLeft = _parity * (int) (angle * _leftTurnRatio);
 		int rotateAngleRight = _parity * (int) (angle * _rightTurnRatio);
 		_left.rotate(-rotateAngleLeft, true);
-		_leftDirection =(byte) Math.signum(-rotateAngleLeft);
+		_leftDirection = (byte) Math.signum(-rotateAngleLeft);
 		_right.rotate(rotateAngleRight, immediateReturn);
-		_rightDirection = (byte)Math.signum(rotateAngleRight);
+		_rightDirection = (byte) Math.signum(rotateAngleRight);
 		if (!immediateReturn)
 			while (isMoving())
 				Thread.yield();
@@ -439,13 +411,16 @@ public class DifferentialPilot implements RegulatedMotorListener,
 	/**
 	 * Stops the NXT robot. side effect: inform listeners of end of movement
 	 */
-	public void stop()
-	{
+	public void stop() {
+		
+//		System.out.println("stop called");
 		_left.stop(true);
 		_right.stop(true);
 		waitComplete();
-		movementStop();
-		setMotorAccel(_acceleration); 
+		while (isMoving())
+			Thread.yield();
+		_callStop = true;
+		setMotorAccel(_acceleration);
 
 	}
 
@@ -453,8 +428,7 @@ public class DifferentialPilot implements RegulatedMotorListener,
 	 * Stops the robot almost immediately. Use this method if the normal
 	 * {@link #stop()} is too slow;
 	 */
-	public void quickStop()
-	{
+	public void quickStop() {
 		setMotorAccel(_quickAcceleration);
 		stop();
 		setMotorAccel(_acceleration);
@@ -470,8 +444,7 @@ public class DifferentialPilot implements RegulatedMotorListener,
 	 *            The distance to move. Unit of measure for distance must be
 	 *            same as wheelDiameter and trackWidth.
 	 **/
-	public void travel(final double distance)
-	{
+	public void travel(final double distance) {
 		travel(distance, false);
 	}
 
@@ -487,31 +460,28 @@ public class DifferentialPilot implements RegulatedMotorListener,
 	 * @param immediateReturn
 	 *            If true this method returns immediately.
 	 */
-	public void travel(final double distance, final boolean immediateReturn)
-	{
+	public void travel(final double distance, final boolean immediateReturn) {
+		waitForActiveMove();
 		_type = Move.MoveType.TRAVEL;
 		_distance = distance;
 		_angle = 0;
-		setMotorAccel(_acceleration); 
-        _leftDirection = 1;
-        _rightDirection = 1;
-        if(distance < 0 )
-        {
-        	_leftDirection = -1;
-        	_rightDirection = -1;
-        }
-        
-		if (distance == Double.POSITIVE_INFINITY)
-		{
+		movementStart();
+		setMotorAccel(_acceleration);
+		_leftDirection = 1;
+		_rightDirection = 1;
+		if (distance < 0) {
+			_leftDirection = -1;
+			_rightDirection = -1;
+		}
+
+		if (distance == Double.POSITIVE_INFINITY) {
 			forward();
 			return;
 		}
-		if ((distance == Double.NEGATIVE_INFINITY))
-		{
+		if ((distance == Double.NEGATIVE_INFINITY)) {
 			backward();
 			return;
 		}
-		movementStart();
 		setSpeed(Math.round(_robotTravelSpeed * _leftDegPerDistance),
 				Math.round(_robotTravelSpeed * _rightDegPerDistance));
 		_left.rotate((int) (_parity * distance * _leftDegPerDistance), true);
@@ -521,15 +491,13 @@ public class DifferentialPilot implements RegulatedMotorListener,
 			waitComplete();
 	}
 
-	public void arcForward(final double radius)
-	{
+	public void arcForward(final double radius) {
+		waitForActiveMove();
 		_type = Move.MoveType.ARC;
-		if (radius > 0)
-		{
+		if (radius > 0) {
 			_angle = Double.POSITIVE_INFINITY;
 			_distance = Double.POSITIVE_INFINITY;
-		} else
-		{
+		} else {
 			_angle = Double.NEGATIVE_INFINITY;
 			_distance = Double.NEGATIVE_INFINITY;
 		}
@@ -546,15 +514,13 @@ public class DifferentialPilot implements RegulatedMotorListener,
 			_inside.backward();
 	}
 
-	public void arcBackward(final double radius)
-	{
+	public void arcBackward(final double radius) {
+		waitForActiveMove();
 		_type = Move.MoveType.ARC;
-		if (radius < 0)
-		{
+		if (radius < 0) {
 			_angle = Double.POSITIVE_INFINITY;
 			_distance = Double.NEGATIVE_INFINITY;
-		} else
-		{
+		} else {
 			_angle = Double.NEGATIVE_INFINITY;
 			_distance = Double.POSITIVE_INFINITY;
 		}
@@ -571,17 +537,14 @@ public class DifferentialPilot implements RegulatedMotorListener,
 			_inside.forward();
 	}
 
-	public void arc(final double radius, final double angle)
-	{
+	public void arc(final double radius, final double angle) {
 		arc(radius, angle, false);
 	}
 
 	public void arc(final double radius, final double angle,
-			final boolean immediateReturn)
-	{
+			final boolean immediateReturn) {
 		if (radius == Double.POSITIVE_INFINITY
-				|| radius == Double.NEGATIVE_INFINITY)
-		{
+				|| radius == Double.NEGATIVE_INFINITY) {
 			forward();
 			return;
 		}
@@ -590,24 +553,19 @@ public class DifferentialPilot implements RegulatedMotorListener,
 		// if (!immediateReturn) waitComplete(); redundant I think - BB
 	}
 
-	public void travelArc(double radius, double distance)
-	{
+	public void travelArc(double radius, double distance) {
 		travelArc(radius, distance, false);
 	}
 
 	public void travelArc(double radius, double distance,
-			boolean immediateReturn)
-	{
+			boolean immediateReturn) {
+		waitForActiveMove();
 		if (radius == Double.POSITIVE_INFINITY
-				|| radius == Double.NEGATIVE_INFINITY)
-		{
+				|| radius == Double.NEGATIVE_INFINITY) {
 			travel(distance, immediateReturn);
 			return;
 		}
-		// _type = Move.MoveType.ARC;
-		// movementStart(immediateReturn);
-		if (radius == 0)
-		{
+		if (radius == 0) {
 			throw new IllegalArgumentException("Zero arc radius");
 		}
 		double angle = (distance * 180) / ((float) Math.PI * radius);
@@ -622,16 +580,13 @@ public class DifferentialPilot implements RegulatedMotorListener,
 	 * @param radius
 	 * @return turnRate to be used in steer()
 	 */
-	private double turnRate(final double radius)
-	{
+	private double turnRate(final double radius) {
 		int direction;
 		double radiusToUse;
-		if (radius < 0)
-		{
+		if (radius < 0) {
 			direction = -1;
 			radiusToUse = -radius;
-		} else
-		{
+		} else {
 			direction = 1;
 			radiusToUse = radius;
 		}
@@ -647,8 +602,7 @@ public class DifferentialPilot implements RegulatedMotorListener,
 	 * @param turnRate
 	 * @return radius of the turn.
 	 */
-	private double radius(double turnRate)
-	{
+	private double radius(double turnRate) {
 		double radius = 100 * _trackWidth / turnRate;
 		if (turnRate > 0)
 			radius -= _trackWidth / 2;
@@ -694,21 +648,18 @@ public class DifferentialPilot implements RegulatedMotorListener,
 	 *            If positive, the left side of the robot is on the inside of
 	 *            the turn. If negative, the left side is on the outside.
 	 */
-	public void steer(double turnRate)
-	{
+	public void steer(double turnRate) {
+		waitForActiveMove();
 		_type = Move.MoveType.ARC;
-		if (turnRate > 0)
-		{
+		if (turnRate > 0) {
 			_angle = Double.POSITIVE_INFINITY;
 			_distance = Double.POSITIVE_INFINITY;
-		} else
-		{
+		} else {
 			_angle = Double.NEGATIVE_INFINITY;
 			_distance = Double.NEGATIVE_INFINITY;
 		}
 		steerPrep(turnRate);
-		if (turnRate == 0)
-		{
+		if (turnRate == 0) {
 			forward();
 			return;
 		}
@@ -731,10 +682,9 @@ public class DifferentialPilot implements RegulatedMotorListener,
 	 * 
 	 * @param turnRate
 	 */
-	public void steerBackward(final double turnRate)
-	{
-		if (turnRate == 0)
-		{
+	public void steerBackward(final double turnRate) {
+		waitForActiveMove();
+		if (turnRate == 0) {
 			if (_parity < 0)
 				forward();
 			else
@@ -747,12 +697,10 @@ public class DifferentialPilot implements RegulatedMotorListener,
 		else
 			_outside.forward();
 		_type = Move.MoveType.ARC;
-		if (turnRate < 0)
-		{
+		if (turnRate < 0) {
 			_angle = Double.POSITIVE_INFINITY;
 			_distance = Double.NEGATIVE_INFINITY;
-		} else
-		{
+		} else {
 			_angle = Double.NEGATIVE_INFINITY;
 			_distance = Double.POSITIVE_INFINITY;
 		}
@@ -808,8 +756,7 @@ public class DifferentialPilot implements RegulatedMotorListener,
 	 *            the robot will move in the directin that decreases its
 	 *            heading.
 	 */
-	public void steer(final double turnRate, double angle)
-	{
+	public void steer(final double turnRate, double angle) {
 		steer(turnRate, angle, false);
 	}
 
@@ -854,14 +801,12 @@ public class DifferentialPilot implements RegulatedMotorListener,
 	 *            immediately.
 	 */
 	public void steer(final double turnRate, final double angle,
-			final boolean immediateReturn)
-	{
-		if (angle == 0)
-		{
+			final boolean immediateReturn) {
+		waitForActiveMove();
+		if (angle == 0) {
 			return;
 		}
-		if (turnRate == 0)
-		{
+		if (turnRate == 0) {
 			forward();
 			return;
 		}
@@ -875,8 +820,7 @@ public class DifferentialPilot implements RegulatedMotorListener,
 		_inside.rotate((int) (_parity * side * rotAngle * _steerRatio), true);
 		_outside.rotate(_parity * side * rotAngle, immediateReturn);
 		setMotorAccel(_acceleration);
-		if (immediateReturn)
-		{
+		if (immediateReturn) {
 			return;
 		}
 		waitComplete();
@@ -885,13 +829,13 @@ public class DifferentialPilot implements RegulatedMotorListener,
 
 	/**
 	 * helper method used by steer(float) and steer(float,float,boolean) sets
-	 * _outsideSpeed, _insideSpeed, _steerRatio
-	 *  set motor acceleration to help continuous steer and arc moves 
+	 * _outsideSpeed, _insideSpeed, _steerRatio set motor acceleration to help
+	 * continuous steer and arc moves
+	 * 
 	 * @param turnRate
 	 *            .
 	 */
-	void steerPrep(final double turnRate)
-	{  
+	void steerPrep(final double turnRate) {
 		double rate = turnRate;
 		if (rate < -200)
 			rate = -200;
@@ -901,9 +845,8 @@ public class DifferentialPilot implements RegulatedMotorListener,
 		float outsideDegPerDist = _rightDegPerDistance;
 		byte insideDirection = _leftDirection;
 		byte outsideDirection = _rightDirection;
-        
-		if (turnRate < 0)
-		{
+
+		if (turnRate < 0) {
 			_inside = _right;
 			insideDegPerDist = _rightDegPerDistance;
 			insideDirection = _rightDirection;
@@ -911,48 +854,53 @@ public class DifferentialPilot implements RegulatedMotorListener,
 			outsideDegPerDist = _leftDegPerDistance;
 			outsideDirection = _leftDirection;
 			rate = -rate;
-		} else
-		{
+		} else {
 			_inside = _left;
 			_outside = _right;
 		}
 		_leftDirection = 1;
 		_rightDirection = 1;
 		_steerRatio = (float) (1 - rate / 100.0);
-		float outsideSpeed  = _robotTravelSpeed * outsideDegPerDist;	
-		float insideSpeed = _robotTravelSpeed * insideDegPerDist*_steerRatio;
-        float inSpeed0 = 0;
-        if( _inside.isMoving())inSpeed0 = _inside.getSpeed()*insideDirection;
-		float insideDV = Math.abs(insideSpeed - inSpeed0 ) ;
-		float outSpeed0 = 0;	
-		if(_outside.isMoving()) outSpeed0 = _outside.getSpeed()*outsideDirection;
-		float outsideDV = Math.abs( outsideSpeed  - outSpeed0);
+		float outsideSpeed = _robotTravelSpeed * outsideDegPerDist;
+		float insideSpeed = _robotTravelSpeed * insideDegPerDist * _steerRatio;
+		float inSpeed0 = 0;
+		if (_inside.isMoving())
+			inSpeed0 = _inside.getSpeed() * insideDirection;
+		float insideDV = Math.abs(insideSpeed - inSpeed0);
+		float outSpeed0 = 0;
+		if (_outside.isMoving())
+			outSpeed0 = _outside.getSpeed() * outsideDirection;
+		float outsideDV = Math.abs(outsideSpeed - outSpeed0);
 		_outside.setSpeed((int) outsideSpeed);
-		_inside.setSpeed((int) insideSpeed); 
-		if(insideDV < outsideDV)
-	    {   
-	    	float acc = _acceleration * outsideDegPerDist;
-	    	_outside.setAcceleration((int)acc);
-	    	float ratio = insideDV/outsideDV;
-	    	if(ratio <.1) _inside.setAcceleration((int)acc);
-	    	else _inside.setAcceleration((int)(acc * ratio));
-	    } else
-	    { //outsideDV < insideDV	    	
-	    	float acc = _acceleration * insideDegPerDist;
-	    	_inside.setAcceleration((int)acc);
-	    	float ratio = outsideDV/insideDV;
-	    	if(ratio <.1) _outside.setAcceleration((int)acc);
-	    	else _outside.setAcceleration((int)(acc * ratio));	
-	    }	
-		if(_steerRatio < 0) 
-		{
-			if (_inside == _left) _leftDirection = -1;
-			else _rightDirection = -1;
+		_inside.setSpeed((int) insideSpeed);
+		if (insideDV < outsideDV) {
+			float acc = _acceleration * outsideDegPerDist;
+			_outside.setAcceleration((int) acc);
+			float ratio = insideDV / outsideDV;
+			if (ratio < .1)
+				_inside.setAcceleration((int) acc);
+			else
+				_inside.setAcceleration((int) (acc * ratio));
+		} else { // outsideDV < insideDV
+			float acc = _acceleration * insideDegPerDist;
+			_inside.setAcceleration((int) acc);
+			float ratio = outsideDV / insideDV;
+			if (ratio < .1)
+				_outside.setAcceleration((int) acc);
+			else
+				_outside.setAcceleration((int) (acc * ratio));
+		}
+		if (_steerRatio < 0) {
+			if (_inside == _left)
+				_leftDirection = -1;
+			else
+				_rightDirection = -1;
 		}
 	}
 
 	/**
-	 * called by RegulatedMotor when a motor rotation is complete calls
+	 * called by RegulatedMotor when a motor rotation is complete sets 
+	 * _callStop calls so the Monitor thread will call
 	 * movementStop() after both motors stop;
 	 * 
 	 * @param motor
@@ -962,14 +910,10 @@ public class DifferentialPilot implements RegulatedMotorListener,
 	 * @param ts
 	 *            s time stamp
 	 */
-	public synchronized void rotationStopped(RegulatedMotor motor,
-			int tachoCount, boolean stall, long ts)
-	{
-		if (motor.isStalled())
-			stop();
-		else if (!isMoving())
-			_callStop = true;  // new - replaces call to movementStop()
-//			movementStop();// a motor has stopped
+	public  void rotationStopped(RegulatedMotor motor,
+			int tachoCount, boolean stall, long ts) {
+		if (motor.isStalled()) stop();
+			_callStop = !isMoving();  
 	}
 
 	/**
@@ -983,67 +927,75 @@ public class DifferentialPilot implements RegulatedMotorListener,
 	 * @param ts
 	 *            time stamp
 	 */
-	public synchronized void rotationStarted(RegulatedMotor motor,
-			int tachoCount, boolean stall, long ts)
-	{ // Not used
+	public  void rotationStarted(RegulatedMotor motor,
+			int tachoCount, boolean stall, long ts) { // Not used
 	}
 
 	/**
 	 * called at start of a movement to inform the listeners that a movement has
 	 * started
 	 */
-	protected void movementStart()
-	{
-		if (isMoving())
-			movementStop();
+	protected void movementStart() {
+		Move move = new Move(_type, getMovementIncrement(),
+				getAngleIncrement(), _robotTravelSpeed, _robotRotateSpeed,
+				isMoving());
 		reset();
+		_moveActive = true;
 		for (MoveListener ml : _listeners)
-			ml.moveStarted(new Move(_type, (float) _distance, (float) _angle,
-					_robotTravelSpeed, _robotRotateSpeed, isMoving()), this);
+			ml.moveStarted(move, this);
+		reset();
 	}
 
 	/**
 	 * called by Arc() ,travel(),rotate(),stop() rotationStopped() calls
 	 * moveStopped on listener
 	 */
-	private synchronized void movementStop()
-	{
+	private void movementStop() {
+		Move move;
+		    move = new Move(_type, getMovementIncrement(),
+				getAngleIncrement(), _robotTravelSpeed, _robotRotateSpeed,
+				isMoving());
+			_moveActive = false;
 		for (MoveListener ml : _listeners)
-			ml.moveStopped(new Move(_type, getMovementIncrement(),
-					getAngleIncrement(), _robotTravelSpeed, _robotRotateSpeed,
-					isMoving()), this);
+			ml.moveStopped(move, this);
+
 	}
 
 	/**
 	 * @return true if the NXT robot is moving.
 	 **/
-	public boolean isMoving()
-	{
+	public boolean isMoving() {
 		return _left.isMoving() || _right.isMoving();
 	}
 
 	/**
 	 * wait for the current operation on both motors to complete
 	 */
-	private void waitComplete()
-	{
-		while (isMoving())
-		{
+	private synchronized void waitComplete() {
+		while (isMoving()) {
 			_left.waitComplete();
 			_right.waitComplete();
 		}
 	}
 
-	public boolean isStalled()
-	{
+	private void waitForActiveMove() {
+//		System.out.println("saitFor active "+ _moveActive+" moving "+isMoving()+" callStop "+_callStop);
+		if( _moveActive)
+		{
+		if(isMoving())stop();	
+		}
+	while(_callStop ) Thread.yield();
+	_moveActive = true;
+	}
+
+	public boolean isStalled() {
 		return _left.isStalled() || _right.isStalled();
 	}
 
 	/**
 	 * Resets tacho count for both motors.
 	 **/
-	public void reset()
-	{
+	public void reset() {
 		_leftTC = getLeftCount();
 		_rightTC = getRightCount();
 	}
@@ -1057,13 +1009,11 @@ public class DifferentialPilot implements RegulatedMotorListener,
 	 * @param radius
 	 *            in degrees
 	 */
-	public void setMinRadius(double radius)
-	{
+	public void setMinRadius(double radius) {
 		_turnRadius = (float) radius;
 	}
 
-	public double getMinRadius()
-	{
+	public double getMinRadius() {
 		return _turnRadius;
 	}
 
@@ -1071,8 +1021,7 @@ public class DifferentialPilot implements RegulatedMotorListener,
 	 * 
 	 * @return The move distance since it last started moving
 	 */
-	public float getMovementIncrement()
-	{
+	public float getMovementIncrement() {
 		float left = (getLeftCount() - _leftTC) / _leftDegPerDistance;
 		float right = (getRightCount() - _rightTC) / _rightDegPerDistance;
 		return /* _parity * */(left + right) / 2.0f;
@@ -1083,18 +1032,15 @@ public class DifferentialPilot implements RegulatedMotorListener,
 	 * @return The angle rotated since rotation began.
 	 * 
 	 */
-	public float getAngleIncrement()
-	{
+	public float getAngleIncrement() {
 		return /* _parity * */(((getRightCount() - _rightTC) / _rightTurnRatio) - ((getLeftCount() - _leftTC) / _leftTurnRatio)) / 2.0f;
 	}
 
-	public void addMoveListener(MoveListener m)
-	{
+	public void addMoveListener(MoveListener m) {
 		_listeners.add(m);
 	}
 
-	public Move getMovement()
-	{
+	public Move getMovement() {
 		return new Move(_type, getMovementIncrement(), getAngleIncrement(),
 				isMoving());
 	}
@@ -1104,21 +1050,23 @@ public class DifferentialPilot implements RegulatedMotorListener,
 	 * 
 	 * @return the turn rate
 	 */
-	public double getTurnRate()
-	{
+	public double getTurnRate() {
 		return _robotRotateSpeed;
 	}
-	
+
 	private class Monitor extends Thread {
 		public boolean more = true;
 
 		public void run() {
-			if (_callStop) {
-				movementStop();
-				_callStop = false;
+			while (more) {
+				if (_callStop) {
+					movementStop();
+					_callStop = false;
+				}
 			}
 		}
 	}
+
 	private float _turnRadius = 0;
 	/**
 	 * Left motor..
@@ -1203,25 +1151,25 @@ public class DifferentialPilot implements RegulatedMotorListener,
 	 */
 	private double _angle;
 	/**
-	 * used  by travel and rotate methods, and stop()
+	 * used by travel and rotate methods, and stop()
 	 */
 	private int _acceleration;
 	private int _quickAcceleration = 9999; // used for quick stop.
 	/**
-	 * direction of rotation of left motor  +1 or -1
+	 * direction of rotation of left motor +1 or -1
 	 */
 	private byte _leftDirection = 1;
 	/**
 	 * direction of rotation of right motor +1 or -1
 	 */
 	private byte _rightDirection;
-	
+
 	/**
-	 * set by rotatsionStopped()
-	 * used by Monitor thread to call movementStopped()
+	 * set by rotatsionStopped() used by Monitor thread to call
+	 * movementStopped()
 	 */
-	
+
 	private boolean _callStop;
-	
+	public boolean _moveActive = false;
 
 }
