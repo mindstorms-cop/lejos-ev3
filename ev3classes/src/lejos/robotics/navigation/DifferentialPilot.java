@@ -365,6 +365,20 @@ public class DifferentialPilot implements RegulatedMotorListener,
 	/**
 	 * Rotates the NXT robot through a specific angle. Returns when angle is
 	 * reached. Wheels turn in opposite directions producing a zero radius turn.<br>
+	 * Note: Requires correct values for wheel diameter and track width. calls
+	 * rotate(angle,false)
+	 * 
+	 * @param angle
+	 *            The wanted angle of rotation in degrees. Positive angle rotate
+	 *            left (anti-clockwise), negative right.
+	 */
+	public void rotate(final double angle) {
+		rotate(angle, false);
+	}
+
+	/**
+	 * Rotates the NXT robot through a specific angle. Returns when angle is
+	 * reached. Wheels turn in opposite directions producing a zero radius turn.<br>
 	 * Note: Requires correct values for wheel diameter and track width. Side
 	 * effect: inform listeners
 	 * 
@@ -421,6 +435,19 @@ public class DifferentialPilot implements RegulatedMotorListener,
 		setMotorAccel(_acceleration);
 	}
 
+	/**
+	 * Moves the NXT robot a specific distance in an (hopefully) straight line.<br>
+	 * A positive distance causes forward motion, a negative distance moves
+	 * backward. If a drift correction has been specified in the constructor it
+	 * will be applied to the left motor. calls travel(distance, false)
+	 * 
+	 * @param distance
+	 *            The distance to move. Unit of measure for distance must be
+	 *            same as wheelDiameter and trackWidth.
+	 **/
+	public void travel(final double distance) {
+		travel(distance, false);
+	}
 
 
 	/**
@@ -512,6 +539,9 @@ public class DifferentialPilot implements RegulatedMotorListener,
 			_inside.forward();
 	}
 
+	public void arc(final double radius, final double angle) {
+		arc(radius, angle, false);
+	}
 
 	public void arc(final double radius, final double angle,
 			final boolean immediateReturn) {
@@ -524,6 +554,9 @@ public class DifferentialPilot implements RegulatedMotorListener,
 														// called by steer()
 	}
 
+	public void travelArc(double radius, double distance) {
+		travelArc(radius, distance, false);
+	}
 
 	public void travelArc(double radius, double distance,
 			boolean immediateReturn) {
