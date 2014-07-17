@@ -32,7 +32,7 @@ public class FixedRangeScanner implements RangeScanner
       float angle;
       if(i == 0 )angle = angles[0];
       else angle = angles[i]-angles[i-1];
-      pilot.rotate(normalize(angle));
+      pilot.rotate(normalize(angle),false);
       Delay.msDelay(50);
       float range = rangeFinder.getRange() + ZERO;
       if (range > MAX_RELIABLE_RANGE_READING)
@@ -41,7 +41,7 @@ public class FixedRangeScanner implements RangeScanner
       }
       readings.setRange(i, angles[i], range);
     }
-    pilot.rotate(normalize(-angles[angles.length -1]));
+    pilot.rotate(normalize(-angles[angles.length -1]),false);
     return readings;
     }
 

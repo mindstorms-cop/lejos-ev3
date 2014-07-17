@@ -215,7 +215,7 @@ public class Navigator implements WaypointListener
 	   while(diff < -180) diff = diff + 360;
 	   if(isMoving()) return false;
 	   if(_pilot instanceof RotateMoveController)
-		   ((RotateMoveController) _pilot).rotate(diff);
+		   ((RotateMoveController) _pilot).rotate(diff,false);
 	   return true;
 	   
    }
@@ -383,7 +383,7 @@ public class Navigator implements WaypointListener
   			for(int i=0;i<moves.length;i++) 
   			{
   				((ArcMoveController) _pilot).travelArc(moves[i].getArcRadius(),
-                            moves[i].getDistanceTraveled());
+                            moves[i].getDistanceTraveled(),false);
   				if (!_keepGoing) break;
   			}
             while (_pilot.isMoving() && _keepGoing)Thread.yield();
@@ -404,7 +404,7 @@ public class Navigator implements WaypointListener
             _pose = poseProvider.getPose();
             	_destination.getHeading();
             	((RotateMoveController) _pilot).rotate(_destination.getHeading()
-                       - _pose.getHeading());
+                       - _pose.getHeading(),false);
             }
           }         
           
