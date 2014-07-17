@@ -237,20 +237,20 @@ public class EV3NavigationModel extends NavigationModel implements MoveListener,
 							break;
 						case TRAVEL: // Request to travel a given distance
 							float distance = dis.readFloat();
-							if (pilot != null) pilot.travel(distance);
+							if (pilot != null) pilot.travel(distance,false);
 							break;
 						case ROTATE: // Request to rotate a given angle
 							float angle = dis.readFloat();
-							if (pilot != null && pilot instanceof RotateMoveController) ((RotateMoveController) pilot).rotate(angle);
+							if (pilot != null && pilot instanceof RotateMoveController) ((RotateMoveController) pilot).rotate(angle,false);
 							break;
 						case ARC: // Request to travel an arc og given radius and angle
 							float radius = dis.readFloat();
 							angle = dis.readFloat();						
-							if (pilot != null && pilot instanceof ArcMoveController) ((ArcMoveController) pilot).arc(radius,angle);
+							if (pilot != null && pilot instanceof ArcMoveController) ((ArcMoveController) pilot).arc(radius,angle,false);
 							break;							
 						case ROTATE_TO: // Request to rotate to a given angle
 							angle = dis.readFloat();
-							if (pp != null && pilot != null && pilot instanceof RotateMoveController) ((RotateMoveController) pilot).rotate(angleTo(angle));
+							if (pp != null && pilot != null && pilot instanceof RotateMoveController) ((RotateMoveController) pilot).rotate(angleTo(angle),false);
 							break;
 						case GET_POSE: // Request to get the pose and return it to the PC
 							if (pp == null) break;
@@ -426,9 +426,9 @@ public class EV3NavigationModel extends NavigationModel implements MoveListener,
 			    // Don't move forward if we are near a wall
 			    if (forwardRange < 0
 			        || distance + clearance < forwardRange)
-			      pilot.travel(distance);
+			      pilot.travel(distance,false);
 			    
-			    ((RotateMoveController) pilot).rotate(angle);
+			    ((RotateMoveController) pilot).rotate(angle,false);
 			    if (debug) log("Random moved done");
 			}			
 		}

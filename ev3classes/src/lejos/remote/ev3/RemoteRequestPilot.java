@@ -67,14 +67,6 @@ public class RemoteRequestPilot implements ArcRotateMoveController {
 		sendRequest(req, false);
 	}
 
-	@Override
-	public void arc(double radius, double angle) {
-		EV3Request req = new EV3Request();
-		req.request = EV3Request.Request.PILOT_ARC;
-		req.doubleValue = radius;
-		req.doubleValue2 = angle;
-		sendRequest(req, true);	
-	}
 
 	@Override
 	public void arc(double radius, double angle, boolean immediateReturn) {
@@ -86,15 +78,7 @@ public class RemoteRequestPilot implements ArcRotateMoveController {
 		sendRequest(req, !immediateReturn);	
 	}
 
-	@Override
-	public void travelArc(double radius, double distance) {
-		EV3Request req = new EV3Request();
-		req.request = EV3Request.Request.PILOT_TRAVEL_ARC;
-		req.doubleValue = radius;
-		req.doubleValue2 = distance;
-		sendRequest(req, true);	
-		
-	}
+
 
 	@Override
 	public void travelArc(double radius, double distance,
@@ -133,14 +117,6 @@ public class RemoteRequestPilot implements ArcRotateMoveController {
 		EV3Request req = new EV3Request();
 		req.request = EV3Request.Request.PILOT_IS_MOVING;
 		return sendRequest(req, true).result;
-	}
-
-	@Override
-	public void travel(double distance) {
-		EV3Request req = new EV3Request();
-		req.request = EV3Request.Request.PILOT_TRAVEL;
-		req.doubleValue = distance;
-		sendRequest(req, true);
 	}
 
 	@Override
@@ -186,13 +162,6 @@ public class RemoteRequestPilot implements ArcRotateMoveController {
 		
 	}
 
-	@Override
-	public void rotate(double angle) {
-		EV3Request req = new EV3Request();
-		req.request = EV3Request.Request.PILOT_ROTATE;
-		req.doubleValue = angle;
-		sendRequest(req, true);
-	}
 
 	@Override
 	public void rotate(double angle, boolean immediateReturn) {
