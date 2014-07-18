@@ -57,8 +57,7 @@ public interface ArcMoveController extends MoveController {
 
 	/**
 	 * Moves the NXT robot along an arc with a specified radius and  angle,
-	 * after which the robot stops moving. This method has the ability to return immediately
-	 * by using the <code>immediateReturn</code> parameter. 
+	 * after which the robot stops moving. 
 	 * <p>
 	 * If <code>radius</code> is positive, the robot arcs left, and the center of the turning circle is on the left side of the robot.<br>
 	 * If <code>radius</code> is negative, the robot arcs right, and the center of the turning circle is on the right side of the robot.<br>
@@ -79,7 +78,7 @@ public interface ArcMoveController extends MoveController {
 	 * @param immediateReturn If immediateReturn is true then the method returns immediately. 
 	 * @see #travelArc(double, double, boolean)
 	 */
-	public void arc(double radius, double angle, boolean immediateReturn);
+	public void arc(double radius, double angle);
 
 
 	/**
