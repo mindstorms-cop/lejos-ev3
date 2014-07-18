@@ -40,7 +40,16 @@ public interface MoveController extends MoveProvider {
 	 * true if the robot is moving 
 	 * @return true if the robot is moving under power.
 	 */
-	public boolean isMoving();;
+	public boolean isMoving();
+	
+
+	/**
+	 * Moves the NXT robot a specific distance. A positive value moves it forward and a negative value moves it backward.
+	 * Method returns when movement is done.
+	 * 
+	 * @param distance The positive or negative distance to move the robot.
+	 */
+	public void travel(double distance);
 
 	/**
 	 * Moves the NXT robot a specific distance. A positive value moves it forward and a negative value moves it backward.
