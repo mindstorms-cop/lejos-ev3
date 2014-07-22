@@ -237,7 +237,13 @@ public class RemoteRequestPilot implements ArcRotateMoveController {
 
 	@Override
 	public void travelArc(double radius, double distance) {
-		// TODO Auto-generated method stub
+		travelArc(radius,distance,false);
+		
+	}
+
+	@Override
+	public void rotate(double angle) {
+		rotate(angle,false);
 		
 	}
 
