@@ -7,8 +7,14 @@ public interface RotateMoveController extends MoveController {
    * 
    * @param angle The angle to rotate in degrees. A positive value rotates left, a negative value right (clockwise).
    */
+  public void rotate(double angle);  
+  /**
+   * Rotates the NXT robot the specified number of degrees; direction determined by the sign of the parameter.
+   * Method returns immediately if immediateReturn flag is true,  otherwise returns when rotation is done.
+   * @param angle The angle to rotate in degrees. A positive value rotates left, a negative value right (clockwise).
+   * @param immediateReturn  If true, method returns immediately,  otherwise blocks until rotation is complete.
+   */
   public void rotate(double angle, boolean immediateReturn);
-  
   /**
    * sets the rotation speed of the robot (the angular velocity of the rotate()
    * methods)
