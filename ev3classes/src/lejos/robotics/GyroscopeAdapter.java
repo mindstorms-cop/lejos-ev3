@@ -11,7 +11,7 @@ import lejos.utility.Delay;
  * @author Aswin
  *
  */
-public class GyroscopeAdaptor implements Gyroscope {
+public class GyroscopeAdapter implements Gyroscope {
   SampleProvider original,   sampler;
   LinearCalibrationFilter calibrator;
   IntegrationFilter integrator;
@@ -27,7 +27,7 @@ public class GyroscopeAdaptor implements Gyroscope {
    * @param axisIndex
    * The axis to use (usefull with multiaxis gyroscopes
    */
-  public GyroscopeAdaptor(SampleProvider source, float sampleFrequency, int axisIndex) {
+  public GyroscopeAdapter(SampleProvider source, float sampleFrequency, int axisIndex) {
     original=source;
     calibrator=new LinearCalibrationFilter(original);
     integrator=new IntegrationFilter(calibrator);
@@ -44,7 +44,7 @@ public class GyroscopeAdaptor implements Gyroscope {
    * @param sampleFrequency
    * The frequency used to sample the gyroscope
    */
-  public GyroscopeAdaptor(SampleProvider source, float sampleFrequency) {
+  public GyroscopeAdapter(SampleProvider source, float sampleFrequency) {
     this(source, sampleFrequency, 0);
   }
 

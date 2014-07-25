@@ -2,12 +2,12 @@ package lejos.robotics;
 
 import lejos.robotics.filter.ModulusFilter;
 
-public class DirectionFinderAdaptor implements DirectionFinder {
+public class DirectionFinderAdapter implements DirectionFinder {
 	private Calibrate calibrator;
 	private SampleProvider provider, initialProvider;
 	private float[] sample = new float[1];
 	
-	public DirectionFinderAdaptor(SampleProvider provider) {
+	public DirectionFinderAdapter(SampleProvider provider) {
 		this.provider = provider;
 	    initialProvider = provider;
 		if (provider instanceof Calibrate) this.calibrator = (Calibrate) provider;

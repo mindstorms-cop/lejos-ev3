@@ -2,11 +2,11 @@ package lejos.robotics;
 
 import lejos.robotics.filter.AbstractFilter;
 
-public class AccelerometerAdaptor extends AbstractFilter implements Accelerometer{
+public class AccelerometerAdapter extends AbstractFilter implements Accelerometer{
   float[] sample;
   
 
-  public AccelerometerAdaptor(SampleProvider source) {
+  public AccelerometerAdapter(SampleProvider source) {
     super(source);
     sample=new float[sampleSize];
   }

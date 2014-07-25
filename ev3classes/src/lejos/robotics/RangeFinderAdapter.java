@@ -2,10 +2,10 @@ package lejos.robotics;
 
 import lejos.robotics.filter.AbstractFilter;
 
-public class RangeFinderAdaptor extends AbstractFilter implements RangeFinder{
+public class RangeFinderAdapter extends AbstractFilter implements RangeFinder{
 	private final float[] buf;
 
-	public RangeFinderAdaptor(SampleProvider source) {
+	public RangeFinderAdapter(SampleProvider source) {
 		super(source);
 		buf=new float[sampleSize];
 	}
