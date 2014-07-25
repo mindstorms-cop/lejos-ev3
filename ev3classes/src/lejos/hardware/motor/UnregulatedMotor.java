@@ -9,7 +9,7 @@ import lejos.robotics.EncoderMotor;
  * Abstraction for an NXT motor with no speed regulation.
  * 
  */
-public class NXTMotor extends BasicMotor implements EncoderMotor {
+public class UnregulatedMotor extends BasicMotor implements EncoderMotor {
     protected Encoder encoderPort;
 
     /**
@@ -18,7 +18,7 @@ public class NXTMotor extends BasicMotor implements EncoderMotor {
      * @param port The motor port that the motor will be attached to.
      * @param PWMMode see {@link lejos.hardware.port.BasicMotorPort#PWM_FLOAT} and see {@link lejos.hardware.port.BasicMotorPort#PWM_BRAKE}
      */
-    public NXTMotor(Port port, int PWMMode)
+    public UnregulatedMotor(Port port, int PWMMode)
     {
         this(port.open(TachoMotorPort.class), PWMMode);
         releaseOnClose(this.port);
@@ -29,7 +29,7 @@ public class NXTMotor extends BasicMotor implements EncoderMotor {
      * PWM operating mode will be PWM_BREAK {@link lejos.hardware.port.BasicMotorPort#PWM_BRAKE}
      * @param port The motor port that the motor will be attached to.
      */
-    public NXTMotor(Port port)
+    public UnregulatedMotor(Port port)
     {
         this(port, TachoMotorPort.PWM_BRAKE);
     }
@@ -40,7 +40,7 @@ public class NXTMotor extends BasicMotor implements EncoderMotor {
      * @param mport The motor port that the motor will be attached to.
      * @param PWMMode see {@link lejos.hardware.port.BasicMotorPort#PWM_FLOAT} and see {@link lejos.hardware.port.BasicMotorPort#PWM_BRAKE}
      */
-    public NXTMotor(TachoMotorPort mport, int PWMMode)
+    public UnregulatedMotor(TachoMotorPort mport, int PWMMode)
     {
         this.port = mport;
         // We use extra var to avoid cost of a cast check later
@@ -53,7 +53,7 @@ public class NXTMotor extends BasicMotor implements EncoderMotor {
      * PWM operating mode will be PWM_BREAK {@link lejos.hardware.port.BasicMotorPort#PWM_BRAKE}
      * @param port The motor port that the motor will be attached to.
      */
-    public NXTMotor(TachoMotorPort port)
+    public UnregulatedMotor(TachoMotorPort port)
     {
         this(port, TachoMotorPort.PWM_BRAKE);
     }

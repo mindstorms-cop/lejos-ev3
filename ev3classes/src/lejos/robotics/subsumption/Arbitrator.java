@@ -24,9 +24,9 @@ public class Arbitrator
 
   private final int NONE = -1;
   private Behavior[] _behavior;
-  // highest priority behavior that wants control ; set by start() usec by monitor
+  // highest priority behavior that wants control ; set by start() used by monitor
   private int _highestPriority = NONE;
-  private int _active = NONE; //  active behavior; set by montior, used by start();
+  private int _active = NONE; //  active behavior; set by monitor, used by start();
   private boolean _returnWhenInactive;
   /**
    * Monitor is an inner class.  It polls the behavior array to find the behavior of hightst
@@ -89,7 +89,7 @@ public class Arbitrator
           monitor.more = false;//9 shut down monitor thread
           return;
         }
-      }// monotor released before action is called
+      }// monitor released before action is called
       if (_active != NONE)  //_highestPrioirty could be NONE
       {
         _behavior[_active].action();
@@ -99,10 +99,14 @@ public class Arbitrator
     }
   }
 
+  public void stop() {
+	  // TODO: Method stops the Monitor thread and exits the start() loop.
+  }
+  
   /**
    * Finds the highest priority behavior that returns <B>true </B> to takeControl();
    * If this priority is higher than the active behavior, it calls active.suppress().
-   * If there is no active behavior, calls suppress() on the most recently acrive behavior.
+   * If there is no active behavior, calls suppress() on the most recently active behavior.
    */
   private class Monitor extends Thread
   {
@@ -118,7 +122,9 @@ public class Arbitrator
         synchronized (this)
         {
            _highestPriority = NONE;
-          for (int i = maxPriority; i >= 0; i--)
+           int active_behavior = _active; // BB modded
+           if(active_behavior == NONE) active_behavior = 0; // BB modded
+          for (int i = maxPriority; i >= active_behavior; i--) // BB modded
           {
             if (_behavior[i].takeControl())
             {
