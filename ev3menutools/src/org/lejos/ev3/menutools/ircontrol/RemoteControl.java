@@ -3,7 +3,7 @@ package org.lejos.ev3.menutools.ircontrol;
 import lejos.hardware.*;
 import lejos.hardware.ev3.LocalEV3;
 import lejos.hardware.lcd.*;
-import lejos.hardware.motor.NXTMotor;
+import lejos.hardware.motor.UnregulatedMotor;
 import lejos.hardware.port.*;
 import lejos.hardware.sensor.EV3IRSensor;
 import lejos.hardware.sensor.EV3SensorConstants;
@@ -15,10 +15,10 @@ public class RemoteControl {
 	private EV3IRSensor ir;
 	
 	// Unregulated motors:
-	private NXTMotor motorA = new NXTMotor(MotorPort.A);
-	private NXTMotor motorB = new NXTMotor(MotorPort.B);
-	private NXTMotor motorC = new NXTMotor(MotorPort.C);
-	private NXTMotor motorD = new NXTMotor(MotorPort.D);
+	private UnregulatedMotor motorA = new UnregulatedMotor(MotorPort.A);
+	private UnregulatedMotor motorB = new UnregulatedMotor(MotorPort.B);
+	private UnregulatedMotor motorC = new UnregulatedMotor(MotorPort.C);
+	private UnregulatedMotor motorD = new UnregulatedMotor(MotorPort.D);
 	
 	// Will autodetect port with IR sensor
 	Port [] sensorPorts = {SensorPort.S1, SensorPort.S2,SensorPort.S3, SensorPort.S4}; 
@@ -56,8 +56,8 @@ public class RemoteControl {
 		boolean keep_looping = true;
 		int previous_command = 0;
 		int channel = 0;
-		NXTMotor currentLeft = motorB;
-		NXTMotor currentRight = motorC;
+		UnregulatedMotor currentLeft = motorB;
+		UnregulatedMotor currentRight = motorC;
 		
 		while(keep_looping) {
 			Delay.msDelay(25);

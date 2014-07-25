@@ -1,6 +1,6 @@
 package lejos.hardware.device;
 
-import lejos.hardware.motor.NXTMotor;
+import lejos.hardware.motor.UnregulatedMotor;
 import lejos.hardware.port.Port;
 import lejos.robotics.EncoderMotor;
 import lejos.robotics.LinearActuator;
@@ -43,7 +43,7 @@ public class LnrActrFirgelliNXT implements LinearActuator{
      * <p>
      * The default power at instantiation is 100%.
      * @param encoderMotor A motor instance of type <code>EncoderMotor</code> which will drive the actuator
-     * @see lejos.hardware.motor.NXTMotor
+     * @see lejos.hardware.motor.UnregulatedMotor
      * @see MMXMotor
      * @see EncoderMotor
      */
@@ -64,10 +64,10 @@ public class LnrActrFirgelliNXT implements LinearActuator{
      * The default power at instantiation is 100%.
      * @param port The motor port that the linear actuator is attached to.
      * @see lejos.hardware.port.MotorPort
-     * @see NXTMotor
+     * @see UnregulatedMotor
      */
     public LnrActrFirgelliNXT(Port port) {
-        this(new NXTMotor(port));
+        this(new UnregulatedMotor(port));
     }
     
     /**Sets the power for the actuator. This is called before the <code>move()</code> or <code>moveTo()</code> method is called 
