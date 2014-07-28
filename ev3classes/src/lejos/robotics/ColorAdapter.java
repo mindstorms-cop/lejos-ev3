@@ -24,9 +24,6 @@ public class ColorAdapter implements ColorDetector, ColorIdentifier {
 	@Override
 	public Color getColor() {
 		colorDetector.fetchSample(bufDetect, 0);
-		for(int i=0;i<bufDetect.length;i++) {
-			System.out.println(i+": " + bufDetect[i]);
-		}
 		Color color = new Color((int)(256*bufDetect[0]), (int)(256*bufDetect[1]), (int)(256*bufDetect[2]));
 		return color;
 	}
