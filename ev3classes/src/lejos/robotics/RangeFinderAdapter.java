@@ -9,11 +9,11 @@ public class RangeFinderAdapter extends AbstractFilter implements RangeFinder{
 		super(source);
 		buf=new float[sampleSize];
 	}
-
+	
 	@Override
 	public float getRange() {
 		fetchSample(buf,0);
-		return buf[0]/10;
+		return buf[0];
 	}
 
 	@Override
