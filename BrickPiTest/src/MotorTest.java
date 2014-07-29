@@ -1,6 +1,6 @@
 import lejos.hardware.brickpi.BrickPi;
 import lejos.hardware.brickpi.LocalBrickPi;
-import lejos.hardware.motor.NXTMotor;
+import lejos.hardware.motor.UnregulatedMotor;
 import lejos.hardware.port.Port;
 import lejos.utility.Delay;
 
@@ -11,8 +11,8 @@ public class MotorTest {
 		Port mA = pi.getPort("A");
 		Port mB= pi.getPort("B");
 		
-		NXTMotor left = new NXTMotor(mA);
-		NXTMotor right = new NXTMotor(mB);
+		UnregulatedMotor left = new UnregulatedMotor(mA);
+		UnregulatedMotor right = new UnregulatedMotor(mB);
 		
 		left.setPower(50);
 		right.setPower(50);

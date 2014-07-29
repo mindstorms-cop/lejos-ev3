@@ -3,7 +3,7 @@ import java.io.IOException;
 import lejos.hardware.Button;
 import lejos.hardware.port.SensorPort;
 import lejos.hardware.sensor.EV3IRSensor;
-import lejos.robotics.RangeFinderAdaptor;
+import lejos.robotics.RangeFinderAdapter;
 import lejos.robotics.RegulatedMotor;
 import lejos.robotics.mapping.EV3NavigationModel;
 import lejos.robotics.mapping.NavEventListener;
@@ -63,7 +63,7 @@ public class MapTest implements NavEventListener {
     	final DifferentialPilot robot = new DifferentialPilot(wheelDiameter,trackWidth,leftMotor,rightMotor,reverse);
     	final Navigator navigator = new Navigator(robot);
     	EV3IRSensor ir = new EV3IRSensor(SensorPort.S1);
-    	RangeFeatureDetector detector = new RangeFeatureDetector(new RangeFinderAdaptor(ir.getDistanceMode()), MAX_DISTANCE, DETECTOR_DELAY);
+    	RangeFeatureDetector detector = new RangeFeatureDetector(new RangeFinderAdapter(ir.getDistanceMode()), MAX_DISTANCE, DETECTOR_DELAY);
 		
     	// Adding the navigator, adds the pilot and pose provider as well
     	model.addNavigator(navigator);

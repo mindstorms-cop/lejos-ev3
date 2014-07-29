@@ -5,7 +5,7 @@ import lejos.hardware.Key;
 import lejos.hardware.Keys;
 import lejos.hardware.LED;
 import lejos.hardware.lcd.TextLCD;
-import lejos.hardware.motor.NXTMotor;
+import lejos.hardware.motor.UnregulatedMotor;
 import lejos.hardware.sensor.EV3GyroSensor;
 import lejos.hardware.sensor.EV3TouchSensor;
 import lejos.hardware.sensor.NXTSoundSensor;
@@ -61,7 +61,7 @@ public class RemoteRequest {
 		
 		lcd.drawInt(100, 3, 5, 6);
 		
-		NXTMotor m = new NXTMotor(ev3.getPort("A"));
+		UnregulatedMotor m = new UnregulatedMotor(ev3.getPort("A"));
 		
 		m.setPower(50);
 		m.forward();
