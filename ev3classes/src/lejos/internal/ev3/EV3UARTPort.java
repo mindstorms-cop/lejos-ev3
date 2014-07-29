@@ -67,8 +67,6 @@ public class EV3UARTPort extends EV3IOPort implements UARTPort
         initDeviceIO();
     }
     
-    protected EV3DeviceManager ldm = EV3DeviceManager.getLocalDeviceManager();
-
     /**
      * The following class maps directly to a C structure containing device information.
      * @author andy
@@ -328,7 +326,7 @@ public class EV3UARTPort extends EV3IOPort implements UARTPort
     {
         byte status;
         int retryCnt = 0;
-        //System.out.println("Initial status is " + getStatus());
+        //System.out.println("Initial status is " + getStatus() + " type is " + ldm.getPortType(port));
         long base = System.currentTimeMillis();
         if (ldm.getPortType(port) != CONN_INPUT_UART)
             return false;

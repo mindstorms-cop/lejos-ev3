@@ -2,6 +2,7 @@ package lejos.internal.ev3;
 
 import lejos.hardware.sensor.EV3SensorConstants;
 import lejos.internal.io.NativeDevice;
+import lejos.utility.Delay;
 
 public class EV3DeviceManager implements EV3SensorConstants
 {
@@ -95,12 +96,25 @@ public class EV3DeviceManager implements EV3SensorConstants
      */
     public void setPortMode(int port, int mode)
     {
+        //System.out.println("Set port mode " + port + " mode " + mode);
         byte [] modes = new byte[PORTS];
         for(int i = 0; i < modes.length; i++)
             modes[i] = (byte)'-';
         modes[port] = (byte)mode;
         dev.write(modes, modes.length);
-        
+        if (mode == CMD_AUTOMATIC)
+        {
+            Delay.msDelay(100);
+            for(int i = 0; i < 2000; i++)
+            {
+                if (getPortType(port) != CONN_NONE) 
+                {
+                    //System.out.println("detected after " + i);
+                    break;
+                }
+                Delay.msDelay(1);
+            }
+        }
     }
     
     /**
@@ -137,6 +151,9 @@ public class EV3DeviceManager implements EV3SensorConstants
         dev = new NativeDevice("/dev/lms_dcm"); 
         // set all ports to be auto detect
         for(int port = 0; port < PORTS; port++)
+        {
             localDeviceManager.setPortMode(port,  CMD_AUTOMATIC);
+            //System.out.println("reset port " + port + " type " + EV3AnalogPort.getPortType(port));
+        }
     }
 }
