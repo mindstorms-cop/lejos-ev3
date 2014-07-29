@@ -40,7 +40,6 @@ public class EV3I2CPort extends EV3IOPort implements I2CPort
     /** Maximum read/write request length */
     public static final int MAX_IO = IIC_DATA_LENGTH;
     
-    protected EV3DeviceManager ldm = EV3DeviceManager.getLocalDeviceManager();
     protected byte[] cmd = new byte[IIC_DATA_LENGTH + 5];
     protected byte speed = SPEED_10KHZ;
 

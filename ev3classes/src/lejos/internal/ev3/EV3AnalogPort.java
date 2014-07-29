@@ -51,7 +51,6 @@ public class EV3AnalogPort extends EV3IOPort implements AnalogPort
     protected int[] calLimits = new int[2];
     protected short[] rawValues = new short[BLANK_INDEX + 1];
     protected short[] values = new short[BLANK_INDEX + 1];
-    protected EV3DeviceManager ldm = EV3DeviceManager.getLocalDeviceManager();
 
     
     static {
