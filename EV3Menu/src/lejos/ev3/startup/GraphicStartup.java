@@ -2128,13 +2128,8 @@ public class GraphicStartup implements Menu {
 	    		{
 	    			long time = System.currentTimeMillis();
 	    			
-	    			byte[] buf = lcd.getDisplay();
-	    			// TODO: Fix this
-	    			// clear not necessary, pixels are always overwritten
-	    			for (int i=0; i<lcd.getWidth(); i++)
-	    				buf[i] = 0;	  
 	    			indiBA.setWifi(ips.size() > 1);
-	    			indiBA.draw(time, buf);
+	    			indiBA.draw(time);
 	    			lcd.refresh();
     			
     				// wait until next tick
