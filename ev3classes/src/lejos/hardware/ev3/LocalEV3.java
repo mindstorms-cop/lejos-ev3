@@ -19,6 +19,7 @@ import lejos.hardware.lcd.Font;
 import lejos.hardware.lcd.GraphicsLCD;
 import lejos.hardware.lcd.TextLCD;
 import lejos.hardware.port.Port;
+import lejos.hardware.video.Video;
 import lejos.internal.ev3.EV3Audio;
 import lejos.internal.ev3.EV3DeviceManager;
 import lejos.internal.ev3.EV3GraphicsLCD;
@@ -29,6 +30,7 @@ import lejos.internal.ev3.EV3LED;
 import lejos.internal.ev3.EV3Port;
 import lejos.internal.ev3.EV3Battery;
 import lejos.internal.ev3.EV3TextLCD;
+import lejos.internal.ev3.EV3Video;
 
 /**
  * This class represents the local instance of an EV3 device. It can be used to
@@ -60,6 +62,7 @@ public class LocalEV3 implements EV3
     protected GraphicsLCD graphicsLCD;
     protected EV3Keys keys = new EV3Keys();
     protected final LED led = new EV3LED();
+    protected Video video;
     
     protected final Key enter = new EV3Key(keys, "Enter");
     protected final Key escape = new EV3Key(keys, "Escape");
@@ -154,6 +157,17 @@ public class LocalEV3 implements EV3
     {
         return audio;
     }
+
+    /** {@inheritDoc}
+     */    
+    @Override
+    public Video getVideo()
+    {
+        if (video == null)
+            video = new EV3Video();
+        return video;
+    }
+
 
 	@Override
 	public boolean isLocal() 

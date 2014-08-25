@@ -6,6 +6,7 @@ import lejos.hardware.lcd.Font;
 import lejos.hardware.lcd.GraphicsLCD;
 import lejos.hardware.lcd.TextLCD;
 import lejos.hardware.port.Port;
+import lejos.hardware.video.Video;
 
 public interface Brick
 {
@@ -29,6 +30,7 @@ public interface Brick
      */
     public Audio getAudio();
 
+    public Video getVideo();
     /**
      * Get text access to the LCD using the default font
      * @return the text LCD 
