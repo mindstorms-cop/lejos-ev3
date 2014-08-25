@@ -189,9 +189,9 @@ public class Image implements Serializable
     /**
      * Returns a graphics object that can be used to draw to the image.
      * @return graphics object.
-     * @see EV3GraphicsLCD
+     * @see GraphicsLCD
      */
-    public EV3GraphicsLCD getGraphics()
+    public GraphicsLCD getGraphics()
     {
         return new EV3GraphicsLCD(data, width, height);
     }
