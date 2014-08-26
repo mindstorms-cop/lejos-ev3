@@ -1,9 +1,9 @@
 package org.lejos.ev3.pcsample.charts;
+
 import java.awt.Dimension;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.FileReader;
-import java.rmi.RemoteException;
 import java.util.Properties;
 
 import javax.swing.JFrame;
@@ -38,6 +38,7 @@ public class BarChart extends JFrame {
 	private String[] labels;
 	private float frequency;
 	private float factor;
+	private boolean running = true;
 	
 	public BarChart(String host, String sensorClass, String portName, String mode, String category, String[] labels, 
 			String units, float minValue, float maxValue, int windowWidth, int windowHeight, 
@@ -66,6 +67,7 @@ public class BarChart extends JFrame {
 	        @Override
 	        public void windowClosing(WindowEvent e) {
 	        	try {
+	        		running = false;
 					if (sp != null) sp.close();
 				} catch (Exception e1) {
 					System.err.println("Exception closing sample provider");
@@ -75,7 +77,7 @@ public class BarChart extends JFrame {
 	}
 
 	public void run() throws Exception {
-        while(true) {
+        while(running) {
         	float[] sample = sp.fetchSample();
         	dataset.clear();
         	for(int i=0;i<labels.length;i++) {
