@@ -32,6 +32,7 @@ public class Graph extends JFrame {
 	private RMISampleProvider sp;
 	private String[] labels;
 	private float frequency;
+	private boolean running = true;
 	
 	public Graph(String host, String sensorClass, String portName, String mode, String category, String[] labels, 
 			String units, float minValue, float maxValue, int windowWidth, int windowHeight, float frequency) throws Exception {
@@ -58,8 +59,8 @@ public class Graph extends JFrame {
 	        @Override
 	        public void windowClosing(WindowEvent e) {
 	        	try {
+	        		running = false;
 					if (sp != null) sp.close();
-					sp = null;
 				} catch (RemoteException e1) {
 					e1.printStackTrace();
 				}
@@ -69,7 +70,7 @@ public class Graph extends JFrame {
 
 	public void run() throws Exception {
 		int x=0;
-        while(sp != null) {
+        while(running) {
         	float[] sample = sp.fetchSample();
         	for(int i=0;i<labels.length;i++) {
         		series.add(x++,sample[i]);
