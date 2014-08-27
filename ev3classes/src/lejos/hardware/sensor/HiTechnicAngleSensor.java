@@ -14,7 +14,67 @@ import lejos.utility.EndianTools;
  * date 2nd April 2011
  */
 
-public class HiTechnicAngleSensor extends I2CSensor implements SensorMode {
+
+/**
+ * <b>Hitechnic Angle sensor</b><br>
+ * The Angle sensor measures axle rotation position and rotation speed. 
+ * 
+ * <p style="color:red;">
+ * The code for this sensor has not been tested. Please report test results to
+ * the <A href="http://www.lejos.org/forum/"> leJOS forum</a>.
+ * </p>
+ * 
+ * <p>
+ * <table border=1>
+ * <tr>
+ * <th colspan=4>Supported modes</th>
+ * </tr>
+ * <tr>
+ * <th>Mode name</th>
+ * <th>Description</th>
+ * <th>unit(s)</th>
+ * <th>Getter</th>
+ * </tr>
+ * <tr>
+ * <td>Absolute angle</td>
+ * <td>Measures the rotation position of a rotating axle</td>
+ * <td>Degrees (0-359)</td>
+ * <td> {@link #getAngleMode() }</td>
+ * </tr>
+ * <tr>
+ * <td>Accumulated angle</td>
+ * <td>Measures the accumulated number of degrees an axle has rotated</td>
+ * <td>Degrees</td>
+ * <td> {@link #getAccumulatedAngleMode() }</td>
+ * </tr>
+ * <tr>
+ * <td>Angular velocity</td>
+ * <td> the speed of the axle rotation</td>
+ * <td>rotations / second</td>
+ * <td> {@link #getAngularVelocityMode() }</td>
+ * </tr>
+ * </table>
+ * 
+ * 
+ * <p>
+ * <b>Sensor configuration</b><br>
+ * The zero position of the sensor can be set and stored in the sensors memory using the calibrateAngle method.
+ * The accumulated angle can be set to zero using the resetAccumulatedAngle method. The accumulated angle is not stored in memory. 
+ * 
+ * <p>
+ * 
+ * @see <a href="http://www.hitechnic.com/cgi-bin/commerce.cgi?preadd=action&key=NAA1030"> Sensor Product page </a>
+ * @see <a href="http://sourceforge.net/p/lejos/wiki/Sensor%20Framework/"> The
+ *      leJOS sensor framework</a>
+ * @see {@link lejos.robotics.SampleProvider leJOS conventions for
+ *      SampleProviders}
+ * 
+ *      <p>
+ * 
+ * 
+ * 
+ */
+public class HiTechnicAngleSensor extends I2CSensor  {
    protected static final int REG_ANGLE = 0x42;
    protected static final int REG_ACCUMULATED_ANGLE = 0x44;
    protected static final int REG_SPEED = 0x48;
@@ -34,7 +94,7 @@ public class HiTechnicAngleSensor extends I2CSensor implements SensorMode {
     }
    
    protected void init() {
-   	setModes(new SensorMode[]{ this, new AccumulatedAngleMode(), new AngularVelocityMode() });
+   	setModes(new SensorMode[]{ new AngleMode(), new AccumulatedAngleMode(), new AngularVelocityMode() });
    }
    
    /** 
@@ -56,8 +116,10 @@ public class HiTechnicAngleSensor extends I2CSensor implements SensorMode {
    }
    
    public SensorMode getAngleMode() {
-	   return this;
+	   return getMode(0);
    }
+   
+   private class AngleMode implements SensorMode {
 
 	@Override
 	public int sampleSize() {
@@ -77,6 +139,7 @@ public class HiTechnicAngleSensor extends I2CSensor implements SensorMode {
 	public String getName() {
 		return "Angle";
 	}
+   }
 	
 	public SensorMode getAccumulatedAngleMode() {
 		return getMode(1);
