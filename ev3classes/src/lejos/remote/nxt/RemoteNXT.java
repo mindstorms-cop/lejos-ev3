@@ -16,7 +16,7 @@ import lejos.hardware.lcd.GraphicsLCD;
 import lejos.hardware.lcd.TextLCD;
 import lejos.hardware.port.Port;
 import lejos.hardware.port.PortException;
-import lejos.internal.ev3.EV3Port;
+import lejos.hardware.video.Video;
 
 public class RemoteNXT implements NXT {
 	
@@ -33,7 +33,7 @@ public class RemoteNXT implements NXT {
         // Create the port objects
         ports.add(new RemoteNXTPort("S1", RemoteNXTPort.SENSOR_PORT, 0, nxtCommand));
         ports.add(new RemoteNXTPort("S2", RemoteNXTPort.SENSOR_PORT, 1, nxtCommand));
-        ports.add(new RemoteNXTPort("S3", EV3Port.SENSOR_PORT, 2, nxtCommand));
+        ports.add(new RemoteNXTPort("S3", RemoteNXTPort.SENSOR_PORT, 2, nxtCommand));
         ports.add(new RemoteNXTPort("S4", RemoteNXTPort.SENSOR_PORT, 3, nxtCommand));
         ports.add(new RemoteNXTPort("A", RemoteNXTPort.MOTOR_PORT, 0, nxtCommand));
         ports.add(new RemoteNXTPort("B", RemoteNXTPort.MOTOR_PORT, 1, nxtCommand));
@@ -80,10 +80,15 @@ public class RemoteNXT implements NXT {
 		return battery;
 	}
 
-	@Override
-	public Audio getAudio() {
-		return audio;
-	}
+    @Override
+    public Audio getAudio() {
+        return audio;
+    }
+
+    @Override
+    public Video getVideo() {
+        return null;
+    }
 
 	@Override
 	public TextLCD getTextLCD() {

@@ -21,6 +21,7 @@ import lejos.hardware.lcd.Font;
 import lejos.hardware.lcd.GraphicsLCD;
 import lejos.hardware.lcd.TextLCD;
 import lejos.hardware.port.Port;
+import lejos.hardware.video.Video;
 import lejos.robotics.RegulatedMotor;
 import lejos.robotics.SampleProvider;
 import lejos.robotics.navigation.ArcRotateMoveController;
@@ -68,11 +69,16 @@ public class RemoteRequestEV3 implements EV3, Serializable {
 		return new RemoteRequestBattery(is, os);
 	}
 
-	@Override
-	public Audio getAudio() {
-		return new RemoteRequestAudio(is, os);
-	}
-	
+    @Override
+    public Audio getAudio() {
+        return new RemoteRequestAudio(is, os);
+    }
+    
+    @Override
+    public Video getVideo() {
+        return null;
+    }
+    
 	@Override
 	public TextLCD getTextLCD() {
 		return new RemoteRequestTextLCD(is, os);

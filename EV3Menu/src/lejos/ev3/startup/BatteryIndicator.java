@@ -117,7 +117,7 @@ public class BatteryIndicator
     /**
      * Display the battery icon.
      */
-    public synchronized void draw(long time, byte[] buf)
+    public synchronized void draw(long time)
     {
     	int level = getLevel();
     	
@@ -141,7 +141,12 @@ public class BatteryIndicator
             lcd.drawString(".", 1, 0);
             lcd.drawInt((level % 1000) / 100, 2, 0);
         }
+        else
+            lcd.drawString("   ", 0, 0);
         
-        if (wifi) g.drawRegion(wifiImage, 0, 0, 16, 16, 0, ICON_X, 0, 0);
+        if (wifi) 
+            g.drawRegion(wifiImage, 0, 0, 16, 16, 0, ICON_X, 0, 0);
+        else
+            g.drawRegionRop(null, 0, 0, 16, 16, 0, ICON_X, 0, 0, GraphicsLCD.ROP_CLEAR);
     }
 }

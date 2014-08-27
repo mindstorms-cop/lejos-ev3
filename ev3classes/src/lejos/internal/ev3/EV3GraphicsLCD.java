@@ -225,7 +225,7 @@ public class EV3GraphicsLCD extends EV3LCD implements GraphicsLCD
         // Check for common optimized case...
         if (transform == 0)
         {
-            drawRegionRop(src, sx, sy, w, h, x, y, anchor, ROP_COPY);
+            drawRegionRop(src, sx, sy, w, h, x, y, anchor, rop);
             return;
         }
 
