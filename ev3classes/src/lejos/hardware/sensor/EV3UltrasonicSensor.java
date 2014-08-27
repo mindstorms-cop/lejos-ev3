@@ -6,8 +6,9 @@ import lejos.robotics.SampleProvider;
 
 /**
  * <b>Lego EV3 Ultrasonic sensor</b><br>
- * The EV3 Ultrasonic sensor measures distance to an object in front of the sensor. 
- * It can also be used to detect other (active) Ultrasonic sensors in the vicinity.
+ * The EV3 Ultrasonic sensor measures distance to an object in front of the
+ * sensor. It can also be used to detect other (active) Ultrasonic sensors in
+ * the vicinity.
  * 
  * 
  * 
@@ -40,7 +41,8 @@ import lejos.robotics.SampleProvider;
  * 
  * <p>
  * <b>Sensor configuration</b><br>
- * The sensor can be switched off and on using the {@link #enable} and {@link #disable} methods. Disabling the sensor also shuts down the lights.
+ * The sensor can be switched off and on using the {@link #enable} and
+ * {@link #disable} methods. Disabling the sensor also shuts down the lights.
  * 
  * <p>
  * 
@@ -61,10 +63,10 @@ public class EV3UltrasonicSensor extends UARTSensor {
   private static final int DISABLED    = 3;
   private static final int SWITCHDELAY = 200;
 
-  protected void init()
-  {
-    setModes(new SensorMode[] { new DistanceMode(), new ListenMode() });      
+  protected void init() {
+    setModes(new SensorMode[] { new DistanceMode(), new ListenMode() });
   }
+
   /**
    * Create the Ultrasonic sensor class.
    * 
@@ -133,7 +135,8 @@ public class EV3UltrasonicSensor extends UARTSensor {
     public void fetchSample(float[] sample, int offset) {
       switchMode(MODE, SWITCHDELAY);
       int raw = port.getShort();
-      sample[offset] = (raw == 2550) ? Float.POSITIVE_INFINITY : (float) raw * toSI;
+      sample[offset] = (raw == 2550) ? Float.POSITIVE_INFINITY : (float) raw
+          * toSI;
     }
 
     @Override

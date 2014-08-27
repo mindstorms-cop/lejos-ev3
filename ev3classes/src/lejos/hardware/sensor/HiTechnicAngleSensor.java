@@ -6,18 +6,8 @@ import lejos.utility.Delay;
 import lejos.utility.EndianTools;
 
 /**
- * Supports the angle sensor of HiTechnic.
- * This Java implementation was based on the NXC implementation on http://www.hitechnic.com/cgi-bin/commerce.cgi?preadd=action&key=NAA1030.
- * Works clockwise, i.e. rotating clockwise increases angle value and rotating counter-clockwise decreases angle value.
- *
- * @author Michael Mirwaldt (epcfreak@gmail.com)<br/>
- * date 2nd April 2011
- */
-
-
-/**
  * <b>Hitechnic Angle sensor</b><br>
- * The Angle sensor measures axle rotation position and rotation speed. 
+ * The Angle sensor measures axle rotation position and rotation speed.
  * 
  * <p style="color:red;">
  * The code for this sensor has not been tested. Please report test results to
@@ -49,7 +39,7 @@ import lejos.utility.EndianTools;
  * </tr>
  * <tr>
  * <td>Angular velocity</td>
- * <td> the speed of the axle rotation</td>
+ * <td>the speed of the axle rotation</td>
  * <td>rotations / second</td>
  * <td> {@link #getAngularVelocityMode() }</td>
  * </tr>
@@ -58,12 +48,16 @@ import lejos.utility.EndianTools;
  * 
  * <p>
  * <b>Sensor configuration</b><br>
- * The zero position of the sensor can be set and stored in the sensors memory using the calibrateAngle method.
- * The accumulated angle can be set to zero using the resetAccumulatedAngle method. The accumulated angle is not stored in memory. 
+ * The zero position of the sensor can be set and stored in the sensors memory
+ * using the calibrateAngle method. The accumulated angle can be set to zero
+ * using the resetAccumulatedAngle method. The accumulated angle is not stored
+ * in memory.
  * 
  * <p>
  * 
- * @see <a href="http://www.hitechnic.com/cgi-bin/commerce.cgi?preadd=action&key=NAA1030"> Sensor Product page </a>
+ * @see <a
+ *      href="http://www.hitechnic.com/cgi-bin/commerce.cgi?preadd=action&key=NAA1030">
+ *      Sensor Product page </a>
  * @see <a href="http://sourceforge.net/p/lejos/wiki/Sensor%20Framework/"> The
  *      leJOS sensor framework</a>
  * @see {@link lejos.robotics.SampleProvider leJOS conventions for
@@ -74,115 +68,114 @@ import lejos.utility.EndianTools;
  * 
  * 
  */
-public class HiTechnicAngleSensor extends I2CSensor  {
-   protected static final int REG_ANGLE = 0x42;
-   protected static final int REG_ACCUMULATED_ANGLE = 0x44;
-   protected static final int REG_SPEED = 0x48;
-   protected static final int HTANGLE_MODE_CALIBRATE = 0x43;
-   protected static final int HTANGLE_MODE_RESET = 0x52;
-   
-   private byte buf[] = new byte[4];
+public class HiTechnicAngleSensor extends I2CSensor {
+  protected static final int REG_ANGLE              = 0x42;
+  protected static final int REG_ACCUMULATED_ANGLE  = 0x44;
+  protected static final int REG_SPEED              = 0x48;
+  protected static final int HTANGLE_MODE_CALIBRATE = 0x43;
+  protected static final int HTANGLE_MODE_RESET     = 0x52;
 
-   public HiTechnicAngleSensor(I2CPort port) {
-       super(port, DEFAULT_I2C_ADDRESS);
-       init();
+  private byte               buf[]                  = new byte[4];
+
+  public HiTechnicAngleSensor(I2CPort port) {
+    super(port, DEFAULT_I2C_ADDRESS);
+    init();
+  }
+
+  public HiTechnicAngleSensor(Port port) {
+    super(port);
+    init();
+  }
+
+  protected void init() {
+    setModes(new SensorMode[] { new AngleMode(), new AccumulatedAngleMode(),
+        new AngularVelocityMode() });
+  }
+
+  /**
+   * Reset the rotation count of accumulated angle to zero. Not saved in EEPORM.
+   */
+  public void resetAccumulatedAngle() {
+    sendData(0x41, (byte) HTANGLE_MODE_RESET);
+  }
+
+  /**
+   * Calibrate the zero position of angle. Zero position is saved in EEPROM on
+   * sensor. Thread sleeps for 50ms while that is done.
+   */
+  public void calibrateAngle() {
+    sendData(0x41, (byte) HTANGLE_MODE_CALIBRATE);
+    Delay.msDelay(50);
+  }
+
+  public SensorMode getAngleMode() {
+    return getMode(0);
+  }
+
+  private class AngleMode implements SensorMode {
+
+    @Override
+    public int sampleSize() {
+      return 1;
     }
-    
-   public HiTechnicAngleSensor(Port port) {
-       super(port);
-       init();
+
+    @Override
+    public void fetchSample(float[] sample, int offset) {
+      getData(REG_ANGLE, buf, 2);
+      int bits9to2 = buf[0] & 0xFF;
+      int bit1 = buf[1] & 0x01;
+
+      sample[offset] = (bits9to2 << 1) | bit1;
     }
-   
-   protected void init() {
-   	setModes(new SensorMode[]{ new AngleMode(), new AccumulatedAngleMode(), new AngularVelocityMode() });
-   }
-   
-   /** 
-    * Reset the rotation count of accumulated angle to zero. 
-    * Not saved in EEPORM.
-    */
-   public void resetAccumulatedAngle() {
-      sendData(0x41, (byte) HTANGLE_MODE_RESET);
-   }
-   
-   /** 
-    * Calibrate the zero position of angle.
-    * Zero position is saved in EEPROM on sensor.
-    * Thread sleeps for 50ms while that is done.
-    */
-   public void calibrateAngle() {
-      sendData(0x41, (byte) HTANGLE_MODE_CALIBRATE);
-      Delay.msDelay(50);
-   }
-   
-   public SensorMode getAngleMode() {
-	   return getMode(0);
-   }
-   
-   private class AngleMode implements SensorMode {
 
-	@Override
-	public int sampleSize() {
-		return 1;
-	}
-	
-	@Override
-	public void fetchSample(float[] sample, int offset) {
-	    getData(REG_ANGLE, buf, 2);
-	    int bits9to2 = buf[0] & 0xFF;
-	    int bit1 = buf[1] & 0x01;
-	    
-	    sample[offset] = (bits9to2 << 1) | bit1;		
-	}
-	
-	@Override
-	public String getName() {
-		return "Angle";
-	}
-   }
-	
-	public SensorMode getAccumulatedAngleMode() {
-		return getMode(1);
-	}
-	
-	private class AccumulatedAngleMode implements SensorMode {
-		@Override
-		public int sampleSize() {
-			return 1;
-		}
+    @Override
+    public String getName() {
+      return "Angle";
+    }
+  }
 
-		@Override
-		public void fetchSample(float[] sample, int offset) {
-	      getData(REG_ACCUMULATED_ANGLE, buf, 4); 
-	      
-	      sample[offset] = -EndianTools.decodeIntBE(buf, 0);
-		}
+  public SensorMode getAccumulatedAngleMode() {
+    return getMode(1);
+  }
 
-		@Override
-		public String getName() {
-			return "AccumulatedAngle";
-		}		
-	}
-	
-	public SensorMode getAngularVelocityMode() {
-		return getMode(2);
-	}
-	
-	private class AngularVelocityMode implements SensorMode {
-		@Override
-		public int sampleSize() {
-			return 1;
-		}
+  private class AccumulatedAngleMode implements SensorMode {
+    @Override
+    public int sampleSize() {
+      return 1;
+    }
 
-		@Override
-		public void fetchSample(float[] sample, int offset) {
-	      getData(REG_SPEED, buf, 2);	      
-		  sample[offset] = -EndianTools.decodeShortBE(buf, 0) / 60;
-		}
+    @Override
+    public void fetchSample(float[] sample, int offset) {
+      getData(REG_ACCUMULATED_ANGLE, buf, 4);
 
-		@Override
-		public String getName() {
-			return "AngularVelocity";
-		}		
-	}
+      sample[offset] = -EndianTools.decodeIntBE(buf, 0);
+    }
+
+    @Override
+    public String getName() {
+      return "AccumulatedAngle";
+    }
+  }
+
+  public SensorMode getAngularVelocityMode() {
+    return getMode(2);
+  }
+
+  private class AngularVelocityMode implements SensorMode {
+    @Override
+    public int sampleSize() {
+      return 1;
+    }
+
+    @Override
+    public void fetchSample(float[] sample, int offset) {
+      getData(REG_SPEED, buf, 2);
+      sample[offset] = -EndianTools.decodeShortBE(buf, 0) / 60;
+    }
+
+    @Override
+    public String getName() {
+      return "AngularVelocity";
+    }
+  }
 }
