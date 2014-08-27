@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import com.ergotech.brickpi.motion.Motor;
 
+import lejos.hardware.motor.JavaMotorRegulator;
 import lejos.hardware.motor.MotorRegulator;
 import lejos.hardware.port.TachoMotorPort;
 
@@ -56,6 +57,6 @@ public class BrickPiMotorPort extends BrickPiIOPort implements TachoMotorPort {
 
 	@Override
 	public MotorRegulator getRegulator() {
-		throw new UnsupportedOperationException("Regulator not supported");
+		return new JavaMotorRegulator(this);
 	}
 }

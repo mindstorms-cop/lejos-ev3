@@ -20,6 +20,7 @@ import lejos.hardware.lcd.GraphicsLCD;
 import lejos.hardware.lcd.TextLCD;
 import lejos.hardware.port.Port;
 import lejos.hardware.port.PortException;
+import lejos.hardware.video.Video;
 
 public class RemoteEV3 implements EV3 {
 	private String host;
@@ -84,14 +85,19 @@ public class RemoteEV3 implements EV3 {
 		}
 	}
 	
-	public Audio getAudio() {
-		try {
-			return new RemoteAudio(rmiEV3.getAudio());
-		} catch (RemoteException e) {
-			throw new PortException(e);
-		}
-	}
-	
+    public Audio getAudio() {
+        try {
+            return new RemoteAudio(rmiEV3.getAudio());
+        } catch (RemoteException e) {
+            throw new PortException(e);
+        }
+    }
+    
+    public Video getVideo() {
+        // TODO: Should this be remote?
+        return null;
+    }
+    
 	public TextLCD getTextLCD() {
 		try {
 			return new RemoteTextLCD(rmiEV3.getTextLCD());
