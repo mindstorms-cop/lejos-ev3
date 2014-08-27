@@ -4,21 +4,51 @@ import lejos.hardware.port.I2CPort;
 import lejos.hardware.port.Port;
 
 /**
- * Class to access the HiTechnic NXT Acceleration / Tilt Sensor (NAC1040).
+ * <b>HiTechnic NXT Acceleration / Tilt Sensor (NAC1040)</b><br>
+ * The HiTechnic Accelerometer / Tilt Sensor measures acceleration in three axes.
  * 
- * Some sensors seem to be badly calibrated, so 0 is not always level.
- *  	
- * Documentation: http://www.hitechnic.com/cgi-bin/commerce.cgi?preadd=action&key=NAC1040
- * Some details from HTAC-driver.h from http://botbench.com/blog/robotc-driver-suite/
+ * <p style="color:red;">
+ * The code for this sensor has not been tested. Please report test results to
+ * the <A href="http://www.lejos.org/forum/"> leJOS forum</a>.
+ * </p>
  * 
- * ProductId: "HITECHNC"
- * SensorType: "Accel."
- * (confirmed for version " V1.1")
+ * <p>
+ * <table border=1>
+ * <tr>
+ * <th colspan=4>Supported modes</th>
+ * </tr>
+ * <tr>
+ * <th>Mode name</th>
+ * <th>Description</th>
+ * <th>unit(s)</th>
+ * <th>Getter</th>
+ * </tr>
+ * <tr>
+ * <td>Acceleration</td>
+ * <td>Measures acceleration over three axes.</td>
+ * <td>metre / second<sup>2</sup></td>
+ * <td> {@link #getAccelerationMode() }</td>
+ * </tr>
+ * </table>
+ * 
+ * 
+ * <p>
+ * 
+ * @see <a href="http://www.hitechnic.com/cgi-bin/commerce.cgi?preadd=action&key=NAC1040"> Sensor Product page </a>
+ *  (Some details from HTAC-driver.h from http://botbench.com/blog/robotc-driver-suite/)
+
+ * @see <a href="http://sourceforge.net/p/lejos/wiki/Sensor%20Framework/"> The
+ *      leJOS sensor framework</a>
+ * @see {@link lejos.robotics.SampleProvider leJOS conventions for
+ *      SampleProviders}
+ * 
+ *      <p>
+ * 
  * 
  * @author Lawrie Griffiths
  * @author Michael Mirwaldt
- */
-public class HiTechnicAccelerometer extends I2CSensor implements SensorMode {
+ * 
+ */public class HiTechnicAccelerometer extends I2CSensor  {
 	private static final int BASE_ACCEL = 0x42;	
 	private static final int OFF_X_HIGH = 0x00;
 	private static final int OFF_Y_HIGH = 0x01;
@@ -71,15 +101,29 @@ public class HiTechnicAccelerometer extends I2CSensor implements SensorMode {
     }
     
     protected void init() {
-       	setModes(new SensorMode[]{ this});
+       	setModes(new SensorMode[]{ new AccelMode()});
        }
     
     /**
-     * Get s sample provider in acceleration mode
-     */
+     * <b>HiTechnic NXT Acceleration , Acceleration mode</b><br>
+     * Measures acceleration over three axes.
+     * 
+     * <p>
+     * <b>Size and content of the sample</b><br>
+     * The sample contains 3 elements, containing acceleration over the X, Y and Z axis respectivily. The range of the sensor is  -2 to 2 G (1G = 9.81 m/s<sup>2</sup>).
+     * 
+     * <p>
+     * 
+     * @return A sampleProvider
+     * @see {@link lejos.robotics.SampleProvider leJOS conventions for
+     *      SampleProviders}
+     * @see <a href="http://www.hitechnic.com/cgi-bin/commerce.cgi?preadd=action&key=NAC1040"> Sensor datasheet </a>
+     */    
     public SensorMode getAccelerationMode() {
-    	return this;
+    	return getMode(0);
     }
+    
+    private class AccelMode implements SensorMode{
 
 	@Override
 	public int sampleSize() {
@@ -99,4 +143,5 @@ public class HiTechnicAccelerometer extends I2CSensor implements SensorMode {
 	public String getName() {
 		return "Acceleration";
 	}
+    }
 }

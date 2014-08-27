@@ -5,15 +5,9 @@ import lejos.hardware.port.UARTPort;
 import lejos.robotics.SampleProvider;
 
 /**
- * Sensor driver for the Lego EV3 Ultrasonic sensor.<br>
- * The EV3 Ultrasonic sensor measures distance to an object in front of the sensor. It can also be used to detect other (active) Ultrasonic sensor in the vicinity.
- * 
- * @author Aswin Bouwmeester
- * 
- */
-/**
  * <b>Lego EV3 Ultrasonic sensor</b><br>
- * The EV3 Ultrasonic sensor measures distance to an object in front of the sensor. It can also be used to detect other (active) Ultrasonic sensor in the vicinity.
+ * The EV3 Ultrasonic sensor measures distance to an object in front of the sensor. 
+ * It can also be used to detect other (active) Ultrasonic sensors in the vicinity.
  * 
  * 
  * 
@@ -59,7 +53,7 @@ import lejos.robotics.SampleProvider;
  *      <p>
  * 
  * 
- * @author Your name
+ * @author Aswin Bouwmeester
  * 
  */
 public class EV3UltrasonicSensor extends UARTSensor {
