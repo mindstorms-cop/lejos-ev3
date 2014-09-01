@@ -35,7 +35,13 @@ import lejos.robotics.Calibrate;
  * <tr>
  * <td>Compass</td>
  * <td>Measures the orientation of the sensor</td>
- * <td>Degrees</td>
+ * <td>Degrees, corresponding to the compass rose</td>
+ * <td> {@link #getCompassMode() }</td>
+ * </tr>
+ * <tr>
+ * <td>Angle</td>
+ * <td>Measures the orientation of the sensor</td>
+ * <td>Degrees, corresponding to the right hand coordinate system</td>
  * <td> {@link #getCompassMode() }</td>
  * </tr>
  * </table>
@@ -122,7 +128,7 @@ public class HiTechnicCompass extends I2CSensor implements Calibrate {
   }
 
   protected void init() {
-    setModes(new SensorMode[] { new CompassMode() });
+    setModes(new SensorMode[] { new CompassMode(), new AngleMode() });
   }
 
   /**
@@ -148,6 +154,37 @@ public class HiTechnicCompass extends I2CSensor implements Calibrate {
       // It would be simpler to use the heading registers 44h and 45h 
       getData(0x42, buf, 2);
       sample[offset] = (((buf[0] & 0xff) << 1) + buf[1]);
+    }
+
+    @Override
+    public String getName() {
+      return "Compass";
+    }
+  }
+  
+  /**
+   * Get a angle mode sensor provider
+   * 
+   * @return the sample provider
+   */
+  public SensorMode getAngleMode() {
+    return getMode(0);
+  }
+
+  private class AngleMode implements SensorMode {
+
+    @Override
+    public int sampleSize() {
+      return 1;
+    }
+
+    @Override
+    public void fetchSample(float[] sample, int offset) {
+      // TODO: Change sample register to 44h.
+      // The sensor uses the two degree heading register and one degree adder (42h, 43h). 
+      // It would be simpler to use the heading registers 44h and 45h 
+      getData(0x42, buf, 2);
+      sample[offset] = (((buf[0] & 0xff) << 1) + buf[1]);
       if (sample[offset] != 0) {
         // correction for right hand coordinate system
         sample[offset] = 360 - sample[offset];
@@ -156,9 +193,10 @@ public class HiTechnicCompass extends I2CSensor implements Calibrate {
 
     @Override
     public String getName() {
-      return "Compass";
+      return "Angle";
     }
   }
+
 
   /**
    * Starts calibration for the compass. Must rotate *very* slowly, taking at
