@@ -121,7 +121,7 @@ public class HiTechnicAccelerometer extends I2CSensor {
    * <p>
    * <b>Size and content of the sample</b><br>
    * The sample contains 3 elements, containing acceleration over the X, Y and Z
-   * axis respectivily. The range of the sensor is -2 to 2 G (1G = 9.81
+   * axis respectively. The range of the sensor is -2 to 2 G (1G = 9.81
    * m/s<sup>2</sup>).
    * 
    * <p>

@@ -87,10 +87,32 @@ public class EV3UltrasonicSensor extends UARTSensor {
     init();
   }
 
+  /**
+   * <b>Lego EV3 Ultrasonic sensor, Listen mode</b><br>
+   * Listens for the presence of other ultrasonic sensors. 
+   * 
+   * <p>
+   * <b>Size and content of the sample</b><br>
+   * The sample contains one elements indicating the presence of another ultrasonic sensor. 
+   * A value of 1 indicates that the sensor detects another ultrasonic sensor.
+   * 
+   * @return A sampleProvider
+   */  
   public SampleProvider getListenMode() {
     return getMode(1);
   }
 
+  /**
+   * <b>Lego EV3 Ultrasonic sensor, Distance mode</b><br>
+   * Measures distance to an object in front of the sensor
+   * 
+   * <p>
+   * <b>Size and content of the sample</b><br>
+   * The sample contains one elements representing the distance (in metres) to an object in front of the sensor.
+   * unit).
+   * 
+   * @return A sampleProvider
+   */
   public SampleProvider getDistanceMode() {
     return getMode(0);
   }
@@ -119,10 +141,8 @@ public class EV3UltrasonicSensor extends UARTSensor {
     return (currentMode == DISABLED) ? false : true;
   }
 
-  /**
-   * Represents a Ultrasonic sensor in distance mode
-   */
-  private class DistanceMode implements SampleProvider, SensorMode {
+
+private class DistanceMode implements SampleProvider, SensorMode {
     private static final int   MODE = 0;
     private static final float toSI = 0.001f;
 

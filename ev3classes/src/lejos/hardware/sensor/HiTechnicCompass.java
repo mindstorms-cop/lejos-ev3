@@ -132,9 +132,12 @@ public class HiTechnicCompass extends I2CSensor implements Calibrate {
   }
 
   /**
-   * Get a compass mode sensor provider
+   * <b>HiTechnic compass sensor, Compass mode</b><br>
+   * Measures the color of a surface.
    * 
-   * @return the sample provider
+   * <p>
+   * <b>Size and content of the sample</b><br>
+   * The sample contains one element containing the bearing of the sensor relative to north expressed in degrees. East being at 90 degrees.
    */
   public SensorMode getCompassMode() {
     return getMode(0);
@@ -149,9 +152,6 @@ public class HiTechnicCompass extends I2CSensor implements Calibrate {
 
     @Override
     public void fetchSample(float[] sample, int offset) {
-      // TODO: Change sample register to 44h.
-      // The sensor uses the two degree heading register and one degree adder (42h, 43h). 
-      // It would be simpler to use the heading registers 44h and 45h 
       getData(0x42, buf, 2);
       sample[offset] = (((buf[0] & 0xff) << 1) + buf[1]);
     }
@@ -163,12 +163,15 @@ public class HiTechnicCompass extends I2CSensor implements Calibrate {
   }
   
   /**
-   * Get a angle mode sensor provider
+   * <b>HiTechnic compass sensor, Angle mode</b><br>
+   * Measures the color of a surface.
    * 
-   * @return the sample provider
+   * <p>
+   * <b>Size and content of the sample</b><br>
+   * The sample contains one element containing the bearing of the sensor relative to north expressed in degrees using a right hand coordinate system in the range of (-180 to 180). West being at 90 degrees, east being at -90 degrees.
    */
   public SensorMode getAngleMode() {
-    return getMode(0);
+    return getMode(1);
   }
 
   private class AngleMode implements SensorMode {
@@ -180,13 +183,13 @@ public class HiTechnicCompass extends I2CSensor implements Calibrate {
 
     @Override
     public void fetchSample(float[] sample, int offset) {
-      // TODO: Change sample register to 44h.
-      // The sensor uses the two degree heading register and one degree adder (42h, 43h). 
-      // It would be simpler to use the heading registers 44h and 45h 
       getData(0x42, buf, 2);
       sample[offset] = (((buf[0] & 0xff) << 1) + buf[1]);
-      if (sample[offset] != 0) {
+      if (sample[offset] <180 ) {
         // correction for right hand coordinate system
+        sample[offset] = - sample[offset];
+      }
+      else {
         sample[offset] = 360 - sample[offset];
       }
     }

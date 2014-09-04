@@ -3,15 +3,61 @@ package lejos.hardware.sensor;
 import lejos.hardware.port.I2CPort;
 import lejos.hardware.port.Port;
 
+
 /**
- * HiTechnic IRSeeker v2
- *  
- * See http://www.hitechnic.com/cgi-bin/commerce.cgi?preadd=action&key=NSK1042
- *
+ * <b>HiTechnic NXT IRSeeker V2</b><br>
+ * The NXT IRSeeker V2 (Version 2) is a multi-element infrared detector that
+ * detects infrared signals from sources such as the HiTechnic IRBall soccer
+ * ball, infrared remote controls and sunlight.
+ * 
+ * <p style="color:red;">
+ * The code for this sensor has not been tested. Please report test results to
+ * the <A href="http://www.lejos.org/forum/"> leJOS forum</a>.
+ * </p>
+ * 
+ * <p>
+ * <table border=1>
+ * <tr>
+ * <th colspan=4>Supported modes</th>
+ * </tr>
+ * <tr>
+ * <th>Mode name</th>
+ * <th>Description</th>
+ * <th>unit(s)</th>
+ * <th>Getter</th>
+ * </tr>
+ * <tr>
+ * <td>modulated</td>
+ * <td>Measures the angle to a source of modulated (1200 Hz square wave) infrared light</td>
+ * <td>Degrees</td>
+ * <td> {@link #getModulatedMode() }</td>
+ * </tr>
+ * <tr>
+ * <td>Unmodulated</td>
+ * <td>Measures the angle to a source of unmodulated infrared light</td>
+ * <td>Degrees</td>
+ * <td> {@link #getUnmodulatedMode() }</td>
+ * </tr>
+ * </table>
+ * 
+ * 
+ * <p>
+ * 
+ * @see <a
+ *      href="http://www.hitechnic.com/cgi-bin/commerce.cgi?preadd=action&key=NSK1042">
+ *      Sensor Product page </a>
+ * @see <a href="http://sourceforge.net/p/lejos/wiki/Sensor%20Framework/"> The
+ *      leJOS sensor framework</a>
+ * @see {@link lejos.robotics.SampleProvider leJOS conventions for
+ *      SampleProviders}
+ * 
+ *      <p>
+ * 
+ * 
  * @author Lawrie Griffiths
  * 
  */
-public class HiTechnicIRSeekerV2 extends I2CSensor implements SensorMode 
+public class HiTechnicIRSeekerV2 extends I2CSensor 
 {
     private static final byte   address   = 0x10;
     private byte[] buf = new byte[1]; 
@@ -27,13 +73,22 @@ public class HiTechnicIRSeekerV2 extends I2CSensor implements SensorMode
     } 
     
     protected void init() {
-    	setModes(new SensorMode[]{ this, new UnmodulatedMode() });
+    	setModes(new SensorMode[]{ new ModulatedMode(), new UnmodulatedMode() });
     }
 	
+    /**
+     * <b>HiTechnic IR seeker V2, modulated mode</b><br>
+     * Measures the angle to a source of a modulated infrared light.
+     * 
+     * <p>
+     * <b>Size and content of the sample</b><br>
+     * The sample contains one element containing the angle to the infrared source. The angle is expressed in degrees following the right hand rule. 
+     */
 	public SensorMode getModulatedMode() {
-		return this;
+		return getMode(0);
 	}
 	
+	private class ModulatedMode implements SensorMode {
  	@Override
 	public int sampleSize() {
 		return 1;
@@ -54,7 +109,16 @@ public class HiTechnicIRSeekerV2 extends I2CSensor implements SensorMode
 	public String getName() {
 		return "Modulated";
 	}
+	}
 	
+  /**
+   * <b>HiTechnic IR seeker V2, Unmodulated mode</b><br>
+   * Measures the angle to a source of unmodulated infrared light
+   * 
+   * <p>
+   * <b>Size and content of the sample</b><br>
+   * The sample contains one element containing the angle to the infrared source. The angle is expressed in degrees following the right hand rule. 
+   */
 	public SensorMode getUnmodulatedMode() {
 		return getMode(1);
 	}

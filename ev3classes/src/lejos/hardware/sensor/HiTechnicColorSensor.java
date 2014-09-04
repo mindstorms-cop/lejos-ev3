@@ -113,11 +113,29 @@ public class HiTechnicColorSensor extends I2CSensor implements ColorIdentifier {
     return colorMap[HT_val];
   }
 
+  /**
+   * <b>HiTechnic color sensor, Color ID mode</b><br>
+   * Measures the color ID of a surface.
+   * 
+   * <p>
+   * <b>Size and content of the sample</b><br>
+   * The sample contains one element containing a color ID.
+   *         <li>0 = red <li>1 = green <li>2 = blue <li>3 = yellow <li>4 =
+   *         magenta <li>5 = orange <li>6 = white <li>7 = black <li>8 = pink <li>
+   *         9 = gray <li>10 = light gray <li>11 = dark gray <li>12 = cyan
+   */  
   public SensorMode getColorIDMode() {
     return getMode(0);
   }
 
-  public SensorMode getRGBMode() {
+  /**
+   * <b>HiTechnic color sensor, Color ID mode</b><br>
+   * Measures the color of a surface.
+   * 
+   * <p>
+   * <b>Size and content of the sample</b><br>
+   * The sample contains three elements containing the color expressed in RGB values (0-255) of the measured surface.
+   */  public SensorMode getRGBMode() {
     return getMode(1);
   }
 
@@ -138,7 +156,7 @@ public class HiTechnicColorSensor extends I2CSensor implements ColorIdentifier {
     }
   }
 
-  public class RGBMode implements SensorMode {
+   public class RGBMode implements SensorMode {
 
     @Override
     public int sampleSize() {

@@ -3,14 +3,51 @@ package lejos.hardware.sensor;
 import lejos.hardware.port.AnalogPort;
 import lejos.hardware.port.Port;
 
+
 /**
- * Support the HiTechnic Gyro sensor NGY1044 (or equivalent). 
- * See http://www.hitechnic.com/cgi-bin/commerce.cgi?preadd=action&key=NGY1044
- *
+ * <b>HiTechnic NXT Gyro Sensor</b><br>
+ * The NXT Gyro Sensor contains a single axis gyroscopic sensor that detects rotation.
+ * 
+ * <p style="color:red;">
+ * The code for this sensor has not been tested. Please report test results to
+ * the <A href="http://www.lejos.org/forum/"> leJOS forum</a>.
+ * </p>
+ * 
+ * <p>
+ * <table border=1>
+ * <tr>
+ * <th colspan=4>Supported modes</th>
+ * </tr>
+ * <tr>
+ * <th>Mode name</th>
+ * <th>Description</th>
+ * <th>unit(s)</th>
+ * <th>Getter</th>
+ * </tr>
+ * <tr>
+ * <td>Rate</td>
+ * <td>The Rate mode measures the angular speed of the sensor over a single axis</td>
+ * <td>Degrees/second</td>
+ * <td> {@link #getRateMode() }</td>
+ * </tr>
+ * </table>
+ * 
+ * 
+ * <p>
+ * 
+ * @see <a href="http://www.hitechnic.com/cgi-bin/commerce.cgi?preadd=action&key=NGY1044"> Sensor Product page </a>
+ * @see <a href="http://sourceforge.net/p/lejos/wiki/Sensor%20Framework/"> The
+ *      leJOS sensor framework</a>
+ * @see {@link lejos.robotics.SampleProvider leJOS conventions for
+ *      SampleProviders}
+ * 
+ *      <p>
+ * 
+ * 
  * @author Lawrie Griffiths
- *
+ * 
  */
-public class HiTechnicGyro extends AnalogSensor implements SensorConstants, SensorMode {
+public class HiTechnicGyro extends AnalogSensor implements SensorConstants {
 	private static final float TO_SI=-1;
 	private float zero = 600f;
 	
@@ -39,10 +76,25 @@ public class HiTechnicGyro extends AnalogSensor implements SensorConstants, Sens
     }
     
     protected void init() {
-    	setModes(new SensorMode[]{ this });
+    	setModes(new SensorMode[]{ new RateMode() });
     	port.setTypeAndMode(TYPE_CUSTOM, MODE_RAW);
     }
+    
+    /**
+     * <b>HiTechnic Gyro sensor, Rate mode</b><br>
+     * The Rate mode measures the angular speed of the sensor over three axes
+     * 
+     * <p>
+     * <b>Size and content of the sample</b><br>
+     * The sample contains one element giving the angular speed (in degrees/second) of the sensor over its vertical axis (Z-axis). 
+     * 
+     * <p>
+     * */
+    public SensorMode getRateMode() {
+      return getMode(0);
+    }
 
+    private class RateMode implements SensorMode {
 	@Override
 	public int sampleSize() {
 		return 1;
@@ -55,6 +107,7 @@ public class HiTechnicGyro extends AnalogSensor implements SensorConstants, Sens
 
 	@Override
 	public String getName() {
-		return "Gyro";
+		return "Rate";
 	}
+    }
 }
