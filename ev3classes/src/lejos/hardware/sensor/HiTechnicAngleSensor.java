@@ -108,6 +108,16 @@ public class HiTechnicAngleSensor extends I2CSensor {
     Delay.msDelay(50);
   }
 
+  /**
+   * <b>HiTechnic angle sensor, Angle mode</b><br>
+   * Measures the rotation position of a rotating axle.
+   * 
+   * <p>
+   * <b>Size and content of the sample</b><br>
+   * The sample contains one elements containing the angle of the sensor in the range of 0 to 359 degrees.
+   * 
+
+   */  
   public SensorMode getAngleMode() {
     return getMode(0);
   }
@@ -134,6 +144,14 @@ public class HiTechnicAngleSensor extends I2CSensor {
     }
   }
 
+  /**
+   * <b>HiTechnic angle sensor, Accumulated angle mode</b><br>
+   * Measures the accumulated number of degrees an axle has rotated.
+   * 
+   * <p>
+   * <b>Size and content of the sample</b><br>
+   * The sample contains one elements containing the accumulated rotation (in degrees) of the axle.
+   */  
   public SensorMode getAccumulatedAngleMode() {
     return getMode(1);
   }
@@ -157,6 +175,14 @@ public class HiTechnicAngleSensor extends I2CSensor {
     }
   }
 
+  /**
+   * <b>HiTechnic angle sensor, Angular velocity mode</b><br>
+   * Measures the rotational speed of an axle.
+   * 
+   * <p>
+   * <b>Size and content of the sample</b><br>
+   * The sample contains one elements containing the angular velocity (in degrees) of the axle.
+   */  
   public SensorMode getAngularVelocityMode() {
     return getMode(2);
   }

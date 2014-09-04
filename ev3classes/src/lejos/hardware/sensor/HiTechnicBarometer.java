@@ -129,6 +129,14 @@ public class HiTechnicBarometer extends I2CSensor {
     return (float) ((result / INHG_TO_HPA) * 10);
   }
 
+  /**
+   * <b>HiTechnic Barometer, Pressure mode</b><br>
+   * Measures the atmospheric pressure of the air.
+   * 
+   * <p>
+   * <b>Size and content of the sample</b><br>
+   * The sample contains one element containing the atmospheric pressure (in HectoPascal) of the air.
+   */  
   public SensorMode getPressureMode() {
     return getMode(0);
   }
@@ -153,7 +161,14 @@ public class HiTechnicBarometer extends I2CSensor {
 
   }
 
-  public SensorMode getTemperatureMode() {
+  /**
+   * <b>HiTechnic Barometer, Temperature mode</b><br>
+   * Measures the temperature of the air.
+   * 
+   * <p>
+   * <b>Size and content of the sample</b><br>
+   * The sample contains one element containing the air temperature (in degree celcius).
+   */    public SensorMode getTemperatureMode() {
     return getMode(1);
   }
 
