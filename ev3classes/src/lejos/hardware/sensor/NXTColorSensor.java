@@ -5,16 +5,79 @@ import lejos.hardware.port.Port;
 import lejos.robotics.*;
 
 /**
- * LEGO NXT Color Sensor driver.
- * This driver provides access to the LEGO Color sensor. It allows the reading of
+ * <b>LEGO NXT Color Sensor</b><br>
+ * allows the reading of
  * raw color values. The sensor has a tri-color LED and this can
  * be set to output red/green/blue or off. It also has a full mode in which
  * four samples are read (off/red/green/blue) very quickly. These samples can
  * then be combined using the calibration data provided by the device to
  * determine the "LEGO" color currently being viewed.
- * @author andy
+ * 
+ * <p>
+ * <table border=1>
+ * <tr>
+ * <th colspan=4>Supported modes</th>
+ * </tr>
+ * <tr>
+ * <th>Mode name</th>
+ * <th>Description</th>
+ * <th>unit(s)</th>
+ * <th>Getter</th>
+ * </tr>
+ * <tr>
+ * <td>Color ID</td>
+ * <td>Measures the color ID</td>
+ * <td>Color ID</td>
+ * <td> {@link #getColorIDMode() }</td>
+ * </tr>
+ * <tr>
+ * <td>Red</td>
+ * <td>Measures the light value when illuminated with a red light source.</td>
+ * <td>N/A, normalized</td>
+ * <td> {@link #getRedMode() }</td>
+ * </tr>
+ * <tr>
+ * <td>Green</td>
+ * <td>Measures the light value when illuminated with a green light source.</td>
+ * <td>N/A, normalized</td>
+ * <td> {@link #getGreenMode() }</td>
+ * </tr>
+ * <tr>
+ * <td>Blue</td>
+ * <td>Measures the light value when illuminated with a blue light source.</td>
+ * <td>N/A, normalized</td>
+ * <td> {@link #getBlueMode() }</td>
+ * </tr>
+ * <tr>
+ * <td>RGB</td>
+ * <td>Measures the light value when illuminated with a white light source.</td>
+ * <td>N/A, normalized</td>
+ * <td> {@link #getRGDMode() }</td>
+ * </tr>
+ * <tr>
+ * <td>Ambient</td>
+ * <td>Measures the light value of ambient light.</td>
+ * <td>N/A, normalized</td>
+ * <td> {@link #getAmbientMode() }</td>
+ * </tr>
+ * </table>
+ * 
+ * 
+ * <p>
+ * 
+ * @see <a href="http://sourceforge.net/p/lejos/wiki/Sensor%20Framework/"> The
+ *      leJOS sensor framework</a>
+ * @see {@link lejos.robotics.SampleProvider leJOS conventions for
+ *      SampleProviders}
+ * 
+ *      <p>
+ * 
+ * 
+ * @author Andy
+ * 
  */
-public class NXTColorSensor extends AnalogSensor implements SensorConstants, SensorMode, LampController, ColorIdentifier
+
+public class NXTColorSensor extends AnalogSensor implements SensorConstants,  LampController, ColorIdentifier
 {
     protected static final long SWITCH_DELAY = 10;
     protected static int[] colorMap =
@@ -66,7 +129,12 @@ public class NXTColorSensor extends AnalogSensor implements SensorConstants, Sen
     
     protected void init()
     {
-        setModes(new SensorMode[]{getColorIDMode(), getRedMode(), getGreenMode(), getBlueMode(), getRGBMode(), getAmbientMode() });        
+        setModes(new SensorMode[]{new ColorIDMode(), 
+            new ModeProvider("Red", TYPE_COLORRED, 1, 0), 
+            new ModeProvider("Green", TYPE_COLORGREEN, 1, 1), 
+            new ModeProvider("Blue", TYPE_COLORBLUE, 1, 2), 
+            new ModeProvider("RGB", TYPE_COLORFULL, 4, 0), 
+            new ModeProvider("None", TYPE_COLORNONE, 1, 3) });        
         setFloodlight(Color.WHITE);
     }
     
@@ -98,7 +166,7 @@ public class NXTColorSensor extends AnalogSensor implements SensorConstants, Sen
      */
     public SensorMode getColorIDMode()
     {
-        return this;
+        return getMode(0);
     }
 
     /**
@@ -108,7 +176,7 @@ public class NXTColorSensor extends AnalogSensor implements SensorConstants, Sen
      */
     public SensorMode getRedMode()
     {
-        return new ModeProvider("Red", TYPE_COLORRED, 1, 0);
+      return getMode(1);
     }
 
     /**
@@ -118,7 +186,7 @@ public class NXTColorSensor extends AnalogSensor implements SensorConstants, Sen
      */
     public SensorMode getGreenMode()
     {
-        return new ModeProvider("Green", TYPE_COLORGREEN, 1, 1);
+      return getMode(2);
     }
 
     /**
@@ -128,7 +196,17 @@ public class NXTColorSensor extends AnalogSensor implements SensorConstants, Sen
      */
     public SensorMode getBlueMode()
     {
-        return new ModeProvider("Blue", TYPE_COLORBLUE, 1, 2);
+      return getMode(3);
+    }
+
+    /**
+     * get a sample provider the returns the light values (RGB + ambient) when illuminated by a
+     * white light source.
+     * @return the sample provider
+     */
+    public SensorMode getRGBMode()
+    {
+      return getMode(4);
     }
 
     /**
@@ -138,17 +216,7 @@ public class NXTColorSensor extends AnalogSensor implements SensorConstants, Sen
      */
     public SensorMode getAmbientMode()
     {
-        return new ModeProvider("None", TYPE_COLORNONE, 1, 3);
-    }
-    
-    /**
-     * get a sample provider the returns the light values (RGB + ambient) when illuminated by a
-     * white light source.
-     * @return the sample provider
-     */
-    public SensorMode getRGBMode()
-    {
-        return new ModeProvider("RGB", TYPE_COLORFULL, 4, 0);
+      return getMode(5);
     }
     
     protected void readRaw()
@@ -228,22 +296,24 @@ public class NXTColorSensor extends AnalogSensor implements SensorConstants, Sen
         return colorMap[(int)ADRaw[BLANK_INDEX+1]];
     }
 
-    @Override
-    public int sampleSize()
-    {
-        return 1;
-    }
-
-    @Override
-    public void fetchSample(float[] sample, int offset)
-    {
-        sample[offset] = (float) getColorID();
-    }
-
-
-    @Override
-    public String getName()
-    {
-        return "ColorID";
+    private class ColorIDMode implements SensorMode{
+      @Override
+      public int sampleSize()
+      {
+          return 1;
+      }
+  
+      @Override
+      public void fetchSample(float[] sample, int offset)
+      {
+          sample[offset] = (float) getColorID();
+      }
+  
+  
+      @Override
+      public String getName()
+      {
+          return "ColorID";
+      }
     }
 }
