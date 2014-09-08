@@ -5,11 +5,48 @@ import lejos.hardware.port.Port;
 import lejos.robotics.SampleProvider;
 import lejos.utility.Delay;
 
-/** Represent the UltraSonic sensor for the NXT. <br> 
- * The sensor has two active modes. In continuous mode the sensor periodically scans the surrounding and measures the distance to the nearest object in sight.
- * In ping mode the sensor only scans the surrounding when a sample is fetched. It will then retun the distance of the eight nearest objects in sight. 
+/**
+ * <b>NXT Ultrasonic sensor</b><br>
+ * The NXT Ultrasonic sensor generates sound waves and reads their echoes to detect and measure distance from objects.
+ * 
+ * <p>
+ * <table border=1>
+ * <tr>
+ * <th colspan=4>Supported modes</th>
+ * </tr>
+ * <tr>
+ * <th>Mode name</th>
+ * <th>Description</th>
+ * <th>unit(s)</th>
+ * <th>Getter</th>
+ * </tr>
+ * <tr>
+ * <td>Distance</td>
+ * <td>Measures the distance to the nearest object in front of the sensor</td>
+ * <td>meter</td>
+ * <td> {@link #getDistanceMode() }</td>
+ * </tr>
+ * <tr>
+ * <td>Ping</td>
+ * <td>Measures the distance to the nearest 8 objects in front of the sensor</td>
+ * <td>meter</td>
+ * <td> {@link #getPingMode() }</td>
+ * </tr>
+ * </table>
+ * 
+ * <p>
+ * 
+ *  @see <a href="http://www.lego.com/en-us/mindstorms/downloads/software/nxt-hdk/"> Mindstorms NXT HDK/SDK </a>
+ * @see <a href="http://sourceforge.net/p/lejos/wiki/Sensor%20Framework/"> The
+ *      leJOS sensor framework</a>
+ * @see {@link lejos.robotics.SampleProvider leJOS conventions for
+ *      SampleProviders}
+ * 
+ *      <p>
+ * 
+ * 
  * @author Aswin
- *
+ * 
  */
 public class NXTUltrasonicSensor extends I2CSensor  {
 	// Supported modes
@@ -84,22 +121,22 @@ public class NXTUltrasonicSensor extends I2CSensor  {
 	}
 	
 	private void init() {
-	  setModes(new SensorMode[]{ new ContinuousMode(), new PingMode()}); 
+	  setModes(new SensorMode[]{ new DistanceMode(), new PingMode()}); 
 		nextCmdTime = System.currentTimeMillis() + DELAY_CMD;
 		setMode(MODE_CONTINUOUS);		
 		dataAvailableTime = System.currentTimeMillis()+DELAY_DATA_CONTINUOUS; 
 		
 	}
 
-	/** Gives a SampleProvider representing the sensor in continuous mode. 
+	/** Gives a SampleProvider representing the sensor in distance mode. 
 	 * In this mode the sensor scans the surrounding continuously and reports the distance to the nearest object in sight.
 	 * The sensor reports the distance to the nearest object in meters. The theoretical range of the sensor is 0,04 to 2.54 meter.
 	 * If there is no object detected within this range the sensor reports Float.POSITIVE_INFINITY. <br>
-	 * Samples can only be provided every 30 ms. If samples are fetched more often the object will pause until the 30ms have passed.
+	 * Samples can only be provided every 30 ms. If samples are fetched more often the SampleProvider will pause until the 30ms have passed.
 	 * @return
 	 * A SamplePrivider
 	 */
-	public SampleProvider getContinuousMode() {
+	public SampleProvider getDistanceMode() {
 	  return getMode(0);
 	}
 
@@ -144,7 +181,7 @@ public class NXTUltrasonicSensor extends I2CSensor  {
 	}
 
 	
-	public class ContinuousMode implements SampleProvider, SensorMode {
+	public class DistanceMode implements SensorMode {
 
 		@Override
 		public int sampleSize() {
@@ -172,7 +209,7 @@ public class NXTUltrasonicSensor extends I2CSensor  {
 
 	}
 	
-	public class PingMode implements SampleProvider, SensorMode {
+	public class PingMode implements SensorMode {
 
 		@Override
 		public int sampleSize() {

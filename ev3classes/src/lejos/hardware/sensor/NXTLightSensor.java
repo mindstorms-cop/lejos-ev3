@@ -5,12 +5,41 @@ import lejos.hardware.port.Port;
 import lejos.robotics.Color;
 import lejos.robotics.LampController;
 
+
 /**
- * This class is used to obtain readings from a LEGO NXT light sensor.
- * The light sensor can be calibrated to low and high values. 
+ * <b>LEGO NXT light Sensor</b><br>
+ * The NXT light sensor measures light levels of reflected or ambient light.
  * 
+ * <p>
+ * <table border=1>
+ * <tr>
+ * <th colspan=4>Supported modes</th>
+ * </tr>
+ * <tr>
+ * <th>Mode name</th>
+ * <th>Description</th>
+ * <th>unit(s)</th>
+ * <th>Getter</th>
+ * </tr>
+ * <tr>
+ * <td>Red</td>
+ * <td>Measures the light value when illuminated with a red light source.</td>
+ * <td>N/A, normalized</td>
+ * <td> {@link #getRedMode() }</td>
+ * </tr>
+ * <tr>
+ * <td>Ambient</td>
+ * <td>Measures the light value of ambient light.</td>
+ * <td>N/A, normalized</td>
+ * <td> {@link #getAmbientMode() }</td>
+ * </tr>
+ * </table>
+ * 
+ * <p>
+ *  @see <a href="http://www.lego.com/en-us/mindstorms/downloads/software/nxt-hdk/"> Mindstorms NXT HDK/SDK </a>
+ *  
  */
-public class NXTLightSensor extends AnalogSensor implements LampController, SensorConstants, SensorMode
+public class NXTLightSensor extends AnalogSensor implements LampController, SensorConstants
 {
     protected static final long SWITCH_DELAY = 10;
 	private boolean floodlight = false;
@@ -40,7 +69,7 @@ public class NXTLightSensor extends AnalogSensor implements LampController, Sens
 	}
     protected void init()
     {
-        setModes(new SensorMode[]{ this, new AmbientMode() });        
+        setModes(new SensorMode[]{ new RedMode(), new AmbientMode() });        
         setFloodlight(true);
     }
     
@@ -93,16 +122,27 @@ public class NXTLightSensor extends AnalogSensor implements LampController, Sens
 		return this.floodlight;
 	}
 
+  /**
+   * get a sample provider the returns the light value when illuminated with a
+   * Red light source.
+   * @return the sample provider
+   */
 	public SensorMode getRedMode()
 	{
-	    return this;
+	    return getMode(0);
 	}
 	
+  /**
+   * get a sample provider the returns the light value when illuminated without a
+   * light source.
+   * @return the sample provider
+   */
 	public SensorMode getAmbientMode()
 	{
 	    return getMode(1);
 	}
 	
+	private class RedMode implements SensorMode {
     @Override
     public int sampleSize()
     {
@@ -122,4 +162,5 @@ public class NXTLightSensor extends AnalogSensor implements LampController, Sens
     {
         return "Red";
     }
+	}
 }
