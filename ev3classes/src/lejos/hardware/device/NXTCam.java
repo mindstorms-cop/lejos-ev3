@@ -3,6 +3,7 @@ package lejos.hardware.device;
 import lejos.hardware.port.I2CPort;
 import lejos.hardware.port.Port;
 import lejos.hardware.sensor.I2CSensor;
+import lejos.robotics.geometry.Rectangle2D;
 import lejos.robotics.geometry.RectangleInt32;
 
 
@@ -132,7 +133,7 @@ public class NXTCam extends I2CSensor {
 	 * @param id the object number (starting at zero)
 	 * @return the rectangle
 	 */
-	public RectangleInt32 getRectangle(int id) {
+	public Rectangle2D getRectangle(int id) {
 		for(int i=0;i<4;i++) buf[i] = 0;
 		getData(0x44 + (id * 5), buf, 4);
 		return new RectangleInt32(buf[0] & 0xFF, buf[1] & 0xFF,
