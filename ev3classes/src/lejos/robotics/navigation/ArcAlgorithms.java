@@ -1,6 +1,6 @@
 package lejos.robotics.navigation; // TODO: Move to lejos.geom?
 
-import java.awt.geom.*;
+
 
 import lejos.robotics.geometry.*;
 

@@ -10,14 +10,15 @@ import java.awt.geom.*;
  * @author Lawrie Griffiths ,  Roger Glassey
  *
  */
-public class Point extends Point2D.Float {
+public class Point extends Point2D.Float{
+    public float x, y;
    /**
     * returns a Point at location x,y
     * @param x coordinate
     * @param y coordinate
     */
 	public Point(float x, float y) {
-		super(x,y);
+	    super(x, y);
 	}
 /**
       * Returns a point ad distance 1 from the origin and an angle <code>radans</code> to the x-axis
@@ -28,6 +29,7 @@ public class Point extends Point2D.Float {
         this.x = (float)Math.cos(radians);
         this.y = -(float)Math.sin(radians);
     }
+
 
 /**
  * Returns the direction angle from this point to the Point p

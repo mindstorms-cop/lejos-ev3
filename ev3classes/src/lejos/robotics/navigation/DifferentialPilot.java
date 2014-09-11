@@ -1057,7 +1057,12 @@ public class DifferentialPilot implements RegulatedMotorListener,
 
 	private class Monitor extends Thread {
 		public boolean more = true;
-
+		public Monitor()
+		{
+		    // don't make VM hang for us!
+            setDaemon(true);		    
+		}
+		
 		public void run() {
 			while (more) {
 				if (_callStop) {
