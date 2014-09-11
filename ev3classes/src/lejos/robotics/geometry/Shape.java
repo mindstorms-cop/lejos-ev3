@@ -15,7 +15,7 @@ public interface Shape {
 	 * 
 	 * @return the bounding Rectangle
 	 */
-	public Rectangle getBounds();
+	public RectangleInt32 getBounds();
 	
 	/**
 	 * Get the bounding Rectangle2D for the shape
