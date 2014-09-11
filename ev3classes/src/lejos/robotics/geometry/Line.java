@@ -1,6 +1,5 @@
 package lejos.robotics.geometry;
 
-import java.awt.geom.*;
 /**
  * Represents a line and supports calculating the point of intersection of two
  * line segments.
@@ -12,9 +11,9 @@ import java.awt.geom.*;
  * 
  */
 public class Line extends Line2D.Float {
-
+  public float x1, y1, x2, y2;
   public Line(float x1, float y1, float x2, float y2) {
-    super(x1,y1,x2,y2);
+    super(x1, y1, x2, y2);
   }
 
   /**
