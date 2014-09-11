@@ -372,7 +372,7 @@ public abstract class Line2D implements Shape, Cloneable {
                  relativeCCW(x3, y3, x4, y4, x2, y2) <= 0));
     }
 
-	public Rectangle getBounds() {
+	public RectangleInt32 getBounds() {
 		return getBounds2D().getBounds();
 	}
 	

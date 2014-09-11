@@ -178,8 +178,8 @@ public class RectangleInt32 extends Rectangle2D {
     }
     
     @Override
-    public Rectangle getBounds() {
-        return new Rectangle(x, y, width, height);
+    public RectangleInt32 getBounds() {
+        return new RectangleInt32(x, y, width, height);
     }
     
     public Rectangle2D getBounds2D() {

@@ -159,17 +159,17 @@ public abstract class RectangularShape implements Shape, Cloneable {
      * Get the bounds of this rectangular shape as a Rectangle
      * @return the bounds as a Rectangle
      */
-    public Rectangle getBounds() {
+    public RectangleInt32 getBounds() {
         double width = getWidth();
         double height = getHeight();
-        if (width < 0 || height < 0) return new Rectangle(0, 0, 0, 0);
+        if (width < 0 || height < 0) return new RectangleInt32(0, 0, 0, 0);
         double x = getX();
         double y = getY();
         double x1 = Math.floor(x);
         double y1 = Math.floor(y);
         double x2 = Math.ceil(x + width);
         double y2 = Math.ceil(y + height);
-        return new Rectangle((int) x1, (int) y1,(int) (x2 - x1), (int) (y2 - y1));
+        return new RectangleInt32((int) x1, (int) y1,(int) (x2 - x1), (int) (y2 - y1));
     }
     
     @Override
