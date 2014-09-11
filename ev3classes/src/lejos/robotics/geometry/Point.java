@@ -1,6 +1,6 @@
 package lejos.robotics.geometry;
 
-import java.awt.geom.*;
+
 
 /**
  * Point with float co-ordinates for use in navigation.
