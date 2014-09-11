@@ -8,6 +8,7 @@ import lejos.robotics.navigation.Pose;
 import lejos.robotics.RangeReadings;
 import lejos.robotics.RangeScanner;
 import lejos.robotics.Transmittable;
+import lejos.robotics.geometry.Rectangle2D;
 import lejos.robotics.geometry.RectangleInt32;
 import lejos.robotics.localization.PoseProvider;
 
@@ -395,7 +396,7 @@ public class MCLPoseProvider implements PoseProvider, MoveListener, Transmittabl
    * Returns the minimum rectangle enclosing all the particles
    * @return rectangle : the minimum rectangle enclosing all the particles
    */
-  public RectangleInt32 getErrorRect()
+  public Rectangle2D getErrorRect()
   {
     return new RectangleInt32((int) minX, (int) minY,
             (int) (maxX - minX), (int) (maxY - minY));
