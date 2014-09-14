@@ -87,8 +87,9 @@ public class RemoteRequest {
 		touch.close();
 		
 		NXTSoundSensor soundSensor = new NXTSoundSensor(ev3.getPort("S2"));
-		float[] sample2 = new float[soundSensor.sampleSize()];
-		soundSensor.fetchSample(sample2, 0);
+		SampleProvider db = soundSensor.getDBMode();
+		float[] sample2 = new float[db.sampleSize()];
+		db.fetchSample(sample2, 0);
 		System.out.println("Sound: " + sample2[0]);
 		soundSensor.close();
 		
@@ -98,11 +99,7 @@ public class RemoteRequest {
 		gyro.getRateMode().fetchSample(sample3, 0);
 		System.out.println("Gyro: " + sample3[0]);
 		gyro.close();
-		
-		
-		Delay.msDelay(5000);
-		
-		
-	}
 
+		Delay.msDelay(5000);
+	}
 }
