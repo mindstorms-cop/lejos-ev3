@@ -42,7 +42,7 @@ import lejos.robotics.Calibrate;
  * <td>Angle</td>
  * <td>Measures the orientation of the sensor</td>
  * <td>Degrees, corresponding to the right hand coordinate system</td>
- * <td> {@link #getCompassMode() }</td>
+ * <td> {@link #getAngleMode() }</td>
  * </tr>
  * </table>
  * 
@@ -133,7 +133,7 @@ public class HiTechnicCompass extends I2CSensor implements Calibrate {
 
   /**
    * <b>HiTechnic compass sensor, Compass mode</b><br>
-   * Measures the color of a surface.
+   * Measures the bearing of the sensor.
    * 
    * <p>
    * <b>Size and content of the sample</b><br>

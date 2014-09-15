@@ -2,13 +2,48 @@ package lejos.hardware.sensor;
 
 import lejos.hardware.port.LegacySensorPort;
 
-/** 
- *Abstraction for an RCX temperature sensor. 
+
+/**
+ * <b>Lego RCX temperature sensor</b><br>
+ * The sensor measures both atmospheric pressure and temperature.
+ * 
+ * <p style="color:red;">
+ * The code for this sensor has not been tested. Please report test results to
+ * the <A href="http://www.lejos.org/forum/"> leJOS forum</a>.
+ * </p>
+ * 
+ * <p>
+ * <table border=1>
+ * <tr>
+ * <th colspan=4>Supported modes</th>
+ * </tr>
+ * <tr>
+ * <th>Mode name</th>
+ * <th>Description</th>
+ * <th>unit(s)</th>
+ * <th>Getter</th>
+ * </tr>
+ * <tr>
+ * <td>Temperature</td>
+ * <td>Measures temperature</td>
+ * <td>Degree Celcius</td>
+ * <td> {@link #getTemperatureMode() }</td>
+ * </tr>
+ * </table>
+ * 
+ * 
+ * @see <a href="http://sourceforge.net/p/lejos/wiki/Sensor%20Framework/"> The
+ *      leJOS sensor framework</a>
+ * @see {@link lejos.robotics.SampleProvider leJOS conventions for
+ *      SampleProviders}
+ * 
+ *      <p>
+ * 
  * 
  * @author Soren Hilmer
  * 
  */
-public class RCXThermometer extends AnalogSensor implements SensorConstants, SensorMode {
+public class RCXThermometer extends AnalogSensor implements SensorConstants {
     LegacySensorPort port;
     
     /**
@@ -22,7 +57,7 @@ public class RCXThermometer extends AnalogSensor implements SensorConstants, Sen
     }
     
     protected void init() {
-    	setModes(new SensorMode[]{ this });
+    	setModes(new SensorMode[]{ new TemperatureMode() });
     	port.setTypeAndMode(TYPE_TEMPERATURE, MODE_RAW);
     }
     
@@ -30,9 +65,10 @@ public class RCXThermometer extends AnalogSensor implements SensorConstants, Sen
      * Return a sample provider in temperature mode
      */
     public SensorMode getTemperatureMode() {
-    	return this;
+    	return getMode(0);
     }
 
+    private class TemperatureMode implements SensorMode { 
 	@Override
 	public int sampleSize() {
 		return 1;
@@ -47,4 +83,5 @@ public class RCXThermometer extends AnalogSensor implements SensorConstants, Sen
 	public String getName() {
 		return "Temperature";
 	}
+    }
 }

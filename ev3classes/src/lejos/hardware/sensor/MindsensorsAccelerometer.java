@@ -4,15 +4,53 @@ import lejos.hardware.port.I2CPort;
 import lejos.hardware.port.Port;
 import lejos.utility.EndianTools;
 
+
 /**
- * This class works with the Mindsensors acceleration (tilt) sensor ACCL-Nx-v2/v3.
+ * <b>Mindsensors acceleration (tilt) sensor ACCL-Nx-v2/v3</b><br>
+ * The Mindsensors Accelerometer Sensor measures acceleration or tilt in three
+ * axes. 
  * 
- * Documentation: http://www.mindsensors.com/index.php?module=pagemaster&PAGE_user_op=view_page&PAGE_id=101
- * Some details from MSAC-driver.h from http://botbench.com/blog/robotc-driver-suite/
+ * <p>
+ * <table border=1>
+ * <tr>
+ * <th colspan=4>Supported modes</th>
+ * </tr>
+ * <tr>
+ * <th>Mode name</th>
+ * <th>Description</th>
+ * <th>unit(s)</th>
+ * <th>Getter</th>
+ * </tr>
+ * <tr>
+ * <td>Acceleration</td>
+ * <td>Measures acceleration over three axes.</td>
+ * <td>meter / second<sup>2</sup></td>
+ * <td> {@link #getAccelerationMode() }</td>
+ * </tr>
+ * <tr>
+ * <td>Tilt</td>
+ * <td>Measures tilt over three axes.</td>
+ * <td>degrees<sup>2</sup></td>
+ * <td> {@link #getTiltMode() }</td>
+ * </tr>
+ * </table>
+ * 
+ * 
+ * <p>
+ * 
+ * @see <a href="http://www.mindsensors.com/index.php?module=pagemaster&PAGE_user_op=view_page&PAGE_id=101"> Sensor Product page </a>
+ * @see <a href="http://sourceforge.net/p/lejos/wiki/Sensor%20Framework/"> The
+ *      leJOS sensor framework</a>
+ * @see {@link lejos.robotics.SampleProvider leJOS conventions for
+ *      SampleProviders}
+ * 
+ *      <p>
+ * 
  * 
  * @author Lawrie Griffiths
+ * 
  */
-public class MindsensorsAccelerometer extends I2CSensor implements SensorMode {
+public class MindsensorsAccelerometer extends I2CSensor  {
 	private static final byte BASE_TILT = 0x42;
 	private static final byte BASE_ACCEL = 0x45;
 	private static final byte OFF_X_ACCEL = 0x00;
@@ -63,9 +101,10 @@ public class MindsensorsAccelerometer extends I2CSensor implements SensorMode {
     }
     
     protected void init() {
-    	setModes(new SensorMode[]{ this, new TiltMode() });
+    	setModes(new SensorMode[]{  new AccelMode(), new TiltMode() });
     }
-	
+
+    private class AccelMode implements SensorMode {
 	@Override
 	public int sampleSize() {
 		return 3;
@@ -84,22 +123,24 @@ public class MindsensorsAccelerometer extends I2CSensor implements SensorMode {
 	public String getName() {
 		return "Acceleration";
 	}
+    }
 	
 	/**
-	 * Return a SampleProvider in acceleration mode
+	 * Return a SampleProvider that provides acceleration data  (in m/s/s) in X, Y, Z axis
 	 */
 	public SensorMode getAccelerationMode() {
-		return this;
+		return getMode(0);
 	}
 	
-	/**
-	 * Return a SampleProvider in tilt mode
-	 */
+  /**
+   * Return a SampleProvider that provides tilt data  (in degree) in X, Y, Z axis
+   */
 	public SensorMode getTiltMode() {
 		return getMode(1);
 	}
 
 	private class TiltMode implements SensorMode {
+	  private float toSI=90.0f/128.0f;
 		@Override
 		public int sampleSize() {
 			return 3;
@@ -108,9 +149,9 @@ public class MindsensorsAccelerometer extends I2CSensor implements SensorMode {
 		@Override
 		public void fetchSample(float[] sample, int offset) {
 			getData(BASE_TILT, buf, 0, 3);			
-			sample[offset+0] = (buf[0] & 0xFF) - 128;
-			sample[offset+1] = (buf[1] & 0xFF) - 128;
-			sample[offset+2] = (buf[2] & 0xFF) - 128;
+			sample[offset+0] = ((buf[0] & 0xFF) - 128.0f)*toSI;
+			sample[offset+1] = ((buf[1] & 0xFF) - 128.0f)*toSI;
+			sample[offset+2] = ((buf[2] & 0xFF) - 128.0f)*toSI;
 		}
 
 		@Override

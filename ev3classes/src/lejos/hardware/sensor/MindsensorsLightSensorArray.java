@@ -4,16 +4,55 @@ import lejos.hardware.port.I2CPort;
 import lejos.hardware.port.Port;
 
 /**
- * This class manages the sensor NXT Line Leader from Mindsensors. The sensor
- * add a sensor row to detect black/white lines.
+ * <b>MindSensors Light Senor Array</b><br>
+ * This sensor an array of 8 sensors with controlled light source, returning you values of the sensor readings.
  * 
- * This sensor is perfect to build a robot which has the mission to follow a
- * line.
+ * <p style="color:red;">
+ * The code for this sensor has not been tested. Please report test results to
+ * the <A href="http://www.lejos.org/forum/"> leJOS forum</a>.
+ * </p>
  * 
- * @author Juan Antonio Brenha Moral
- * @author Eric Pascual (EP)
+ * <p>
+ * <table border=1>
+ * <tr>
+ * <th colspan=4>Supported modes</th>
+ * </tr>
+ * <tr>
+ * <th>Mode name</th>
+ * <th>Description</th>
+ * <th>unit(s)</th>
+ * <th>Getter</th>
+ * </tr>
+ * <tr>
+ * <td>Red</td>
+ * <td>Measures the light value when illuminated with a red light source.</td>
+ * <td>N/A, normalized</td>
+ * <td> {@link #getRedMode() }</td>
+ * </tr>
+ * </table>
+ * 
+ * 
+ * <p>
+ * <b>Sensor configuration</b><br>
+ * The sensor can be calibrated for black and white using the calibrateWhite and calibrateBlack methods. <p>
+ * The sensor can be put in and out of sleep mode (lights off) using the sleep method and wakeUp methods.
+ * 
+ * <p>
+ * 
+ * @see <a href="http://www.mindsensors.com/index.php?module=documents&JAS_DocumentManager_op=downloadFile&JAS_File_id=1260"> Sensor datasheet </a>
+ * @see <a href="http://www.mindsensors.com/index.php?module=pagemaster&PAGE_user_op=view_page&PAGE_id=168"> Sensor Product page </a>
+ * @see <a href="http://sourceforge.net/p/lejos/wiki/Sensor%20Framework/"> The
+ *      leJOS sensor framework</a>
+ * @see {@link lejos.robotics.SampleProvider leJOS conventions for
+ *      SampleProviders}
+ * 
+ *      <p>
+ * 
+ * 
+ * @author Juan Antonio Brenha Moral, Eric Pascual (EP)
+ * 
  */
-public class MindsensorsLightSensorArray extends I2CSensor implements SensorMode {
+public class MindsensorsLightSensorArray extends I2CSensor  {
 	private byte[] buf = new byte[8];
 	private final static byte COMMAND = 0x41;
 	private final static byte DATA = 0x42;
@@ -62,7 +101,7 @@ public class MindsensorsLightSensorArray extends I2CSensor implements SensorMode
     }
     
     protected void init() {
-    	setModes(new SensorMode[]{ this });
+    	setModes(new SensorMode[]{ new LightArrayMode() });
     }
     
 	/**
@@ -98,12 +137,13 @@ public class MindsensorsLightSensorArray extends I2CSensor implements SensorMode
 	}
 	
 	/**
-	 * Return a sample provider in light mode
+	 * Return a sample provider in that measures the light reflection of a surface illuminated with a red led light. The sensor houses 8 light sensors. Each element in the sample represents one light sensor.
 	 */
-	public SensorMode getLightMode() {
-		return this;
+	public SensorMode getRedMode() {
+		return getMode(0);
 	}
 
+	private class LightArrayMode implements SensorMode {
 	@Override
 	public int sampleSize() {
 		return 8;
@@ -114,12 +154,13 @@ public class MindsensorsLightSensorArray extends I2CSensor implements SensorMode
 		getData(DATA,buf,8);
 		
 		for(int i=0;i<8;i++) {
-			sample[offset+i] = buf[i];
+			sample[offset+i] = buf[i]/100;
 		}	
 	}
 
 	@Override
 	public String getName() {
-		return "Light";
+		return "Red";
+	}
 	}
 }
