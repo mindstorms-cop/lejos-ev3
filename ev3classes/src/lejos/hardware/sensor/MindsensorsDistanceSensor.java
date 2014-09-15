@@ -1,20 +1,63 @@
-package lejos.hardware.sensor;
+ package lejos.hardware.sensor;
 
 import lejos.hardware.port.I2CPort;
 import lejos.hardware.port.Port;
 import lejos.utility.EndianTools;
 
+
 /**
- * Supports Mindsensors DIST-Nx series of Optical Distance Sensor.<br>
- * This sensor is used for greater precision than the Ultrasonic Sensor.<br>
+ * <b> Mindsensors DIST-Nx series of Optical Distance Sensors</b><br>
+ *  Mindsensors DIST Sensor measure the distance to an object in front of the sensor using IR light
  * 
- * See http://www.mindsensors.com/index.php?module=pagemaster&PAGE_user_op=view_page&PAGE_id=73
+
+ * <p>
+ * <table border=1>
+ * <tr>
+ * <th colspan=4>Supported modes</th>
+ * </tr>
+ * <tr>
+ * <th>Mode name</th>
+ * <th>Description</th>
+ * <th>unit(s)</th>
+ * <th>Getter</th>
+ * </tr>
+ * <tr>
+ * <td>Distance</td>
+ * <td>Measures distance to an object in front of the sensor</td>
+ * <td>Meter</td>
+ * <td> {@link #getDistanceMode() }</td>
+ * </tr>
+ * <tr>
+ * <td>Voltage</td>
+ * <td>Returns the output level of the sensors signal processing unit</td>
+ * <td>Volt</td>
+ * <td> {@link #getVoltageMode() }</td>
+ * </tr>
+ * </table>
+ * 
+ * 
+ * <p>
+ * <b>Sensor configuration</b><br>
+ * The sensor can be powered on and off using the powerOn and powerOff methods. It is usefull to power off the sensor when not in use as it consumes a a fair bit of energy.
+ * <br>
+ * The sensor supports hardware calibration but this in not supported by this intrface.
+ * 
+ * <p>
+ * 
+ * @see <a href="http://www.mindsensors.com/index.php?module=documents&JAS_DocumentManager_op=downloadFile&JAS_File_id=335"> Sensor datasheet </a>
+ * @see <a href="http://www.mindsensors.com/index.php?module=pagemaster&PAGE_user_op=view_page&PAGE_id=73"> Sensor Product page </a>
+ * @see <a href="http://sourceforge.net/p/lejos/wiki/Sensor%20Framework/"> The
+ *      leJOS sensor framework</a>
+ * @see {@link lejos.robotics.SampleProvider leJOS conventions for
+ *      SampleProviders}
+ * 
+ *      <p>
+ * 
  * 
  * @author Michael Smith <mdsmitty@gmail.com>
- * <br><br>Lum, Many thanks for helping me test this class.
  * 
  */
-public class MindsensorsDistanceSensor extends I2CSensor implements SensorMode {
+public class MindsensorsDistanceSensor extends I2CSensor  {
 	private byte[] buf = new byte[2];
 	
 	//Registers
@@ -66,7 +109,7 @@ public class MindsensorsDistanceSensor extends I2CSensor implements SensorMode {
     }
     
     protected void init() {
-    	setModes(new SensorMode[]{ this, new VoltageMode() });
+    	setModes(new SensorMode[]{ new DistanceMode(), new VoltageMode() });
     	powerOn();
     }
 
@@ -88,20 +131,22 @@ public class MindsensorsDistanceSensor extends I2CSensor implements SensorMode {
 	}
 	
 	/**
-	 * Returns a sample provider in distance mode.
+	 * Returns a sample provider that measures distance (in meter).
 	 */
 	public SensorMode getDistanceMode() {
-		return this;
+		return getMode(0);
 	}
 	
+	
+	//TODO: I think it is milivolt and should be converted to volt (Aswin)
   /**
-   * Returns a sample provider in voltage mode.
+   * Returns a sample provider that measures the output level (in volt) of the sensors signal processing unit.
    */
   public SensorMode getVoltageMode() {
     return getMode(1);
   }
 
-	
+private class DistanceMode implements SensorMode {	
 	@Override
 	public int sampleSize() {
 		return 1;
@@ -112,16 +157,20 @@ public class MindsensorsDistanceSensor extends I2CSensor implements SensorMode {
 		getData(DIST_DATA_LSB, buf, 2);
 		sample[offset] = (float) EndianTools.decodeShortLE(buf, 0) / 100f;	
 	}
+
+	@Override
+  public String getName() {
+    return "Distance";
+  }
+
+
+}
 	
 	private void dump() {
 	  System.out.print(buf.length+": ");
 	  for (int i=0;i<buf.length;i++) System.out.println(buf[i]);
 	}
 
-	@Override
-	public String getName() {
-		return "Distance";
-	}
 	
 	private class VoltageMode implements SensorMode {
 

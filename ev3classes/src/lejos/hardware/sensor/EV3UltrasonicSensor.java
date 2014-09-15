@@ -26,9 +26,8 @@ import lejos.robotics.SampleProvider;
  * <tr>
  * <td>Distance</td>
  * <td>Measures distance to an object in front of the sensor</td>
- * <td>Metre</td>
+ * <td>Meter</td>
  * <td> {@link #getDistanceMode() }</td>
- * </tr>
  * </tr>
  * <tr>
  * <td>Listen</td>
