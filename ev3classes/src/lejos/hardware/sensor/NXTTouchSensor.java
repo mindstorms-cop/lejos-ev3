@@ -51,6 +51,7 @@ public class NXTTouchSensor extends AnalogSensor implements SensorConstants
 	{
 	   super(port);
 	   port.setTypeAndMode(TYPE_SWITCH, MODE_RAW);
+	   init();
 	}
 
 	/**
@@ -60,7 +61,8 @@ public class NXTTouchSensor extends AnalogSensor implements SensorConstants
 	public NXTTouchSensor(Port port)
 	{
 	    super(port);
-	    this.port.setTypeAndMode(TYPE_SWITCH, MODE_RAW);	    
+	    this.port.setTypeAndMode(TYPE_SWITCH, MODE_RAW);	 
+	    init();
 	}
 	
 	protected void init() {

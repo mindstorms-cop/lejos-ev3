@@ -7,6 +7,7 @@ import lejos.hardware.Device;
 
 public class BaseSensor extends Device implements SensorModes
 {
+    protected int currentMode = 0;
     protected SensorMode[] modes;
     ArrayList<String> modeList;
 
@@ -19,6 +20,7 @@ public class BaseSensor extends Device implements SensorModes
         modes = m;
         // force the list to be rebuilt
         modeList = null;
+        currentMode = 0;
     }
 
     @Override
@@ -56,6 +58,68 @@ public class BaseSensor extends Device implements SensorModes
             i++;
         }
         throw new IllegalArgumentException("No such mode " + modeName);
+    }
+    
+    private boolean isValid(int mode) {
+      if (mode < 0 || modes == null || mode >= modes.length) return false;
+      return true;
+    }
+    
+    private int getIndex(String modeName) {
+      int i = 0;
+      for(String s : getAvailableModes())
+      {
+          if (s.equals(modeName))
+              return i;
+          i++;
+      }
+      return -1;
+    }
+    
+    @Override
+    public String getName() {
+      return modes[currentMode].getName();
+    }
+
+    @Override
+    public int sampleSize() {
+      return modes[currentMode].sampleSize();
+    }
+
+    @Override
+    public void fetchSample(float[] sample, int offset) {
+      modes[currentMode].fetchSample(sample, offset);
+    }
+
+    @Override
+    public void setCurrentMode(int mode) {
+      if (!isValid(mode)) {
+        throw new IllegalArgumentException("Invalid mode " + mode);
+      }
+      else {
+        currentMode = mode;
+      }
+    }
+
+    @Override
+    public void setCurrentMode(String modeName) {
+      int mode = getIndex(modeName);
+      if (mode==-1) { 
+        throw new IllegalArgumentException("Invalid mode " + modeName);
+      }
+      else {
+        currentMode = mode;
+      }
+    }
+
+    @Override
+    public int getCurrentMode() {
+      return currentMode;
+    }
+
+    @Override
+    public int getModeCount() {
+      return modes.length;
     }
 
 }

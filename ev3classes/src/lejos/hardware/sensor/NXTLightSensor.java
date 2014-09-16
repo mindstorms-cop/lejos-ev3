@@ -63,7 +63,7 @@ public class NXTLightSensor extends AnalogSensor implements LampController, Sens
         @Override
         public String getName()
         {
-            return "None";
+            return "Ambient";
         }
 	    
 	}
