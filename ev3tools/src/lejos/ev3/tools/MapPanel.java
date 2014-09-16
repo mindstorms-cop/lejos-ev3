@@ -1,9 +1,12 @@
 package lejos.ev3.tools;
 
 import java.awt.*;
+import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.event.MouseEvent;
 import java.awt.geom.*;
 import java.util.*;
+
 import javax.swing.JPanel;
 
 import lejos.robotics.geometry.Line;
@@ -137,7 +140,7 @@ public class MapPanel extends JPanel {
 				while(iter.hasNext()) {
 					Node neighbor = iter.next();
 					g2d.setColor(colors[NEIGHBOR_COLOR_INDEX]);
-					Line line = new Line(getX(cur.x), getY(cur.y), getX(neighbor.x), getY(neighbor.y));
+					Line2D.Float line = new Line2D.Float(getX(cur.x), getY(cur.y), getX(neighbor.x), getY(neighbor.y));
 					g2d.draw(line);
 				}
 			}
@@ -367,7 +370,7 @@ public class MapPanel extends JPanel {
 			g2d.setColor(colors[PATH_COLOR_INDEX]);
 			while(path_iter.hasNext()) {
 				Waypoint nextWP = path_iter.next();
-				Line line = new Line(getX(curWP.x), getY(curWP.y), getX(nextWP.x), getY(nextWP.y));
+				Line2D.Float line = new Line2D.Float(getX(curWP.x), getY(curWP.y), getX(nextWP.x), getY(nextWP.y));
 				g2d.draw(line);
 				curWP = nextWP;
 			}	
