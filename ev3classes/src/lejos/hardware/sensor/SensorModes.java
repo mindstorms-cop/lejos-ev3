@@ -7,7 +7,7 @@ import java.util.ArrayList;
  * @author andy
  *
  */
-public interface SensorModes
+public interface SensorModes extends SensorMode
 {
     /**
      * Return a list of string descriptions for the sensors available modes.
@@ -28,6 +28,29 @@ public interface SensorModes
      * @return the sample provider for the requested mode.
      */
     public SensorMode getMode(String modeName);
+    
+    /**
+     * Sets the current mode for fetching samples
+     * @param mode the index number of the mode. Index number corresponds with the item order of the list from getAvailableModes().
+     */
+    public void setCurrentMode(int mode);
+    
+    /**
+     * Sets the current mode for fetching samples
+     * @param mode the name of the mode. name corresponds with the item value of the list from getAvailableModes().
+     */
+    public void setCurrentMode(String modeName);
+    
+    /** Gets the index number of the current mode. 
+     * @return the index number of the mode. Index number corresponds with the item order of the list from getAvailableModes().
+     */
+    public int getCurrentMode();
+    
+    /** Gets the number of supported modes
+     * @return the number of supported modes
+     */
+    public int getModeCount();
+    
     
 
 }
