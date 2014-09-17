@@ -140,7 +140,7 @@ public class MindsensorsAccelerometer extends I2CSensor  {
 	}
 
 	private class TiltMode implements SensorMode {
-	  private float toSI=90.0f/128.0f;
+	  private float toSI=180f/128f;
 		@Override
 		public int sampleSize() {
 			return 3;

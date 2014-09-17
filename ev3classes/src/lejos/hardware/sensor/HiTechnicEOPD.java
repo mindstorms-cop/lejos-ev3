@@ -7,11 +7,6 @@ import lejos.hardware.port.Port;
  * <b>HiTechnic EOPD Sensor</b><br>
  * The EOPD or Electro Optical Proximity Detector uses an internal light source to detect the presence of a target or determine changes in distance to a target.
  * 
- * <p style="color:red;">
- * The code for this sensor has not been tested. Please report test results to
- * the <A href="http://www.lejos.org/forum/"> leJOS forum</a>.
- * </p>
- * 
  * <p>
  * <table border=1>
  * <tr>

@@ -6,7 +6,7 @@ import lejos.utility.EndianTools;
 
 
 /**
- * <b> Mindsensors DIST-Nx series of Optical Distance Sensors</b><br>
+ * <b> Mindsensors DIST-Nx series of Optical Distance Sensors, Version 2</b><br>
  *  Mindsensors DIST Sensor measure the distance to an object in front of the sensor using IR light
  * 
 
@@ -38,9 +38,11 @@ import lejos.utility.EndianTools;
  * 
  * <p>
  * <b>Sensor configuration</b><br>
- * The sensor can be powered on and off using the powerOn and powerOff methods. It is usefull to power off the sensor when not in use as it consumes a a fair bit of energy.
+ * The sensor can be powered on and off using the powerOn and powerOff methods. It is useful to power off the sensor when not in use as it consumes a a fair bit of energy.
  * <br>
- * The sensor supports hardware calibration but this in not supported by this intrface.
+ * The sensor can be tuned for a particular Sharp optical distance sensor using the setModule method. See the top of the sensor for the Sharp module installed on the sensor.
+ * <br>
+ * The sensor supports hardware calibration but this in not supported by this interface.
  * 
  * <p>
  * 
@@ -57,7 +59,7 @@ import lejos.utility.EndianTools;
  * @author Michael Smith <mdsmitty@gmail.com>
  * 
  */
-public class MindsensorsDistanceSensor extends I2CSensor  {
+public class MindsensorsDistanceSensorV2 extends I2CSensor  {
 	private byte[] buf = new byte[2];
 	
 	//Registers
@@ -68,13 +70,19 @@ public class MindsensorsDistanceSensor extends I2CSensor  {
 	//Commands
 	private final static byte DE_ENERGIZED = 0x44;
 	private final static byte ENERGIZED = 0x45;
+	private final static byte GP2D12 = 0x31;
+  private final static byte GP2D120 = 0x32;
+  private final static byte GP2Y0A21YK = 0x33;
+  private final static byte GP2Y0A02YK = 0x34;
+  private final static byte CUSTOM_MODULE = 0x31;
+	
 
   
 	/**
 	 *
 	 * @param port NXT sensor port 1-4
 	 */
-	public MindsensorsDistanceSensor(I2CPort port){
+	public MindsensorsDistanceSensorV2(I2CPort port){
 	    this(port, DEFAULT_I2C_ADDRESS);
 	    init();
 	}
@@ -84,7 +92,7 @@ public class MindsensorsDistanceSensor extends I2CSensor  {
      * @param port NXT sensor port 1-4
      * @param address I2C address for the sensor
      */
-    public MindsensorsDistanceSensor(I2CPort port, int address){
+    public MindsensorsDistanceSensorV2(I2CPort port, int address){
         super(port, address);
         init();
     }
@@ -93,7 +101,7 @@ public class MindsensorsDistanceSensor extends I2CSensor  {
      *
      * @param port NXT sensor port 1-4
      */
-    public MindsensorsDistanceSensor(Port port){
+    public MindsensorsDistanceSensorV2(Port port){
         this(port, DEFAULT_I2C_ADDRESS);
         init();
     }
@@ -103,7 +111,7 @@ public class MindsensorsDistanceSensor extends I2CSensor  {
      * @param port NXT sensor port 1-4
      * @param address I2C address for the sensor
      */
-    public MindsensorsDistanceSensor(Port port, int address){
+    public MindsensorsDistanceSensorV2(Port port, int address){
         super(port, address, TYPE_LOWSPEED);
         init();
     }
@@ -128,6 +136,19 @@ public class MindsensorsDistanceSensor extends I2CSensor  {
 	 */
 	public void powerOff(){
 		sendData(COMMAND, DE_ENERGIZED);
+	}
+	
+	
+	/** Configure the sensor for a particular Sharp Module
+	 * @param module See static fields for valid modules
+	 */
+	public void setModule (byte module) {
+	  if (module <0x31 || module > 0x35 ) {
+	    throw new IllegalArgumentException();
+	  }
+	  else {
+	    sendData(COMMAND,  module);
+	  }
 	}
 	
 	/**
