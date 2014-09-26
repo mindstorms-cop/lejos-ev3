@@ -135,7 +135,7 @@ public class EV3I2CPort extends EV3IOPort implements I2CPort
         cmd[2] = (byte) readLen;
         cmd[3] = (byte) writeLen;
         cmd[4] = (byte) (deviceAddress >> 1);
-        System.arraycopy(writeBuf, writeOffset, cmd, 5, writeLen);
+        if (writeLen > 0) System.arraycopy(writeBuf, writeOffset, cmd, 5, writeLen);
         i2c.ioctl(IIC_SETUP, cmd);
         int result = (int) cmd[1];
         if (result == STATUS_FAIL)
