@@ -24,6 +24,8 @@ import lejos.utility.Delay;
  *
  * Once the motor stops, the final position is held using the same PID control
  * mechanism (with slightly different parameters), as that used for movement.
+ * 
+ * TODO: Should we add synchronization to this?
  **/
 public class JavaMotorRegulator implements MotorRegulator
 {
@@ -565,5 +567,29 @@ public class JavaMotorRegulator implements MotorRegulator
                 Delay.msDelay(now + UPDATE_PERIOD - System.currentTimeMillis());
             }   // end keep going loop
         }
+    }
+
+
+    @Override
+    public void startSynchronization()
+    {
+        // TODO Auto-generated method stub
+        
+    }
+
+
+    @Override
+    public void endSynchronization(boolean b)
+    {
+        // TODO Auto-generated method stub
+        
+    }
+
+
+    @Override
+    public void synchronizeWith(MotorRegulator[] rl)
+    {
+        // TODO Auto-generated method stub
+        
     }
 }

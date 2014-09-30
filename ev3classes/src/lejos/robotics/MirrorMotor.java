@@ -164,4 +164,25 @@ public class MirrorMotor implements RegulatedMotor, RegulatedMotorListener {
 	public void close() {
 		regMotor.close();
 	}
+
+    @Override
+    public void synchronizeWith(RegulatedMotor[] syncList)
+    {
+        regMotor.synchronizeWith(syncList);
+        
+    }
+
+    @Override
+    public void startSynchronization()
+    {
+        regMotor.startSynchronization();
+        
+    }
+
+    @Override
+    public void endSynchronization()
+    {
+        regMotor.endSynchronization();
+        
+    }
 }
