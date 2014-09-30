@@ -223,4 +223,25 @@ public class RemoteRequestRegulatedMotor implements RegulatedMotor {
 			throw new RemoteRequestException(e);
 		}
 	}
+
+    @Override
+    public void synchronizeWith(RegulatedMotor[] syncList)
+    {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public void startSynchronization()
+    {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public void endSynchronization()
+    {
+        // TODO Auto-generated method stub
+        
+    }
 }

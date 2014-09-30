@@ -120,6 +120,27 @@ public interface MotorRegulator
      * @return true if the motor is stalled, else false
      */
     public boolean isStalled();
+    
+    /**
+     * Begin a set of synchronized motor operations
+     */
+    public void startSynchronization();
+    
+    /**
+     * Complete a set of synchronized motor operations.
+     */
+    public void endSynchronization(boolean b);
+    
+    /**
+     * Specify a set of motors that should be kept in synchronization with this one.
+     * The synchronization mechanism simply ensures that operations between a startSynchronization
+     * call and an endSynchronization call will all be executed at the same time (when the 
+     * endSynchronization method is called). This is all that is needed to ensure that motors
+     * will operate in a synchronized fashion. The start/end methods can also be used to ensure
+     * that reads of the motor state will also be consistent.
+     * @param syncList an array of motors to synchronize with.
+     */
+    public void synchronizeWith(MotorRegulator[] rl);
 
 
 }
