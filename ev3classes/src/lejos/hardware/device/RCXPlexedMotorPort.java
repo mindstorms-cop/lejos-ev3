@@ -44,8 +44,8 @@ public class RCXPlexedMotorPort implements BasicMotorPort {
     }
 
     @Override
-    public void setPinMode(int mode)
+    public boolean setPinMode(int mode)
     {
-
+        return false;
     }
 }

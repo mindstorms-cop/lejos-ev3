@@ -62,24 +62,4 @@ public class RemoteRequestPort implements Port {
             throw new DeviceException("unable to open port");
         return portclass.cast(p);
 	}
-
-	@Override
-	public int getPortType() {
-        // TODO Should this method work for a remote port?
-        return EV3SensorConstants.CONN_NONE;
-	}
-
-	@Override
-    public void forcePortType(int typ)
-    {
-        // TODO Should this method work for a remote port?
-        throw new UnsupportedOperationException("can't force a remote port");
-    }
-
-	@Override
-	public int getSensorType() {
-        // TODO Should this method work for a remote port?
-        return EV3SensorConstants.TYPE_NONE;
-	}
-    
 }

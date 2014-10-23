@@ -3,6 +3,7 @@ package lejos.internal.ev3;
 import lejos.hardware.DeviceException;
 import lejos.hardware.port.AnalogPort;
 import lejos.hardware.port.BasicMotorPort;
+import lejos.hardware.port.ConfigurationPort;
 import lejos.hardware.port.I2CPort;
 import lejos.hardware.port.IOPort;
 import lejos.hardware.port.Port;
@@ -17,7 +18,6 @@ public class EV3Port implements Port
     protected String name;
     protected int typ;
     protected int portNum;
-    protected static final EV3DeviceManager devMan = EV3DeviceManager.getLocalDeviceManager();
 
     public EV3Port(String name, int typ, int portNum)
     {
@@ -56,12 +56,16 @@ public class EV3Port implements Port
                 p = new EV3AnalogPort();
             else if (portclass == I2CPort.class)
                 p = new EV3I2CPort();
+            else if (portclass == ConfigurationPort.class)
+                p = new EV3ConfigurationPort();
             break;
         case MOTOR_PORT:
             if (portclass == BasicMotorPort.class)
                 p = new EV3MotorPort();
             else if (portclass == TachoMotorPort.class)
                 p = new EV3MotorPort();
+            else if (portclass == ConfigurationPort.class)
+                p = new EV3ConfigurationPort();
             // TODO: Should we also allow Encoder?
             break;
         }
@@ -70,29 +74,5 @@ public class EV3Port implements Port
         if (!p.open(typ,  portNum, this))
             throw new DeviceException("unable to open port");
         return portclass.cast(p);
-    }
-
-    /** {@inheritDoc}
-     */    
-    @Override
-    public int getPortType()
-    {
-        return devMan.getPortType(portNum);
-    }
-
-    /** {@inheritDoc}
-     */    
-    @Override
-    public void forcePortType(int typ)
-    {
-        devMan.forcePortType(portNum, typ);
-    }
-
-    /** {@inheritDoc}
-     */    
-    @Override
-    public int getSensorType()
-    {
-        return devMan.getSensorType(portNum);
     }
 }

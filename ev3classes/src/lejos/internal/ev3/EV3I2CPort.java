@@ -1,5 +1,6 @@
 package lejos.internal.ev3;
 
+import java.io.IOError;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.List;
@@ -68,8 +69,6 @@ public class EV3I2CPort extends EV3IOPort implements I2CPort
      */
     public boolean open(int t, int p, EV3Port r)
     {
-        if (ldm.getPortType(p) != CONN_NXT_IIC)
-            return false;
         if (!super.open(t, p, r))
             return false;
         // Set pin state to a sane default
@@ -154,7 +153,12 @@ public class EV3I2CPort extends EV3IOPort implements I2CPort
     
     private static void initDeviceIO()
     {
-        i2c = new NativeDevice("/dev/lms_iic");
+        try {
+            i2c = new NativeDevice("/dev/lms_iic");
+        } catch (IOError e)
+        {
+            throw new UnsupportedOperationException("Unable to access EV3 hardware. Is this an EV3?", e);
+        }
     }
     
 }

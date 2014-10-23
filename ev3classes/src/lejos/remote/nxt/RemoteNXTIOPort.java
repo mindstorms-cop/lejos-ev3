@@ -117,9 +117,10 @@ public abstract class RemoteNXTIOPort implements IOPort, BasicSensorPort, EV3Sen
      * Set the port pins up ready for use.
      * @param mode The EV3 pin mode
      */
-    public void setPinMode(int mode)
+    public boolean setPinMode(int mode)
     {
     	// Nothing required on the NXT
+        return false;
     }
 
 }

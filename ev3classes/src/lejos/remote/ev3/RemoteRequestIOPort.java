@@ -73,7 +73,8 @@ public class RemoteRequestIOPort implements IOPort, BasicSensorPort, EV3SensorCo
 	}
 
 	@Override
-	public void setPinMode(int mode) {
+	public boolean setPinMode(int mode) {
 		// Overridden by specific port implementations
+	    return false;
 	}
 }

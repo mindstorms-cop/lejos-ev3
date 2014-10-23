@@ -17,7 +17,6 @@ public abstract class EV3IOPort implements IOPort, BasicSensorPort, EV3SensorCon
     protected static byte [] dc = new byte[3*PORTS];
     protected int currentMode = 0;
     protected static EV3IOPort [][] openPorts = new EV3IOPort[EV3Port.MOTOR_PORT+1][PORTS];
-    protected static final EV3DeviceManager ldm = EV3DeviceManager.getLocalDeviceManager();
    
 
     /** {@inheritDoc}
@@ -89,10 +88,10 @@ public abstract class EV3IOPort implements IOPort, BasicSensorPort, EV3SensorCon
                 this.port = port;
                 this.typ = typ;
                 this.ref = ref;
+                // Set into connected state and disable auto detection
+                setPinMode(CMD_CONNECTED);
                 if (typ == EV3Port.SENSOR_PORT)
                 {
-                    // Set into connected state and disable auto detection
-                    setPinMode(CMD_CONNECTED);
                     // set sane pin states, automatic detection may have changed them. 
                     setPinMode(CMD_FLOAT);
                 }
@@ -108,12 +107,10 @@ public abstract class EV3IOPort implements IOPort, BasicSensorPort, EV3SensorCon
     public void close()
     {
         if (port == -1)
-            throw new IllegalStateException("Port is not open");
+            return;
         synchronized (openPorts)
         {
-            if (typ == EV3Port.SENSOR_PORT)
-                // resume automatic type detection
-                setPinMode(CMD_AUTOMATIC);
+            setPinMode(CMD_DISCONNECTED);
             openPorts[typ][port] = null;
             port = -1;
         }
@@ -143,10 +140,10 @@ public abstract class EV3IOPort implements IOPort, BasicSensorPort, EV3SensorCon
      * Set the port pins up ready for use.
      * @param mode The EV3 pin mode
      */
-    public void setPinMode(int mode)
+    public boolean setPinMode(int mode)
     {
         //System.out.println("Set Pin mode port " + port + " value " + mode);
-        ldm.setPortMode(port, mode);
+        return EV3ConfigurationPort.setPortMode(typ, port, mode);
     }
 
 }

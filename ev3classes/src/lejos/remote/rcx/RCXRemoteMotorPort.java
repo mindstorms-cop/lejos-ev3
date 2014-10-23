@@ -68,9 +68,9 @@ public class RCXRemoteMotorPort implements BasicMotorPort {
         return null;
     }
     @Override
-    public void setPinMode(int mode)
+    public boolean setPinMode(int mode)
     {
         // TODO Auto-generated method stub
-        
+        return false;
     }
 }
