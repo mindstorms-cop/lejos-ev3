@@ -50,7 +50,8 @@ import lejos.hardware.port.UARTPort;
  * 
  * @author andy
  * 
- */public class EV3IRSensor extends UARTSensor 
+ */
+public class EV3IRSensor extends UARTSensor 
 {
     protected final static int IR_PROX = 0;
     protected final static int IR_SEEK = 1;

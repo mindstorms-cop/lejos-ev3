@@ -8,7 +8,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import lejos.hardware.ev3.LocalEV3;
-import lejos.internal.ev3.EV3DeviceManager;
 import lejos.remote.ev3.RemoteEV3;
 
 public class BrickFinder {
@@ -20,7 +19,6 @@ public class BrickFinder {
 	public static Brick getLocal() {
 		if (localBrick != null) return localBrick;
 		// Check we are running on an EV3
-		EV3DeviceManager.getLocalDeviceManager();
 		localBrick = LocalEV3.get();
 		return localBrick;
 	}
@@ -29,7 +27,6 @@ public class BrickFinder {
 		if (defaultBrick != null) return defaultBrick;
 		try {
 			// See if we are running on an EV3
-			EV3DeviceManager.getLocalDeviceManager();
 			defaultBrick =  LocalEV3.get();
 			return defaultBrick;
 		} catch (UnsupportedOperationException e) {

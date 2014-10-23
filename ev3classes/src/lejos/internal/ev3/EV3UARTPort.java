@@ -1,5 +1,6 @@
 package lejos.internal.ev3;
 
+import java.io.IOError;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.List;
@@ -199,8 +200,6 @@ public class EV3UARTPort extends EV3IOPort implements UARTPort
         {
             if (status != 0)
                 return status;
-            if (ldm.getPortType(port) != CONN_INPUT_UART)
-                return status;
             Delay.msDelay(TIMEOUT_DELTA);
             status = getStatus();
         }
@@ -220,8 +219,6 @@ public class EV3UARTPort extends EV3IOPort implements UARTPort
         while (cnt-- > 0)
         {
             if (status == 0)
-                return status;
-            if (ldm.getPortType(port) != CONN_INPUT_UART)
                 return status;
             Delay.msDelay(TIMEOUT_DELTA);
             status = getStatus();
@@ -328,8 +325,6 @@ public class EV3UARTPort extends EV3IOPort implements UARTPort
         int retryCnt = 0;
         //System.out.println("Initial status is " + getStatus() + " type is " + ldm.getPortType(port));
         long base = System.currentTimeMillis();
-        if (ldm.getPortType(port) != CONN_INPUT_UART)
-            return false;
         // now try and configure as a UART
         setOperatingMode(mode);
         status = waitNonZeroStatus(TIMEOUT);
@@ -337,8 +332,6 @@ public class EV3UARTPort extends EV3IOPort implements UARTPort
         while((status & UART_PORT_CHANGED) != 0 && retryCnt++ < INIT_RETRY)
         {
             // something change wait for it to become ready
-            if (ldm.getPortType(port) != CONN_INPUT_UART)
-                return false;
             clearPortChanged();
             Delay.msDelay(INIT_DELAY);
             status = waitNonZeroStatus(TIMEOUT);
@@ -363,8 +356,6 @@ public class EV3UARTPort extends EV3IOPort implements UARTPort
     {
         for(int i = 0; i < OPEN_RETRY; i++)
         {
-            if (ldm.getPortType(port) != CONN_INPUT_UART)
-                return false;
             // initialise the sensor, if we have no mode data
             // then read it, otherwise use what we have
             if (initSensor(mode) && (modeCnt > 0 || readModeInfo()))
@@ -393,8 +384,6 @@ public class EV3UARTPort extends EV3IOPort implements UARTPort
     @Override
     public boolean open(int typ, int port, EV3Port ref)
     {
-        if (ldm.getPortType(port) != CONN_INPUT_UART)
-            return false;
         if (!super.open(typ, port, ref))
             return false;
         // clear mode data cache
@@ -491,8 +480,6 @@ public class EV3UARTPort extends EV3IOPort implements UARTPort
      */
     protected void checkSensor()
     {
-        if (ldm.getPortType(port) != CONN_INPUT_UART)
-            throw new DeviceException("Sensor unavailable");
         if ((getStatus() & UART_PORT_CHANGED) != 0)
         {
             //System.out.println("port " + port + " Changed ");
@@ -669,8 +656,14 @@ public class EV3UARTPort extends EV3IOPort implements UARTPort
     
     private static void initDeviceIO()
     {
-        uart = new NativeDevice("/dev/lms_uart");
-        pDev = uart.mmap(DEV_SIZE);
+        try {
+            uart = new NativeDevice("/dev/lms_uart");
+            pDev = uart.mmap(DEV_SIZE);
+        }
+        catch (IOError e)
+        {
+            throw new UnsupportedOperationException("Unable to access EV3 hardware. Is this an EV3?", e);
+        }
         devStatus = pDev.getByteBuffer(DEV_STATUS_OFF, PORTS);
         actual = pDev.getByteBuffer(DEV_ACTUAL_OFF, PORTS*2);
         raw = pDev.getByteBuffer(DEV_RAW_OFF, PORTS*DEV_RAW_SIZE1);

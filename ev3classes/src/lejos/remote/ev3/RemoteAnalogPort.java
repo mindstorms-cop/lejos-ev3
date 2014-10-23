@@ -52,9 +52,9 @@ public class RemoteAnalogPort extends RemoteIOPort  implements AnalogPort {
 	}
 	
 	@Override
-	public void setPinMode(int mode) {
+	public boolean setPinMode(int mode) {
 		try {
-			rmi.setPinMode(mode);
+			return rmi.setPinMode(mode);
 		} catch (RemoteException e) {
 			throw new PortException(e);
 		}

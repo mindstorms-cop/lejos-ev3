@@ -98,9 +98,6 @@ public class UART implements Closeable
      */
     public UART(Port port)
     {
-        // There may be no device attached to the port, force it 
-        // into UART mode.
-        port.forcePortType(EV3SensorConstants.CONN_INPUT_UART);
         this.port = port.open(UARTPort.class);
         this.port.setMode(UARTPort.UART_RAW_MODE);        
     }

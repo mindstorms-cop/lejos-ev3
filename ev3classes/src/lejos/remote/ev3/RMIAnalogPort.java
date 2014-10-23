@@ -9,7 +9,7 @@ public interface RMIAnalogPort extends Remote {
 
 	public float getPin1() throws RemoteException;
 	
-	public void setPinMode(int mode) throws RemoteException;
+	public boolean setPinMode(int mode) throws RemoteException;
 	
 	public void close() throws RemoteException;
 

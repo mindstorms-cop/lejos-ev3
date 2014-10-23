@@ -21,7 +21,6 @@ import lejos.hardware.lcd.TextLCD;
 import lejos.hardware.port.Port;
 import lejos.hardware.video.Video;
 import lejos.internal.ev3.EV3Audio;
-import lejos.internal.ev3.EV3DeviceManager;
 import lejos.internal.ev3.EV3GraphicsLCD;
 import lejos.internal.ev3.EV3Key;
 import lejos.internal.ev3.EV3Keys;
@@ -40,12 +39,6 @@ import lejos.internal.ev3.EV3Video;
  */
 public class LocalEV3 implements EV3
 {
-    static
-    {
-        // Check that we have EV3 hardware available
-        EV3DeviceManager.getLocalDeviceManager();
-    }
-    
     public static final int ID_UP = 0x1;
     public static final int ID_ENTER = 0x2;
     public static final int ID_DOWN = 0x4;

@@ -25,7 +25,8 @@ public interface IOPort extends Closeable   {
    /**
      * Set the port pins up ready for use.
      * @param mode The EV3 pin mode
+     * @return true if the operation succeeds false if it fails
      */
-    public void setPinMode(int mode);
+    public boolean setPinMode(int mode);
     
 }

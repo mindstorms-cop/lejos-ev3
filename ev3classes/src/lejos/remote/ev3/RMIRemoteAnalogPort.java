@@ -32,8 +32,8 @@ public class RMIRemoteAnalogPort extends UnicastRemoteObject implements RMIAnalo
 	}
 
 	@Override
-	public void setPinMode(int mode) throws RemoteException {
-		port.setPinMode(mode);
+	public boolean setPinMode(int mode) throws RemoteException {
+		return port.setPinMode(mode);
 	}
 
     @Override

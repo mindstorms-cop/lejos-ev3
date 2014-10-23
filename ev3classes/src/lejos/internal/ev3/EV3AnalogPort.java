@@ -1,5 +1,6 @@
 package lejos.internal.ev3;
 
+import java.io.IOError;
 import java.nio.ByteBuffer;
 
 import lejos.hardware.port.AnalogPort;
@@ -56,23 +57,14 @@ public class EV3AnalogPort extends EV3IOPort implements AnalogPort
     static {
         initDeviceIO();
     }
+    
     /** {@inheritDoc}
      */    
     @Override
     public boolean open(int typ, int port, EV3Port ref)
     {
-        int portType = ldm.getPortType(port);
-        if (portType == CONN_NXT_IIC || portType == CONN_INPUT_UART)
-            return false;
         if (!super.open(typ, port, ref))
             return false;
-        //System.out.println("Open port");
-        if (portType == CONN_NXT_COLOR)
-        {
-            //System.out.println("In color mode");
-            // Read NXT color sensor calibration data
-            getColorData();
-        }
         return true;
     }
 
@@ -97,7 +89,7 @@ public class EV3AnalogPort extends EV3IOPort implements AnalogPort
     
     protected void getColorData()
     {
-        setPinMode(TYPE_COLORNONE);
+        //setPinMode(TYPE_COLORFULL);
         Delay.msDelay(1000);
         int offset = ANALOG_NXTCOL_OFF + port*ANALOG_NXTCOL_SZ;
         for(int i = 0; i < calData.length; i++)
@@ -274,7 +266,10 @@ public class EV3AnalogPort extends EV3IOPort implements AnalogPort
         case TYPE_COLORNONE:
             // Sensor type and pin modes are aligned
             //System.out.println("Set type :" + type);
-            setPinMode(type);
+            if (!setPinMode(type)) System.out.println("Failed to set mode");
+            if (type == TYPE_COLORFULL)
+                // Read NXT color sensor calibration data
+                getColorData();
             break;
 
         default:
@@ -388,8 +383,13 @@ public class EV3AnalogPort extends EV3IOPort implements AnalogPort
     
     private static void initDeviceIO()
     {
-        dev = new NativeDevice("/dev/lms_analog"); 
-        pAnalog = dev.mmap(ANALOG_SIZE);
+        try {
+            dev = new NativeDevice("/dev/lms_analog"); 
+            pAnalog = dev.mmap(ANALOG_SIZE);
+        } catch (IOError e)
+        {
+            throw new UnsupportedOperationException("Unable to access EV3 hardware. Is this an EV3?", e);
+        }
         inDcm = pAnalog.getByteBuffer(ANALOG_INDCM_OFF, PORTS);
         inConn = pAnalog.getByteBuffer(ANALOG_INCONN_OFF, PORTS);
         outDcm = pAnalog.getByteBuffer(ANALOG_OUTDCM_OFF, PORTS);
