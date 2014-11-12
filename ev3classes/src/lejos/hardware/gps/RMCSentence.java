@@ -2,6 +2,7 @@ package lejos.hardware.gps;
 
 import java.util.NoSuchElementException;
 
+
 /**
  * RMC is a Class designed to manage RMC Sentences from a NMEA GPS Receiver
  * 
@@ -23,9 +24,12 @@ import java.util.NoSuchElementException;
  * 
  * @author Juan Antonio Brenha Moral
  * 
+ * Added changes by Alan M Gilkes - Nov 12th 2014 - Lawrie Griffiths
+ * 
  */
-public class RMCSentence extends NMEASentence{
 
+public class RMCSentence extends NMEASentence {
+	
 	//RMC Sentence
 	private String nmeaHeader = "";
 	private int dateTimeOfFix = 0;
@@ -33,13 +37,13 @@ public class RMCSentence extends NMEASentence{
 	private String status = "";
 	private final String ACTIVE = "A";
 	private final String VOID = "V";
-	private float latitude = 0;
+	private double latitude = 0;
 	private String latitudeDirection = "";
-	private float longitude = 0;
+	private double longitude = 0;
 	private String longitudeDirection = "";
 	private final float KNOT = 1.852f;
 	private float groundSpeed;//In knots
-	private int compassDegrees;
+	private float compassDegrees;
 	private int dateOfFix = 0;
 	private float magneticVariation = 0f;
 	private String magneticVariationLetter = "";
@@ -48,6 +52,70 @@ public class RMCSentence extends NMEASentence{
 
 	//Header
 	public static final String HEADER = "$GPRMC";
+	
+	/**
+	 * Any GPS Receiver gives Lat/Lon data in the following way:
+	 * 
+	 * http://www.gpsinformation.org/dale/nmea.htm
+	 * http://www.teletype.com/pages/support/Documentation/RMC_log_info.htm
+	 * 
+	 * 4807.038,N   Latitude 48 deg 07.038' N
+	 * 01131.000,E  Longitude 11 deg 31.000' E
+	 * 
+	 * This data is necessary to convert to Decimal Degrees.
+	 * 
+	 * Latitude values has the range: -90 <-> 90
+	 * Longitude values has the range: -180 <-> 180
+	 * 
+	 * @param DD_MM
+	 * @param CoordinateType
+	 * @return the degrees
+	 */
+	protected double degreesMinToDegreesDbl(String DD_MM,int CoordinateType) {//throws NumberFormatException
+		// This methods accept all strings of the format
+		// DDDMM.MMMM
+		// DDDMM
+		// MM.MMMM
+		// MM
+		
+		// check first character, rest is checked by parseInt/parseFloat
+		int len = DD_MM.length();
+		if (len <= 0 || DD_MM.charAt(0) == '-')
+			throw new NumberFormatException();
+		
+		int dotPosition = DD_MM.indexOf('.');
+		if (dotPosition < 0)
+			dotPosition = len;
+		
+		int degrees;
+		double minutes;		
+		if (dotPosition > 2)
+		{
+			degrees = Integer.parseInt(DD_MM.substring(0, dotPosition-2));
+			// check first character of minutes since '-' is not allowed
+			// rest is checked by parseFloat
+			if (DD_MM.charAt(dotPosition-2) == '-')
+				throw new NumberFormatException();
+			minutes = Double.parseDouble(DD_MM.substring(dotPosition-2));
+		}
+		else
+		{
+			degrees = 0;
+			minutes = Double.parseDouble(DD_MM);
+		}
+		
+//		if(CoordenateType == NMEASentence.LATITUDE){
+//			if((degrees >=0) && (degrees <=90)){
+//				throw new NumberFormatException();
+//			}
+//		}else{
+//			if((degrees >=0) && (degrees <=180)){
+//				throw new NumberFormatException();
+//			}
+//		}
+		
+		return (double)(degrees + minutes * (double)(1.0 / 60.0));
+	}
 
 	/*
 	 * GETTERS & SETTERS
@@ -58,7 +126,7 @@ public class RMCSentence extends NMEASentence{
 	 */
 	@Override
 	public String getHeader() {
-		return HEADER;
+		return nmeaHeader;
 	}
 	
 	public String getStatus(){
@@ -69,7 +137,7 @@ public class RMCSentence extends NMEASentence{
 	 * Get Latitude
 	 * 
 	 */
-	public float getLatitude(){
+	public double getLatitude(){
 		return latitude;  
 	}
 
@@ -78,7 +146,7 @@ public class RMCSentence extends NMEASentence{
 	 * 
 	 * @return the longitude
 	 */
-	public float getLongitude(){
+	public double getLongitude(){
 		return longitude;
 	}
 
@@ -114,7 +182,7 @@ public class RMCSentence extends NMEASentence{
 	 * 
 	 * @return the compass heading
 	 */
-	public int getCompassDegrees(){
+	public float getCompassDegrees(){
 		return compassDegrees;
 	}
 	
@@ -145,7 +213,7 @@ public class RMCSentence extends NMEASentence{
 			}
 			
 			if (isNumeric(parts[3])) {
-				latitude = degreesMinToDegrees(parts[3],NMEASentence.LATITUDE);
+				latitude = degreesMinToDegreesDbl(parts[3],NMEASentence.LATITUDE);
 			} else {
 				latitude = 0f;
 			}
@@ -153,7 +221,7 @@ public class RMCSentence extends NMEASentence{
 			latitudeDirection = parts[4];
 			
 			if (isNumeric(parts[5])) {
-				longitude = degreesMinToDegrees(parts[5],NMEASentence.LONGITUDE);
+				longitude = degreesMinToDegreesDbl(parts[5],NMEASentence.LONGITUDE);
 			} else {
 				longitude = 0f;
 			}
@@ -189,7 +257,7 @@ public class RMCSentence extends NMEASentence{
 			if (parts[8].length() == 0) {
 				compassDegrees = 0;
 			} else {
-				compassDegrees = Math.round(Float.parseFloat(parts[8]));
+				compassDegrees = Float.parseFloat(parts[8]);
 			}
 			
 			if (parts[9].length() == 0) {
@@ -201,7 +269,7 @@ public class RMCSentence extends NMEASentence{
 			if (parts[10].length() == 0) {
 				magneticVariation = 0;
 			} else{
-				magneticVariation = Math.round(Float.parseFloat(parts[10]));
+				magneticVariation = Float.parseFloat(parts[10]);
 			}
 			
 			if (parts[11].length() == 0) {
@@ -217,4 +285,5 @@ public class RMCSentence extends NMEASentence{
 			//System.err.println("RMCSentence: Exception");
 		}
 	}//End Parse
-}//End Class
+
+}

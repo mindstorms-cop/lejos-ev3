@@ -34,15 +34,17 @@ import java.util.NoSuchElementException;
  * 
  * @author Juan Antonio Brenha Moral
  * 
+ * Added changes by Alan M Gilkes - Nov 12th 2014 - Lawrie Griffiths
+ * 
  */
-public class GGASentence extends NMEASentence{
+
+public class GGASentence extends NMEASentence {
 	
-	//GGA
+	private double latitude = 0;
+	private double longitude = 0;
 	private String nmeaHeader = "";
 	private int dateTimeOfFix = 0;
-	private float latitude = 0;
 	private char latitudeDirection;
-	private float longitude = 0;
 	private char longitudeDirection;
 	private int quality = 0;
 	private int satellitesTracked = 0;
@@ -54,6 +56,70 @@ public class GGASentence extends NMEASentence{
 
 	//Header
 	public static final String HEADER = "$GPGGA";
+
+	/**
+	 * Any GPS Receiver gives Lat/Lon data in the following way:
+	 * 
+	 * http://www.gpsinformation.org/dale/nmea.htm
+	 * http://www.teletype.com/pages/support/Documentation/RMC_log_info.htm
+	 * 
+	 * 4807.038,N   Latitude 48 deg 07.038' N
+	 * 01131.000,E  Longitude 11 deg 31.000' E
+	 * 
+	 * This data is necessary to convert to Decimal Degrees.
+	 * 
+	 * Latitude values has the range: -90 <-> 90
+	 * Longitude values has the range: -180 <-> 180
+	 * 
+	 * @param DD_MM
+	 * @param CoordinateType
+	 * @return the degrees
+	 */
+	protected double degreesMinToDegreesDbl(String DD_MM,int CoordinateType) {//throws NumberFormatException
+		// This methods accept all strings of the format
+		// DDDMM.MMMM
+		// DDDMM
+		// MM.MMMM
+		// MM
+		
+		// check first character, rest is checked by parseInt/parseFloat
+		int len = DD_MM.length();
+		if (len <= 0 || DD_MM.charAt(0) == '-')
+			throw new NumberFormatException();
+		
+		int dotPosition = DD_MM.indexOf('.');
+		if (dotPosition < 0)
+			dotPosition = len;
+		
+		int degrees;
+		double minutes;		
+		if (dotPosition > 2)
+		{
+			degrees = Integer.parseInt(DD_MM.substring(0, dotPosition-2));
+			// check first character of minutes since '-' is not allowed
+			// rest is checked by parseFloat
+			if (DD_MM.charAt(dotPosition-2) == '-')
+				throw new NumberFormatException();
+			minutes = Double.parseDouble(DD_MM.substring(dotPosition-2));
+		}
+		else
+		{
+			degrees = 0;
+			minutes = Double.parseDouble(DD_MM);
+		}
+		
+//		if(CoordenateType == NMEASentence.LATITUDE){
+//			if((degrees >=0) && (degrees <=90)){
+//				throw new NumberFormatException();
+//			}
+//		}else{
+//			if((degrees >=0) && (degrees <=180)){
+//				throw new NumberFormatException();
+//			}
+//		}
+		
+		return (double)(degrees + minutes * (double)(1.0 / 60.0));
+	}
 	
 	/*
 	 * GETTERS & SETTERS
@@ -64,14 +130,14 @@ public class GGASentence extends NMEASentence{
 	 */
 	@Override
 	public String getHeader() {
-		return HEADER;
+		return nmeaHeader;//The header actually read in when the sentence was parsed
 	}
 
 	/**
 	 * Get Latitude
 	 * 
 	 */
-	public float getLatitude() {
+	public double getLatitude() {
 		return latitude;
 	}
 	
@@ -88,7 +154,7 @@ public class GGASentence extends NMEASentence{
 	 * Get Longitude
 	 * 
 	 */
-	public float getLongitude() {
+	public double getLongitude() {
 		return longitude;
 	}
 
@@ -137,11 +203,20 @@ public class GGASentence extends NMEASentence{
 		return quality;
 	}
 
+	/**
+	 * Get Horizontal Dilution of Precision (HDOP)
+	 * 
+	 * @return the hdop
+	 */
+	public float getHDOP(){
+		return hdop;
+	}
+
 	
 	/**
 	 * Method used to parse a GGA Sentence
 	 */
-	protected void parse(String sentence) {
+	public void parse(String sentence) {
 		
 		String[] parts = sentence.split(",");
 
@@ -157,17 +232,17 @@ public class GGASentence extends NMEASentence{
 			}
 						
 			if (isNumeric(parts[2])) {
-				latitude = degreesMinToDegrees(parts[2],NMEASentence.LATITUDE);
+				latitude = degreesMinToDegreesDbl(parts[2],NMEASentence.LATITUDE);
 			} else {
-				latitude = 0f;
+				latitude = 0.0;
 			}
 			
 			latitudeDirection = parts[3].charAt(0);
 			
 			if (isNumeric(parts[4])) {
-				longitude = degreesMinToDegrees(parts[4],NMEASentence.LONGITUDE);
+				longitude = degreesMinToDegreesDbl(parts[4],NMEASentence.LONGITUDE);
 			} else {
-				longitude = 0f;
+				longitude = 0.0;
 			}
 
 			longitudeDirection = parts[5].charAt(0);
@@ -211,4 +286,5 @@ public class GGASentence extends NMEASentence{
 			//System.err.println("GGASentence: Exception");
 		}
 	}//End parse
-}//End class
+
+}
