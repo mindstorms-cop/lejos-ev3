@@ -25,6 +25,8 @@ import java.util.StringTokenizer;
  * 
  * @author Juan Antonio Brenha Moral
  * 
+ * Added changes by Alan M Gilkes - Nov 12th 2014 - Lawrie Griffiths
+ * 
  */
 
 public class GSASentence extends NMEASentence{
@@ -120,7 +122,7 @@ public class GSASentence extends NMEASentence{
 	/**
 	 * Method used to parse a GGA Sentence
 	 */
-	protected void parse(String sentence){
+	public void parse(String sentence){
 		
 		//TODO StringTokenizer must not be used to parse NMEA sentences since it doesn't return empty tokens 
 		StringTokenizer st = new StringTokenizer(sentence,",");
