@@ -24,7 +24,14 @@ var
     Result := RegQueryStringValue(HKEY_LOCAL_MACHINE,
       'SOFTWARE\JavaSoft\Java Development Kit\' + Version,
       'JavaHome', Tmp) and (Length(Tmp) > 0) and DirExists(Tmp);
-    if Result then Path := Tmp;
+    if Result then Path := Tmp
+    else 
+    begin
+      Result := RegQueryStringValue(HKEY_LOCAL_MACHINE_32,
+        'SOFTWARE\JavaSoft\Java Development Kit\' + Version,
+        'JavaHome', Tmp) and (Length(Tmp) > 0) and DirExists(Tmp);
+      if Result then Path := Tmp
+    end;;
   end;
   
   function DetectJDK(var Path: String): Boolean;
@@ -73,8 +80,8 @@ var
       if DetectJDK(Tmp) then JDKSelectTree.Directory := Tmp
       else
       begin
-        Tmp := ExpandConstant('{pf32}\Java');
-        Tmp2 := ExpandConstant('{pf}\Java');
+        Tmp := ExpandConstant('{pf}\Java');
+        Tmp2 := ExpandConstant('{pf32}\Java');
         MsgBox('The installer was uanble to detect a Java Development Kit.'
           + CRLF + 'By default, such a JDK is installed in ' + Tmp + ' or ' + CRLF + Tmp2,
           mbInformation, MB_OK);
