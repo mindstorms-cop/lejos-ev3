@@ -11,7 +11,7 @@ package lejos.robotics;
 
 /**
  * A platform independent implementation for sensors that can detect white light levels.
- * @author BB
+ * @author BB modified by RG 11/14
  *
  */
 public interface LightDetector {
