@@ -22,14 +22,12 @@ public interface LightDetector {
 	 */
 	public float getLightValue();
 	
-	// TODO: Names: getLightValue, getLevel, getLightLevel, getLight()
-	
 	
 	/**
 	 * Returns the normalized value of the brightness of the white light detected, such that
 	 * the lowest value is darkness and the highest value is intense bright light.
 	 * @return A raw value, between getLow() and getHigh(). Usually 
-	 * between 0 and 1023 but can be anything depending on hardware. low values = dark, high values = bright 
+	 * between 0 and 1.00 but can be anything depending on hardware. low values = dark, high values = bright 
 	 */
 	public float getNormalizedLightValue();
 	
