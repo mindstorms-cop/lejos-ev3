@@ -21,10 +21,7 @@ public interface LightDetector {
 	 * @return A brightness value between 0 and 100%, with 0 = darkness and 100 = intense sunlight
 	 */
 	public float getLightValue();
-	// TODO: In future, if we decide to include calibration methods in LightDetector interface,
-	// the API docs for getLightValue() should include:
-	// * Use calibrateLow() to set the zero level, and calibrateHigh to set the 100 level.
-
+	
 	// TODO: Names: getLightValue, getLevel, getLightLevel, getLight()
 	
 	
