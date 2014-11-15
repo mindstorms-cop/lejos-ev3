@@ -5,7 +5,7 @@ var
   JDKSelectTree: TFolderTreeView;
   JDKSelectDetection: Boolean;
   
-  function Is32BitJDK(const Path: String; var Error: String): Boolean;
+  function IsJDK(const Path: String; var Error: String): Boolean;
   var
     Tmp: String;
   begin
@@ -14,12 +14,6 @@ var
     if not FileExists(Tmp) then Error := Error + Tmp + ' does not exist.' + CRLF;
     Tmp := ConcatPath(Path, 'bin\javac.exe');
     if not FileExists(Tmp) then Error := Error + Tmp + ' does not exist.' + CRLF;
-    if Length(Error) <= 0 then
-    begin
-      Tmp := ConcatPath(Path, 'jre\lib\i386');
-      if not DirExists(Tmp) then
-        Error := Error + 'Selected JDK is not a 32 Bit version.' + CRLF;   
-    end;
     Result := Length(Error) <= 0;
   end;
 
@@ -30,7 +24,14 @@ var
     Result := RegQueryStringValue(HKEY_LOCAL_MACHINE,
       'SOFTWARE\JavaSoft\Java Development Kit\' + Version,
       'JavaHome', Tmp) and (Length(Tmp) > 0) and DirExists(Tmp);
-    if Result then Path := Tmp;
+    if Result then Path := Tmp
+    else 
+    begin
+      Result := RegQueryStringValue(HKEY_LOCAL_MACHINE_32,
+        'SOFTWARE\JavaSoft\Java Development Kit\' + Version,
+        'JavaHome', Tmp) and (Length(Tmp) > 0) and DirExists(Tmp);
+      if Result then Path := Tmp
+    end;;
   end;
   
   function DetectJDK(var Path: String): Boolean;
@@ -40,13 +41,15 @@ var
     GetEnvVar('LEJOS_EV3_JAVA_HOME', Tmp);
     if Length(Tmp) <= 0 then
       Tmp := GetEnv('LEJOS_EV3_JAVA_HOME');
-    if (Length(Tmp) > 0) and Is32BitJDK(Tmp, Dummy) then
+    if (Length(Tmp) > 0) and IsJDK(Tmp, Dummy) then
     begin
       Result := true;
       Path := Tmp;
       Exit;
     end;
   
+    Result := GetJDKPath('1.8', Path);
+    if Result then Exit;
     Result := GetJDKPath('1.7', Path);
     if Result then Exit;
     Result := GetJDKPath('1.6', Path);
@@ -68,6 +71,7 @@ var
   procedure JDKSelect_Activate(Page: TWizardPage);
   var
     Tmp: String;
+    Tmp2: String;
   begin
     if JDKSelectDetection then
     begin
@@ -76,17 +80,22 @@ var
       if DetectJDK(Tmp) then JDKSelectTree.Directory := Tmp
       else
       begin
-        Tmp := ExpandConstant('{pf32}\Java');
-        MsgBox('The installer was uanble to detect a 32 Bit Java Development Kit.'
-          + CRLF + 'By default, such a JDK is installed in ' + Tmp,
+        Tmp := ExpandConstant('{pf}\Java');
+        Tmp2 := ExpandConstant('{pf32}\Java');
+        MsgBox('The installer was uanble to detect a Java Development Kit.'
+          + CRLF + 'By default, such a JDK is installed in ' + Tmp + ' or ' + CRLF + Tmp2,
           mbInformation, MB_OK);
           
         if DirExists(Tmp) then JDKSelectTree.Directory := Tmp
         else 
         begin
-          Tmp := ExpandConstant('{pf32}');
-          if DirExists(Tmp) then JDKSelectTree.Directory := Tmp
-          else JDKSelectTree.Directory := ExpandConstant('{sd}\');
+          if DirExists(Tmp2) then JDKSelectTree.Directory := Tmp2
+          else
+          begin
+            Tmp := ExpandConstant('{pf}');
+            if DirExists(Tmp) then JDKSelectTree.Directory := Tmp
+            else JDKSelectTree.Directory := ExpandConstant('{sd}\');
+          end;
         end;
       end;     
     end;
@@ -108,7 +117,7 @@ var
   var
     Error: String;
   begin
-    Result := Is32BitJDK(JDKSelectTree.Directory, Error);
+    Result := IsJDK(JDKSelectTree.Directory, Error);
     if (not Result) then
       MsgBox(Error + 'Please select the root directory of a valid JDK. '
         + 'This is required to continue.' + CRLF2
@@ -147,7 +156,7 @@ var
       Top := ScaleY(0);
       Width := ScaleX(297);
       Height := ScaleY(25);
-      Caption := 'Select the root directory of a 32-Bit Java Development Kit'
+      Caption := 'Select the root directory of a Java Development Kit'
         + CRLF + 'for use with leJOS EV3:';
     end;
     
