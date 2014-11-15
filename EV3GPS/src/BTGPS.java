@@ -185,7 +185,7 @@ public class BTGPS{
 		btGPS = (BTConnection) connector.connect(GPSDevice.getAddress(), NXTConnection.RAW);
 		
 		if(btGPS == null){
-			result  = -1;//No connection
+			return -1;//No connection
 		}else{
 			result = 1;//Connection Successful
 		}
@@ -199,7 +199,7 @@ public class BTGPS{
 		} catch(Exception e) {
 			LCD.clear();
 			LCD.drawString("Exception:", 0, 0);
-			LCD.drawString(e.getMessage(), 0, 1);
+			LCD.drawString(e.toString(), 0, 1);
 			LCD.refresh();
 			result = -2;
 		}

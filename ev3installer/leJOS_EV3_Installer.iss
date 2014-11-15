@@ -38,6 +38,7 @@ WizardImageStretch=no
 WizardImageBackColor=clWhite
 WizardSmallImageFile=img\WizardSmallImage.bmp
 UninstallFilesDir={app}\uninst
+ArchitecturesInstallIn64BitMode=x64 ia64
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
