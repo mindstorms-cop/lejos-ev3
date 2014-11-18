@@ -27,10 +27,9 @@ public class EV3I2CPort extends EV3IOPort implements I2CPort
     static {
         initDeviceIO();
     }
-    protected static final int IIC_SET_CONN = 0xc00c6902;
-    protected static final int IIC_READ_TYPE_INFO = 0xc03c6903;
-    protected static final int IIC_SETUP = 0xc04c6905;
-    protected static final int IIC_SET = 0xc02c6906;
+    protected static final int IIC_CONNECT = 0xc0036907;
+    protected static final int IIC_DISCONNECT = 0xc0036908;
+    protected static final int IIC_IO = 0xc0036909;
         
     protected static final int IO_TIMEOUT = 2000;
     
@@ -44,22 +43,10 @@ public class EV3I2CPort extends EV3IOPort implements I2CPort
     protected byte[] cmd = new byte[IIC_DATA_LENGTH + 5];
     protected byte speed = SPEED_10KHZ;
 
-    protected void reset()
-    {
-        i2c.ioctl(IIC_SET_CONN, devCon(port, CONN_NONE, 0, 0));        
-    }
-
-    protected void setOperatingMode(int typ, int mode)
-    {
-        i2c.ioctl(IIC_SET_CONN, devCon(port, CONN_NXT_IIC, typ, mode));        
-    }
-    
     protected boolean initSensor()
     {
-        reset();
-        Delay.msDelay(100);
-        setOperatingMode(TYPE_IIC_UNKNOWN, 255);
-        Delay.msDelay(100);
+        cmd[0] = (byte)port;
+        i2c.ioctl(IIC_CONNECT, cmd);        
         return true;
     }
     
@@ -81,7 +68,8 @@ public class EV3I2CPort extends EV3IOPort implements I2CPort
     @Override
     public void close()
     {
-        reset();
+        cmd[0] = (byte)port;
+        i2c.ioctl(IIC_DISCONNECT, cmd);        
         super.close();
     }
     
@@ -135,7 +123,7 @@ public class EV3I2CPort extends EV3IOPort implements I2CPort
         cmd[3] = (byte) writeLen;
         cmd[4] = (byte) (deviceAddress >> 1);
         if (writeLen > 0) System.arraycopy(writeBuf, writeOffset, cmd, 5, writeLen);
-        i2c.ioctl(IIC_SETUP, cmd);
+        i2c.ioctl(IIC_IO, cmd);
         int result = (int) cmd[1];
         if (result == STATUS_FAIL)
             throw new I2CException("I2C read error");
@@ -150,7 +138,7 @@ public class EV3I2CPort extends EV3IOPort implements I2CPort
         throw new I2CException("I2C Unexpected error " + result);
     }
     
-    
+
     private static void initDeviceIO()
     {
         try {

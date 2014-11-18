@@ -77,14 +77,12 @@ public class EV3ConfigurationPort extends EV3IOPort  implements ConfigurationPor
     public static boolean setPortMode(int typ, int port, int mode)
     {
         //System.out.println("Set port mode " + port + " mode " + mode);
-        byte [] modes = new byte[PORTS*(EV3Port.MOTOR_PORT+1)];
-        for(int i = 0; i < modes.length; i++)
-            modes[i] = (byte)'-';
-        modes[port+typ*PORTS] = (byte)mode;
-        return dev.write(modes, modes.length) >= 0;
+        byte [] cmd = new byte[2];
+        cmd[0] = (byte)(typ == EV3Port.MOTOR_PORT ? port + PORTS : port);
+        cmd[1] = (byte)mode;
+        return dev.write(cmd, cmd.length) >= 0;
     }
     
-   
     private static void initDeviceIO()
     {
         try {
@@ -93,12 +91,5 @@ public class EV3ConfigurationPort extends EV3IOPort  implements ConfigurationPor
         {
             throw new UnsupportedOperationException("Unable to access EV3 hardware. Is this an EV3?", e);
         }
-        // set all ports to be disconnected
-        for(int typ = 0; typ <= EV3Port.MOTOR_PORT; typ++)
-            for(int port = 0; port < PORTS; port++)
-            {
-                setPortMode(typ, port,  CMD_DISCONNECTED);
-                //System.out.println("reset port " + port + " type " + EV3AnalogPort.getPortType(port));
-            }
     }
 }

@@ -44,6 +44,9 @@ public class EV3UARTPort extends EV3IOPort implements UARTPort
     protected static final int DEV_RAW_SIZE2 = 32;
     protected static final int DEV_ACTUAL_OFF = 42592;
     
+    protected static final int UART_CONNECT = 0xc0037507;
+    protected static final int UART_DISCONNECT = 0xc0037508;
+    protected static final int UART_SETMODE = 0xc0037509;
     protected static final int UART_SET_CONN = 0xc00c7500;
     protected static final int UART_READ_MODE_INFO = 0xc03c7501;
     protected static final int UART_NACK_MODE_INFO = 0xc03c7502;
@@ -169,6 +172,7 @@ public class EV3UARTPort extends EV3IOPort implements UARTPort
     protected int modeCnt = 0;
     protected byte[] rawInput;
     protected byte[] rawOutput;
+    protected byte[] cmd = new byte[3];
 
     /**
      * return the current status of the port
@@ -228,12 +232,31 @@ public class EV3UARTPort extends EV3IOPort implements UARTPort
     }
 
     /**
+     * Connect to the device
+     */
+    protected void connect()
+    {
+        cmd[0] = (byte)port;
+        uart.ioctl(UART_CONNECT, cmd);        
+    }
+
+    /**
+     * Disconnect to the device
+     */
+    protected void disconnect()
+    {
+        cmd[0] = (byte)port;
+        uart.ioctl(UART_DISCONNECT, cmd);        
+    }
+
+    /**
      * reset the port and device
      */
     protected void reset()
     {
         // Force the device to reset
-        uart.ioctl(UART_SET_CONN, devCon(port, CONN_NONE, 0, 0));        
+        disconnect();
+        connect();
     }
 
     /**
@@ -242,7 +265,9 @@ public class EV3UARTPort extends EV3IOPort implements UARTPort
      */
     protected void setOperatingMode(int mode)
     {
-        uart.ioctl(UART_SET_CONN, devCon(port, CONN_INPUT_UART, 0, mode));
+        cmd[0] = (byte)port;
+        cmd[2] = (byte)mode;
+        uart.ioctl(UART_SETMODE, cmd);
     }
 
     /**
@@ -283,10 +308,12 @@ public class EV3UARTPort extends EV3IOPort implements UARTPort
     /**
      * Clear the port changed flag for the current port.
      */
-    protected void clearPortChanged()
+    protected void clearPortChanged(UARTCTL uc)
     {
         //System.out.printf("Clear changed\n");
-        uart.ioctl(UART_CLEAR_CHANGED, devCon(port, CONN_INPUT_UART, 0, 0));
+        uc.Port = (byte)port;
+        uc.write();
+        uart.ioctl(UART_CLEAR_CHANGED, uc.getPointer());
         devStatus.put(port, (byte)(devStatus.get(port) & ~UART_PORT_CHANGED));        
     }
 
@@ -325,24 +352,28 @@ public class EV3UARTPort extends EV3IOPort implements UARTPort
         int retryCnt = 0;
         //System.out.println("Initial status is " + getStatus() + " type is " + ldm.getPortType(port));
         long base = System.currentTimeMillis();
+        UARTCTL uc = new UARTCTL();
         // now try and configure as a UART
+        connect();
         setOperatingMode(mode);
         status = waitNonZeroStatus(TIMEOUT);
-        //System.out.println("Time is " + (System.currentTimeMillis() - base));
+        System.out.println("Time is " + (System.currentTimeMillis() - base));
         while((status & UART_PORT_CHANGED) != 0 && retryCnt++ < INIT_RETRY)
         {
             // something change wait for it to become ready
-            clearPortChanged();
+            clearPortChanged(uc);
             Delay.msDelay(INIT_DELAY);
             status = waitNonZeroStatus(TIMEOUT);
+            System.out.println("Time2 is " + (System.currentTimeMillis() - base));
             if ((status & UART_DATA_READY) != 0 && (status & UART_PORT_CHANGED) == 0) 
             {
                 // device ready make sure it is now in the correct mode
                 setOperatingMode(mode);
                 status = waitNonZeroStatus(TIMEOUT);
+                System.out.println("Time3 is " + (System.currentTimeMillis() - base));
             }
         }
-        //System.out.println("Init complete retry " + retryCnt + " time " + (System.currentTimeMillis() - base));
+        System.out.println("Init complete retry " + retryCnt + " time " + (System.currentTimeMillis() - base));
         if ((status & UART_DATA_READY) != 0 && (status & UART_PORT_CHANGED) == 0)
             return super.setMode(mode);
         else
@@ -396,7 +427,7 @@ public class EV3UARTPort extends EV3IOPort implements UARTPort
     @Override
     public void close()
     {
-        reset();
+        disconnect();
         super.close();
     }
     
@@ -643,17 +674,6 @@ public class EV3UARTPort extends EV3IOPort implements UARTPort
     
 
 
-    /**
-     * Reset all of the ports
-     */
-    public static void resetAll()
-    {
-        // reset everything
-        for(int i = 0; i < PORTS; i++)
-            devCon(i, CONN_NONE, 0, 0);
-        uart.ioctl(UART_SET_CONN, dc);        
-    }
-    
     private static void initDeviceIO()
     {
         try {

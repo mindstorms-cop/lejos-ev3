@@ -84,12 +84,16 @@ public abstract class EV3IOPort implements IOPort, BasicSensorPort, EV3SensorCon
         {
             if (openPorts[typ][port] == null)
             {
-                openPorts[typ][port] = this;
+                // Set into connected state and disable auto detection
                 this.port = port;
                 this.typ = typ;
+                if (!setPinMode(CMD_CONNECTED))
+                {
+                    this.port = -1;
+                    return false;
+                }
+                openPorts[typ][port] = this;
                 this.ref = ref;
-                // Set into connected state and disable auto detection
-                setPinMode(CMD_CONNECTED);
                 if (typ == EV3Port.SENSOR_PORT)
                 {
                     // set sane pin states, automatic detection may have changed them. 
@@ -114,26 +118,6 @@ public abstract class EV3IOPort implements IOPort, BasicSensorPort, EV3SensorCon
             openPorts[typ][port] = null;
             port = -1;
         }
-    }
-    
-    /**
-     * Create and return a devCon structure ready for use. Note that this structure
-     * when used will impact all of the UART ports currently active. Thus the values
-     * used for other ports in earlier operations must be preserved.
-     * @param p port number
-     * @param conn connection type
-     * @param typ sensor type
-     * @param mode operating mode
-     * @return the DEVCON structure ready for use
-     */
-    protected synchronized static byte[] devCon(int p, int conn, int typ, int mode)
-    {
-        // structure is 3 byte arrays
-        //byte [] dc = new byte[3*PORTS];
-        dc[p] = (byte)conn;
-        dc[p + PORTS] = (byte) typ;
-        dc[p + 2*PORTS] = (byte) mode;
-        return dc;
     }
     
    /**

@@ -18,11 +18,13 @@ import lejos.utility.Delay;
  *
  */
 public class EV3MotorPort extends EV3IOPort implements TachoMotorPort {
-    static final byte OUTPUT_SET_TYPE = (byte)0xa1;
-    static final byte OUTPUT_POWER = (byte)0xa4;
-    static final byte OUTPUT_START = (byte)0xa6;
-    static final byte OUTPUT_STOP = (byte)0xa3;
-    static final byte OUTPUT_CLR_COUNT = (byte)0xb2;
+    static final byte OUTPUT_CONNECT = (byte)1;
+    static final byte OUTPUT_DISCONNECT = (byte)2;
+    static final byte OUTPUT_START = (byte)4;
+    static final byte OUTPUT_STOP = (byte)5;
+    static final byte OUTPUT_SET_TYPE = (byte)6;
+    static final byte OUTPUT_CLR_COUNT = (byte)7;
+    static final byte OUTPUT_POWER = (byte)8;
 
         
     protected static byte[] regCmd2 = new byte[55*4];
@@ -34,10 +36,6 @@ public class EV3MotorPort extends EV3IOPort implements TachoMotorPort {
     static
     {
         initDeviceIO();
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-            @Override
-            public void run() {resetAll();}
-        });
     }
     protected int curMode = FLOAT+1; // current mode is unknown
     protected byte[] cmd = new byte[3];
@@ -687,6 +685,32 @@ public class EV3MotorPort extends EV3IOPort implements TachoMotorPort {
         }
     }    
 
+    /** {@inheritDoc}
+     */    
+    @Override
+    public boolean open(int typ, int port, EV3Port ref)
+    {
+        if (!super.open(typ, port, ref))
+            return false;
+        cmd[0] = OUTPUT_CONNECT;
+        cmd[1] = (byte) port;
+        pwm.write(cmd, 2);
+        return true;
+    }
+
+    /** {@inheritDoc}
+     */    
+    @Override
+    public void close()
+    {
+        cmd[0] = OUTPUT_DISCONNECT;
+        cmd[1] = (byte) port;
+        pwm.write(cmd, 2);
+        super.close();
+    }
+    
+        
+
     /**
      * Helper method to adjust the requested power
      * @param power
@@ -766,21 +790,6 @@ public class EV3MotorPort extends EV3IOPort implements TachoMotorPort {
     public void setPWMMode(int mode)
     {
     }
-
-    /**
-     * reset all motor ports by setting the type to be none.
-     */
-    private static void resetAll()
-    {
-        byte[] cmd = new byte[35];
-        for(int i = 0; i < EV3IOPort.MOTORS; i++)
-        {
-            cmd[0] = OUTPUT_SET_TYPE;
-            cmd[1] = (byte)i;
-            cmd[2] = (byte)EV3IOPort.TYPE_NONE;
-            pwm.write(cmd, 35);
-        }            
-    }
     
     
     private static void initDeviceIO()
@@ -792,7 +801,6 @@ public class EV3MotorPort extends EV3IOPort implements TachoMotorPort {
         // allocate the shadow buffer
         ibufShadow = IntBuffer.allocate(4*8);
         pwm = new NativeDevice("/dev/lms_pwm");
-        resetAll();
     }
 
     /**
