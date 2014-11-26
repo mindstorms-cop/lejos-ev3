@@ -58,6 +58,7 @@ public class EV3UARTPort extends EV3IOPort implements UARTPort
     
     protected static final byte UART_PORT_CHANGED = 1;
     protected static final byte UART_DATA_READY = 8;
+    protected static final byte UART_PORT_ERROR = (byte)0x80;
     
     protected static final int TIMEOUT_DELTA = 1;
     protected static final int TIMEOUT = 4000;
@@ -358,6 +359,7 @@ public class EV3UARTPort extends EV3IOPort implements UARTPort
         setOperatingMode(mode);
         status = waitNonZeroStatus(TIMEOUT);
         System.out.println("Time is " + (System.currentTimeMillis() - base));
+        if ((status & UART_PORT_ERROR) != 0) return false;
         while((status & UART_PORT_CHANGED) != 0 && retryCnt++ < INIT_RETRY)
         {
             // something change wait for it to become ready
@@ -385,6 +387,7 @@ public class EV3UARTPort extends EV3IOPort implements UARTPort
     @Override
     public boolean initialiseSensor(int mode)
     {
+        connect();
         for(int i = 0; i < OPEN_RETRY; i++)
         {
             // initialise the sensor, if we have no mode data
@@ -396,6 +399,7 @@ public class EV3UARTPort extends EV3IOPort implements UARTPort
             }
             resetSensor();
         }
+        disconnect();
         return false;
     }
     
