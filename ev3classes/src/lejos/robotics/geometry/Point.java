@@ -11,7 +11,7 @@ package lejos.robotics.geometry;
  *
  */
 public class Point extends Point2D.Float{
-    public float x, y;
+  
    /**
     * returns a Point at location x,y
     * @param x coordinate
