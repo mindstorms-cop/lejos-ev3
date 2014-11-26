@@ -42,7 +42,7 @@ import com.sun.jdi.connect.Connector.StringArgument;
 
 public class LaunchEV3ConfigDelegate extends AbstractJavaLaunchConfigurationDelegate {
 	public static final String ID_TYPE = "org.lejos.ev3.ldt.LaunchType";
-	private boolean debug = false;
+	private boolean debug = true;
 	
 	//TODO we should make sure, that uploads to the same EV3 are executed sequentially, not in parallel
 	
@@ -104,15 +104,13 @@ public class LaunchEV3ConfigDelegate extends AbstractJavaLaunchConfigurationDele
 			IProject project2 = project.getProject();
 			IFile binary = project2.getFile(simpleName+".jar");
 			String binaryPath = binary.getLocation().toOSString();
-			i = binary.getLocation().toPortableString().lastIndexOf("/");
-			String binDirectory = binary.getLocation().toPortableString().substring(0,i+1) + "bin";
+			String binDirectory = project2.getFolder(project.getOutputLocation().lastSegment()).getLocation().toOSString();
 			
 			monitor.worked(1);			
 			monitor.subTask("Creating jar file and uploading " + binaryPath + " to the brick...");
 			
 			if (debug) LeJOSEV3Util.message("Binary path is " + binaryPath);
 			if (debug) LeJOSEV3Util.message("Main type name is " + mainTypeName);
-			if (debug) LeJOSEV3Util.message("Project relative path is " + binary.getProjectRelativePath().toPortableString());
 			if (debug) LeJOSEV3Util.message("Bin directory is " + binDirectory);
 			
 			JarCreator jc = new JarCreator(binDirectory, binaryPath, mainTypeName);
