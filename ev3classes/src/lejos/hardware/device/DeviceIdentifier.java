@@ -1,5 +1,9 @@
 package lejos.hardware.device;
 
+import java.util.AbstractMap;
+import java.util.ArrayList;
+import java.util.List;
+
 import lejos.hardware.Device;
 import lejos.hardware.port.AnalogPort;
 import lejos.hardware.port.ConfigurationPort;
@@ -7,11 +11,21 @@ import lejos.hardware.port.Port;
 import lejos.hardware.port.UARTPort;
 import lejos.hardware.sensor.EV3SensorConstants;
 import lejos.hardware.sensor.I2CSensor;
+import lejos.utility.Delay;
 
 public class DeviceIdentifier extends Device implements EV3SensorConstants
 {
-    Port port;
-    ConfigurationPort configPort;
+    protected final static int ANALOG_ID_VAR = 50;
+    protected final static long VALID_TIME = 2000;
+    protected long openTime;
+    protected Port port;
+    protected ConfigurationPort configPort;
+    protected static List<AbstractMap.SimpleEntry<Integer,String>> EV3AnalogMap = new ArrayList<AbstractMap.SimpleEntry<Integer,String>>();
+    static 
+    {
+        EV3AnalogMap.add(new AbstractMap.SimpleEntry<Integer,String>(417, "EV3_TOUCH"));
+    }
+
     
     /**
      * Create an instance of the device identifier for a particular port
@@ -20,7 +34,7 @@ public class DeviceIdentifier extends Device implements EV3SensorConstants
     public DeviceIdentifier(Port port)
     {
         this.port = port;
-        configPort = port.open(ConfigurationPort.class);
+        openConfigPort();
     }
     
     public void close()
@@ -28,6 +42,32 @@ public class DeviceIdentifier extends Device implements EV3SensorConstants
         if (configPort != null)
             configPort.close();
         super.close();            
+    }
+
+    protected void openConfigPort()
+    {
+        configPort = port.open(ConfigurationPort.class);
+        openTime = System.currentTimeMillis();        
+    }
+    
+    /**
+     * Wait until the identification data for this port is valid
+     */
+    protected void waitValid()
+    {
+        if (configPort == null)
+            openConfigPort();
+        // allow time for detection to work
+        while (System.currentTimeMillis() < openTime + VALID_TIME)
+        {
+            if (configPort.getPortType() != CONN_NONE) 
+            {
+                //System.out.println("detected after " + i);
+                break;
+            }
+            Delay.msDelay(1);
+        }
+        
     }
 
     /**
@@ -39,11 +79,12 @@ public class DeviceIdentifier extends Device implements EV3SensorConstants
      */
     public int getPortType()
     {
+        waitValid();
         return configPort.getPortType();
     }
 
     /**
-     * Thismethod returns information on the sensor/motor that is attached to the
+     * This method returns information on the sensor/motor that is attached to the
      * specified port. Note that only very basic sensor identification information
      * may be available for some sensor types. It may be necessary to actually open the
      * sensor to allow it to be identified in further detail.
@@ -51,6 +92,7 @@ public class DeviceIdentifier extends Device implements EV3SensorConstants
      */
     public int getDeviceType()
     {
+        waitValid();
         return configPort.getDeviceType();
     }
     
@@ -77,14 +119,14 @@ public class DeviceIdentifier extends Device implements EV3SensorConstants
      * Returns the signature for a i2c sensor
      * @return string identifying the device
      */
-    protected String getI2CSignature()
+    protected String getI2CSignature(boolean full)
     {
         configPort.close();
         configPort = null;
         String product = "";
         String vendor = "";
         String version = "";
-        String address = "2";
+        String address = "";
         I2CSensor i2c = null;
         try {
             // we need to try and read the device identification strings
@@ -96,7 +138,8 @@ public class DeviceIdentifier extends Device implements EV3SensorConstants
                 product = i2c.getProductID();
                 if (product.length() != 0)
                 {
-                    address = String.valueOf(i);
+                    if (i > 2)
+                        address = String.valueOf(i);
                     break;
                 }
             }
@@ -119,7 +162,12 @@ public class DeviceIdentifier extends Device implements EV3SensorConstants
             vendor = "unknown";
         if (version.length() == 0)
             version = "unknown";
-        return address + "-" + vendor + "-" + product + "-" + version;
+        if (address.length() != 0)
+            address = "//" + address + "/";
+        String ret = address + vendor + "/" + product;
+        if (full) 
+            ret += "/" + version;
+        return ret;
     }
     
     /**
@@ -135,9 +183,18 @@ public class DeviceIdentifier extends Device implements EV3SensorConstants
         AnalogPort ap = null;
         try {
             ap = port.open(AnalogPort.class);
-            float p1Val = ap.getPin1();
-            System.out.println("Pin 1 voltage is " + p1Val);
-            product = "EV3TOUCH";
+            int p1mV = (int)(ap.getPin1()*1000);
+            System.out.println("Pin 1 voltage is " + p1mV);
+            // search for a matching sensor
+            for(AbstractMap.SimpleEntry<Integer,String> sensor : EV3AnalogMap)
+            {
+                int key = sensor.getKey();
+                if ((key - ANALOG_ID_VAR) < p1mV && (key + ANALOG_ID_VAR ) > p1mV)
+                {
+                    product = sensor.getValue();
+                    break;
+                }
+            }
         }
         catch (Exception e)
         {
@@ -147,7 +204,7 @@ public class DeviceIdentifier extends Device implements EV3SensorConstants
         {
             if (ap != null)
                 ap.close();
-            configPort = port.open(ConfigurationPort.class);
+            openConfigPort();
         }
         if (product.length() == 0)
             product = "unknown"; 
@@ -178,7 +235,7 @@ public class DeviceIdentifier extends Device implements EV3SensorConstants
         {
             if (uart != null)
                 uart.close();
-            configPort = port.open(ConfigurationPort.class);
+            openConfigPort();
         }
         if (product.length() == 0)
             product = "unknown";
@@ -208,38 +265,39 @@ public class DeviceIdentifier extends Device implements EV3SensorConstants
     /**
      * return the signature of the attached device. This signature can be used to identify
      * the actual device. Note that identification may require that the device is opened.
+     * @param full true to return all available information, false for basic information
      * @return a string signature
      */
-    public String getDeviceSignature()
+    public String getDeviceSignature(boolean full)
     {
         int portType = getPortType();
         switch(portType)
         {
         case CONN_NONE:
-            return "NONE::NONE";
+            return "NONE:NONE";
         case CONN_ERROR:
         case CONN_UNKNOWN:
-            return "UNKNOWN::UNKNOWN";
+            return "UNKNOWN:UNKNOWN";
         case CONN_NXT_COLOR:
-            return "NXT_COLOR::NXT_COLOR";
+            return "NXT_COLOR:NXT_COLOR";
         case CONN_NXT_DUMB:
-            return "NXT_ANALOG::" + getNXTDumbSignature();
+            return "NXT_ANALOG:" + getNXTDumbSignature();
         case CONN_NXT_IIC:
-            return "IIC::" + getI2CSignature();
+            return "IIC:" + getI2CSignature(full);
         case CONN_INPUT_DUMB:
-            return "EV3_ANALOG::" + getEV3DumbSignature();
+            return "EV3_ANALOG:" + getEV3DumbSignature();
         case CONN_INPUT_UART:
-            return "UART::" + getUARTSignature();
+            return "UART:" + getUARTSignature();
         case CONN_OUTPUT_DUMB:
             // TODO: Does anyone have anything that is recognised as this?
-            return "OUTPUT_DUMB::UNKNOWN";
+            return "OUTPUT_DUMB:UNKNOWN";
         case CONN_OUTPUT_INTELLIGENT:
             // TODO: Same for this type
-            return "OUTPUT_INTELLIGENT::UNKNOWN";
+            return "OUTPUT_INTELLIGENT:UNKNOWN";
         case CONN_OUTPUT_TACHO:
-            return "OUTPUT_TACHO::" + getMotorSignature();
+            return "OUTPUT_TACHO:" + getMotorSignature();
         default:
-            return "UNKNOWN::UNKNOWN";
+            return "UNKNOWN:UNKNOWN";
         }
     }
     

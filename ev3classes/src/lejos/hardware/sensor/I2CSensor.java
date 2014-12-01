@@ -209,7 +209,7 @@ public class I2CSensor extends BaseSensor implements SensorConstants {
 		for (i=0; i<len && buf[i] != 0; i++)
 			charBuff[i] = (char)(buf[i] & 0xFF);
 		
-		return new String(charBuff, 0, i);
+		return new String(charBuff, 0, i).trim();
 	}
 	
 	/**

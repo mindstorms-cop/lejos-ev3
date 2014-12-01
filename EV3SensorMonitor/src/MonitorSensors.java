@@ -5,14 +5,10 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 
-import lejos.hardware.port.AnalogPort;
-import lejos.hardware.port.I2CPort;
-import lejos.hardware.sensor.EV3SensorConstants;
-import lejos.hardware.sensor.I2CSensor;
+import lejos.hardware.Device;
+import lejos.hardware.device.DeviceIdentifier;
 import lejos.hardware.port.Port;
 import lejos.hardware.port.SensorPort;
-import lejos.hardware.port.UARTPort;
-import lejos.internal.ev3.EV3DeviceManager;
 import lejos.robotics.SampleProvider;
 
 /**
@@ -37,69 +33,47 @@ public class MonitorSensors {
     void monitorSensorPorts()
     {
         // TODO: add more sensors.
-    	sensorClasses.put("mndsnsrsNRLink","lejos.hardware.device.RCXLink");
-    	sensorClasses.put("mndsnsrsACCL3X03","lejos.hardware.sensor.MindsensorsAccelerometer");
-    	sensorClasses.put("HiTechncColor   ","lejos.hardware.sensor.ColorHTSensor");
-    	sensorClasses.put("HiTechncIRLink  ","lejos.hardware.device.IRLink");
-    	sensorClasses.put("HiTechncCompass ","lejos.hardware.sensor.HiTechnicCompass");
-    	sensorClasses.put("NXT Color","lejos.hardware.sensor.ColorSensor");
+    	sensorClasses.put("IIC:mndsnsrs/NRLink","lejos.hardware.device.RCXLink");
+    	sensorClasses.put("IIC:mndsnsrs/ACCL3X03","lejos.hardware.sensor.MindsensorsAccelerometer");
+    	sensorClasses.put("IIC:HiTechnc/Color","lejos.hardware.sensor.ColorHTSensor");
+    	sensorClasses.put("IIC:HiTechnc/IRLink","lejos.hardware.device.IRLink");
+    	sensorClasses.put("IIC:HiTechnc/Compass","lejos.hardware.sensor.HiTechnicCompass");
+    	sensorClasses.put("NXT_COLOR:NXT_Color","lejos.hardware.sensor.ColorSensor");
     	// Use LightSensor class for NXT dumb sensors
-    	sensorClasses.put("NXT Dumb","lejos.hardware.sensor.LightSensor");
+    	sensorClasses.put("NXT_ANALOG:NXT_LIGHT","lejos.hardware.sensor.LightSensor");
     	// Use TouchSensor for EV3 dumb sensors
-    	sensorClasses.put("Dumb","lejos.hardware.sensor.TouchSensor");
-    	sensorClasses.put("LEGOSonar","lejos.hardware.sensor.NXTUltrasonicSensor");
-    	sensorClasses.put("IR-PROX","lejos.hardware.sensor.EV3IRSensor");
-    	sensorClasses.put("COL-REFLECT","lejos.hardware.sensor.EV3ColorSensor");
+    	sensorClasses.put("EV3_ANALOG:EV3_TOUCH","lejos.hardware.sensor.EV3TouchSensor");
+    	sensorClasses.put("IIC:LEGO/Sonar","lejos.hardware.sensor.NXTUltrasonicSensor");
+    	sensorClasses.put("UART:IR-PROX","lejos.hardware.sensor.EV3IRSensor");
+    	sensorClasses.put("UART:COL-REFLECT","lejos.hardware.sensor.EV3ColorSensor");
 
-    	// TODO: Should not really be using this class!
-    	EV3DeviceManager dm = EV3DeviceManager.getLocalDeviceManager();
         Port[] port = {SensorPort.S1, SensorPort.S2, SensorPort.S3, SensorPort.S4};
-        int [] current = new int[port.length];
-
+        String [] currentSig = new String[port.length];
+        int [] currentTyp = new int[port.length];
+        DeviceIdentifier ids[] = new DeviceIdentifier[port.length];
+        for(int i = 0; i < port.length; i++)
+        {
+            currentSig[i] = "";
+            currentTyp[i] = 0;
+            ids[i] = new DeviceIdentifier(port[i]);
+        }
         while(true) {
             // Look for changes
             for(int i = 0; i < port.length; i++) {
-                int typ = port[i].getPortType();
-                if (current[i] != typ) {
-                    out.println("Port " + i + " changed to " + dm.getPortTypeName(typ));
-                    current[i] = typ;
-
-                    if (typ == EV3SensorConstants.CONN_INPUT_UART) {
-                        out.println("Open port " + i);
-                        UARTPort u = port[i].open(UARTPort.class);
-                        // Set mode 0 to activate the sensor
-                        u.setMode(0);
-                        String modeName = u.getModeName(0);
-                        // Copy with any null terminators in name (in case bug not fixed)
-                        if (modeName.indexOf(0) >= 0)modeName = modeName.substring(0, modeName.indexOf(0));
-                        out.println("Uart sensor: " + modeName);
-                        String className = sensorClasses.get(modeName);
-                        out.println("Sensor class for " + modeName + " is " + className);
-                        callGetMethods(className, UARTPort.class, u);
-                        u.close();
-                    } else if (typ == EV3SensorConstants.CONN_NXT_IIC){
-                        I2CPort ii = port[i].open(I2CPort.class);
-                        I2CSensor s = new I2CSensor(ii);
-                        String product = s.getProductID();
-                        String vendor = s.getVendorID();
-                        s.close();
-                        out.println("I2c sensor: " + vendor + " " + product);
-                        String className = sensorClasses.get(vendor + product);
-                        out.println("Sensor class for " + vendor + product + " is " + className);
-                        if (className == null) {
-                        	out.println("Cannot find sensor class, using I2CSensor");
-                        	className = "lejos.hardware.sensor.I2CSensor";
-                        }
-                        callGetMethods(className, I2CPort.class, ii);
-                        ii.close();
-                    } else if (typ != EV3SensorConstants.CONN_NONE  && typ != EV3SensorConstants.CONN_ERROR) {       	
-                    	String key = dm.getPortTypeName(typ);
-                		AnalogPort a = port[i].open(AnalogPort.class);
-                		String className = sensorClasses.get(key);
-                		out.println("Sensor class is " + className);
-                		callGetMethods(className,AnalogPort.class, a);
-                		a.close();
-                    } 
+                int typ = ids[i].getPortType();
+                if (typ != currentTyp[i])
+                {
+                    currentTyp[i] = typ;
+                    String sig = ids[i].getDeviceSignature(false);
+                    if (!currentSig[i].equals(sig)) {
+                        out.println("Port " + i + " changed to " + sig);
+                        currentSig[i] = sig;
+                        ids[i].close();
+                        String className = sensorClasses.get(sig);
+                        out.println("Sensor class for " + sig + " is " + className);
+                        callGetMethods(className, Port.class, port[i]);
+                        ids[i] = new DeviceIdentifier(port[i]);
+                    }
                 }
             }
         }
@@ -120,6 +94,7 @@ public class MonitorSensors {
 				Object o = con.newInstance(args);
 				out.println("Calling get methods for " + className);
 				callGetMethods(c, o);
+				((Device)o).close();
 			} catch (Exception e) {
 				e.printStackTrace();
 			} 
