@@ -16,6 +16,8 @@ public class EV3ConfigurationPort extends EV3IOPort  implements ConfigurationPor
     }
 
     /** {@inheritDoc}
+     * Note that it can take up to two seconds for the identification data to be available
+     * after the port has been opened.
      */    
     @Override
     public boolean open(int typ, int port, EV3Port ref)
@@ -24,17 +26,6 @@ public class EV3ConfigurationPort extends EV3IOPort  implements ConfigurationPor
             return false;
         // enable automatic detection on this port
         setPinMode(CMD_AUTOMATIC);
-        // allow time for detection to work
-        Delay.msDelay(100);
-        for(int i = 0; i < 2000; i++)
-        {
-            if (getPortType() != CONN_NONE) 
-            {
-                //System.out.println("detected after " + i);
-                break;
-            }
-            Delay.msDelay(1);
-        }
         return true;
     }
 

@@ -1,6 +1,7 @@
 package org.lejos.ev3.menutools.ircontrol;
 
 import lejos.hardware.*;
+import lejos.hardware.device.DeviceIdentifier;
 import lejos.hardware.ev3.LocalEV3;
 import lejos.hardware.lcd.*;
 import lejos.hardware.motor.UnregulatedMotor;
@@ -171,21 +172,14 @@ public class RemoteControl {
 	
 	private int detectIRSensorPort() {
 		int detectedPort = -99;
+		// run device detection in parallel to reduce detection time 
+        DeviceIdentifier []ids = new DeviceIdentifier[4];
+        for(int i=0; i<4; i++)
+            ids[i] = new DeviceIdentifier(sensorPorts[i]);
 		for(int i=0;i<4;i++) {
-			int portType = sensorPorts[i].getPortType();
-			// Check if we have a UART sensor
-			if(portType == EV3SensorConstants.CONN_INPUT_UART) {
-				UARTPort u = sensorPorts[i].open(UARTPort.class);
-                // Set mode 0 to activate the sensor
-                u.setMode(0);
-                String modeName = u.getModeName(0);
-                // Copy with any null terminators in name (in case bug not fixed)
-                if (modeName.indexOf(0) >= 0)modeName = modeName.substring(0, modeName.indexOf(0));
-                //System.out.println("Uart sensor: " + modeName);
-                u.close();
-				if(modeName.equals("IR-PROX"))
-					detectedPort = i;
-			}
+		    if (ids[i].getDeviceSignature(false).contains("IR-PROX"))
+		        detectedPort = i;
+		    ids[i].close();
 		}
 		return detectedPort;
 	}

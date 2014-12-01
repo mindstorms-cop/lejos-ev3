@@ -2,6 +2,7 @@ package lejos.internal.ev3;
 
 import java.io.IOError;
 import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.List;
 
@@ -345,41 +346,40 @@ public class EV3UARTPort extends EV3IOPort implements UARTPort
     /**
      * Attempt to initialise the sensor ready for use.
      * @param mode initial operating mode
-     * @return true if the initialisation succeeded false if it failed
+     * @return -1 no uart, 0 failed to initialise, 1 sensor initialised
      */
-    protected boolean initSensor(int mode)
+    protected int initSensor(int mode)
     {
         byte status;
         int retryCnt = 0;
         //System.out.println("Initial status is " + getStatus() + " type is " + ldm.getPortType(port));
-        long base = System.currentTimeMillis();
+        //long base = System.currentTimeMillis();
         UARTCTL uc = new UARTCTL();
         // now try and configure as a UART
-        connect();
         setOperatingMode(mode);
         status = waitNonZeroStatus(TIMEOUT);
-        System.out.println("Time is " + (System.currentTimeMillis() - base));
-        if ((status & UART_PORT_ERROR) != 0) return false;
+        //System.out.println("Time is " + (System.currentTimeMillis() - base));
+        if ((status & UART_PORT_ERROR) != 0) return -1;
         while((status & UART_PORT_CHANGED) != 0 && retryCnt++ < INIT_RETRY)
         {
             // something change wait for it to become ready
             clearPortChanged(uc);
             Delay.msDelay(INIT_DELAY);
             status = waitNonZeroStatus(TIMEOUT);
-            System.out.println("Time2 is " + (System.currentTimeMillis() - base));
+            //System.out.println("Time2 is " + (System.currentTimeMillis() - base));
             if ((status & UART_DATA_READY) != 0 && (status & UART_PORT_CHANGED) == 0) 
             {
                 // device ready make sure it is now in the correct mode
                 setOperatingMode(mode);
                 status = waitNonZeroStatus(TIMEOUT);
-                System.out.println("Time3 is " + (System.currentTimeMillis() - base));
+                //System.out.println("Time3 is " + (System.currentTimeMillis() - base));
             }
         }
-        System.out.println("Init complete retry " + retryCnt + " time " + (System.currentTimeMillis() - base));
+        //System.out.println("Init complete retry " + retryCnt + " time " + (System.currentTimeMillis() - base));
         if ((status & UART_DATA_READY) != 0 && (status & UART_PORT_CHANGED) == 0)
-            return super.setMode(mode);
+            return 1;
         else
-            return false;
+            return 0;
     }
 
     /** {@inheritDoc}
@@ -392,10 +392,12 @@ public class EV3UARTPort extends EV3IOPort implements UARTPort
         {
             // initialise the sensor, if we have no mode data
             // then read it, otherwise use what we have
-            if (initSensor(mode) && (modeCnt > 0 || readModeInfo()))
+            int res = initSensor(mode);
+            if (res < 0) break;
+            if (res > 0 && (modeCnt > 0 || readModeInfo()))
             {
                 //System.out.println("reset cnt " + i);
-                return true;
+                return super.setMode(mode);
             }
             resetSensor();
         }
@@ -582,7 +584,15 @@ public class EV3UARTPort extends EV3IOPort implements UARTPort
     public String getModeName(int mode)
     {
         if (modeInfo[mode] != null)
-            return new String(modeInfo[mode].Name);
+        {
+            byte[] name = modeInfo[mode].Name;
+            // find the length of the possibly null terminated ascii string
+            int len = name.length;
+            for(int i = 0; i < name.length; i++)
+                if (name[i] == 0)
+                    len = i;
+            return new String(name, 0, len, Charset.forName("US-ASCII")).trim();
+        }
         else 
             return "Unknown";
     }
