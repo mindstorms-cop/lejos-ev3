@@ -124,7 +124,7 @@ public class LightScanner
       int k = 0;
       while (_scanning && head.isMoving())
       {
-         light = eye.getNormalizedLightValue();
+         light = (int) ( eye.getNormalizedLightValue()*100);
          if (!beacon && light > _lightMin)//seeing beacon
          {
             beacon = true;
