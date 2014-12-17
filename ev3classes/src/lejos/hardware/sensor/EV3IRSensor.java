@@ -63,10 +63,6 @@ public class EV3IRSensor extends UARTSensor
     
     protected byte [] remoteVals = new byte[IR_CHANNELS];
     
-
-
-
-
     protected void init()
     {
         setModes(new SensorMode[] {new DistanceMode(), new SeekMode()});
@@ -125,8 +121,6 @@ public class EV3IRSensor extends UARTSensor
     }
     
     
-    
-
     /**
      * <b>EV3 Infra Red sensor, Distance mode</b><br>
      * Measures the distance to an object in front of the sensor.
@@ -135,7 +129,8 @@ public class EV3IRSensor extends UARTSensor
      * <b>Size and content of the sample</b><br>
      * The sample contains one element giving the distance to an object in front of the sensor. The distance provided is very roughly equivalent to meters
      * but needs conversion to give better distance. See product page for details. <br>
-     * The effective range of the sensor in Distance mode  is about 5 to 50 centimeter. Outside this range a Float.NaN is returned.
+     * The effective range of the sensor in Distance mode  is about 5 to 50 centimeters. Outside this range a zero is returned
+     * for low values and positive infinity for high values.
      * 
      * 
      * @return A sampleProvider
@@ -162,7 +157,8 @@ public class EV3IRSensor extends UARTSensor
         {
             switchMode(IR_PROX, SWITCH_DELAY);
             int raw=((int)port.getByte() & 0xff);
-            if (raw<5 || raw>55 ) sample[offset]=Float.NaN;
+            if (raw<5) sample[offset]=0;
+            else if (raw>55) sample[offset]=Float.POSITIVE_INFINITY;
             else sample[offset]=raw*toSI;
         }
 
@@ -174,8 +170,7 @@ public class EV3IRSensor extends UARTSensor
         
     }
 
-
-
+    
     /**
      * <b>EV3 Infra Red sensor, Seek mode</b><br>
      * In seek mode the sensor locates up to four beacons and provides bearing and distance of each beacon.
@@ -188,7 +183,7 @@ public class EV3IRSensor extends UARTSensor
      * when looking from behind the sensor). A bearing of 0 indicates the beacon is
      * directly in front of the sensor. <br>
      * Distance values are not to scale. Al increasing values indicate increasing distance. <br>
-     * If no beacon is detected both bearing and distance are Float.NaN.
+     * If no beacon is detected both bearing is set to zero, and distance to positive infinity.
      * 
      * <p>
      * 
@@ -221,8 +216,8 @@ public class EV3IRSensor extends UARTSensor
               {
                   int raw=(int)seekVals[i+1] & 0xff;
                   if (raw == 128) {
-                      sample[offset++]=Float.NaN; 
-                      sample[offset++]=Float.NaN; 
+                      sample[offset++] = 0; 
+                      sample[offset++] = Float.POSITIVE_INFINITY; 
                   }
                   else {
                   sample[offset++] = seekVals[i] * toSI;
@@ -238,8 +233,5 @@ public class EV3IRSensor extends UARTSensor
         }
 
     }
-
-
-
-
+    
 }
