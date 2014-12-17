@@ -14,7 +14,6 @@ public abstract class EV3IOPort implements IOPort, BasicSensorPort, EV3SensorCon
     protected int port = -1;
     protected int typ = -1;
     protected EV3Port ref;
-    protected static byte [] dc = new byte[3*PORTS];
     protected int currentMode = 0;
     protected static EV3IOPort [][] openPorts = new EV3IOPort[EV3Port.MOTOR_PORT+1][PORTS];
    
@@ -128,6 +127,17 @@ public abstract class EV3IOPort implements IOPort, BasicSensorPort, EV3SensorCon
     {
         //System.out.println("Set Pin mode port " + port + " value " + mode);
         return EV3ConfigurationPort.setPortMode(typ, port, mode);
+    }
+
+    /**
+     * Close all open ports
+     */
+    public static void closeAll()
+    {
+        for(int typ = 0; typ < openPorts.length; typ++)
+            for(int prt = 0; prt < openPorts[typ].length; prt++)
+                if (openPorts[typ][prt] != null)
+                    openPorts[typ][prt].close();
     }
 
 }
