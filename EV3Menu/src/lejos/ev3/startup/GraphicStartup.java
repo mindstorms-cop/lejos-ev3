@@ -59,6 +59,7 @@ import lejos.hardware.port.I2CPort;
 import lejos.hardware.port.UARTPort;
 import lejos.hardware.port.TachoMotorPort;
 import lejos.hardware.sensor.BaseSensor;
+import lejos.internal.ev3.EV3IOPort;
 import lejos.internal.io.Settings;
 import lejos.internal.io.SystemSettings;
 import lejos.remote.ev3.EV3Reply;
@@ -70,7 +71,6 @@ import lejos.remote.ev3.RMIRemoteEV3;
 import lejos.robotics.RegulatedMotor;
 import lejos.robotics.SampleProvider;
 import lejos.robotics.filter.PublishFilter;
-import lejos.robotics.navigation.ArcRotateMoveController;
 import lejos.robotics.navigation.DifferentialPilot;
 
 public class GraphicStartup implements Menu {
@@ -1341,8 +1341,8 @@ public class GraphicStartup implements Menu {
      */
     private void systemMenu()
     {
-        String[] menuData = {"Delete all", "", "Auto Run", "Change name", "NTP host", "Suspend menu", "Unset default"};
-        String[] iconData = {ICFormat,ICSleep,ICAutoRun,ICDefault,ICDefault,ICDefault,ICDefault};
+        String[] menuData = {"Delete all", "", "Auto Run", "Change name", "NTP host", "Suspend menu", "Reset", "Unset default"};
+        String[] iconData = {ICFormat,ICSleep,ICAutoRun,ICDefault,ICDefault,ICDefault,ICDefault, ICDefault};
         boolean rechargeable = false;
         GraphicMenu menu = new GraphicMenu(menuData,iconData,4);
         int selection = 0;
@@ -1360,8 +1360,8 @@ public class GraphicStartup implements Menu {
             menuData[1] = "Sleep time: " + (timeout == 0 ? "off" : String.valueOf(timeout));
             File f = getDefaultProgram();
             if (f == null){
-            	menuData[6] = null;
-            	iconData[6] = null;
+            	menuData[7] = null;
+            	iconData[7] = null;
             }
             menu.setItems(menuData,iconData);
             selection = getSelection(menu, selection);
@@ -1423,6 +1423,10 @@ public class GraphicStartup implements Menu {
                     Settings.setProperty(defaultProgramAutoRunProperty, "");
                     selection = 0;
                     break;
+                case 7:
+                	EV3IOPort.closeAll();
+                	selection = 0;
+                	break;
             }
         } while (selection >= 0);
     }
