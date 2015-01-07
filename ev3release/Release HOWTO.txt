@@ -21,7 +21,7 @@ To create a new release of leJOS EV3 in Eclipse on Linux, please perform the fol
 10. Right click on release/build.xml and select "Run As", "Ant Build"
 11. After the ant script has finished, the packed distributions for Linux and Windows may be found
     inside the folder release/dist.
-12. Install Inno Setup (unicode version) and open/compile installjammer/leJOS_EV3_Installer.iss
+12. Install Inno Setup (unicode version) and open/compile ev3installer/leJOS_EV3_Installer.iss
 13. After that, the installer can be found at installjammer/leJOS_EV3_<version>_win32_setup.exe
 
 There are other steps that are needed after this to release the product:
