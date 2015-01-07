@@ -13,7 +13,7 @@ import lejos.robotics.Calibrate;
 
 /**
  * <b>HiTechnic compass sensor Sensor name</b><br>
- * The HiTechnic compass measures the earth’s magnetic field and calculates a
+ * The HiTechnic compass measures the earth's magnetic field and calculates a
  * heading angle.
  * 
  * <p style="color:red;">

@@ -69,7 +69,7 @@ import lejos.robotics.Calibrate;
  *   To calibrate Compass, mount it on your robot where it will be used and
  * issue startCalibration method and then rotate AbsoluteIMU slowly along all
  * three axes. (The Compass in AbsoluteIMU is a 3 axis compass, and hence
- * needs to be turned along all three axes, and if it’s mounted on your robot,
+ * needs to be turned along all three axes, and if it's mounted on your robot,
  * the whole robot needs to rotate). Rotate one axis at a time, turn once in
  * clock-wise direction completing at-least 360 degrees, and then turn it in
  * anti-clock-wise direction, then go to next axis. Upon finishing turning
@@ -340,7 +340,7 @@ public class MindsensorsAbsoluteIMU extends I2CSensor implements SensorModes,
    * To calibrate Compass, mount it on your robot where it will be used and
    * issue startCalibration method and then rotate AbsoluteIMU slowly along all
    * three axes. (The Compass in AbsoluteIMU is a 3 axis compass, and hence
-   * needs to be turned along all three axes, and if it’s mounted on your robot,
+   * needs to be turned along all three axes, and if it's mounted on your robot,
    * the whole robot needs to rotate). Rotate one axis at a time, turn once in
    * clock-wise direction completing at-least 360 degrees, and then turn it in
    * anti-clock-wise direction, then go to next axis. Upon finishing turning
