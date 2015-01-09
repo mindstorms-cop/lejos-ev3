@@ -50,6 +50,7 @@
 			verbose="false"
 		>
 			<arg value="-quiet"/>
+			<arg value="-Xdoclint:none"/>
 			
 			<packageset dir="${source.dir}" excludes="${docs.exclude}" />
 			<classpath refid="libraries.path"/>
