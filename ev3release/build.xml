@@ -13,6 +13,7 @@
 	<property prefix="vars.ev3scripts"  file="${project.ev3scripts}/build.properties" />
 
 	<property prefix="vars.ev3samples"   file="${project.ev3samples}/build.properties" />
+	<property prefix="vars.ev3menutools"   file="${project.ev3menutools}/build.properties" />
 	<property prefix="vars.ev3pcsamples" file="${project.ev3pcsamples}/build.properties" />
 	
 	<property prefix="vars.ev3example"   file="${project.ev3example}/build.properties" />
@@ -250,6 +251,7 @@
 		<copy-source todir="${source.dir}" id="ev3menu" />
 		
 		<copy-source todir="${source.dir}" id="ev3samples" />
+		<copy-source todir="${source.dir}" id="ev3menutools" />
 		<copy-source todir="${source.dir}" id="ev3pcsamples" />
 		
 		<copy-source todir="${source.dir}" id="ev3example" />
@@ -266,7 +268,7 @@
 		</tar>
 	</target>
 
-	<!-- copies the lejos sources -->
+	<!-- copies the lejos samples -->
 	<target name="dist.samples" description="copies the lejos samples" depends="subproject.ev3samples">
 		<mkdir dir="${dist.dir}" />
 		<zip destfile="${dist.dir}/${lejos.samples.version}.zip">
