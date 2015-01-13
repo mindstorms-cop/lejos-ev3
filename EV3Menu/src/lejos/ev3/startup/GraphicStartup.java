@@ -17,6 +17,7 @@ import java.net.NetworkInterface;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.rmi.Naming;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -100,6 +101,7 @@ public class GraphicStartup implements Menu {
     private static final String ICTools = "\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u00f0\u000f\u0000\u0000\u00f8\u001f\u0000\u0000\u001c\u0038\u0000\u0000\u000c\u0030\u0000\u0000\u000c\u0030\u0000\u0000\u0000\u0000\u0000\u00f0\u00ff\u00ff\u000f\u00fc\u00ff\u00ff\u003f\u00fe\u00ff\u00ff\u007f\u00fe\u00ff\u00ff\u007f\u007e\u00f8\u001f\u007e\u0000\u0000\u0000\u0000\u007e\u00f8\u001f\u007e\u007e\u00f8\u001f\u007e\u00fe\u00ff\u00ff\u007f\u00fe\u00ff\u00ff\u007f\u00fe\u00ff\u00ff\u007f\u00fe\u00ff\u00ff\u007f\u00fe\u00ff\u00ff\u007f\u00fe\u00ff\u00ff\u007f\u00fe\u00ff\u00ff\u007f\u00fe\u00ff\u00ff\u007f\u00fc\u00ff\u00ff\u003f\u00f0\u00ff\u00ff\u000f\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000";
     private static final String ICBlue = "\u0000\u00f0\u000f\u0000\u0000\u00f0\u000f\u0000\u0000\u00ff\u00ff\u0000\u0000\u00ff\u00ff\u0000\u00c0\u003f\u00ff\u0003\u00c0\u003f\u00ff\u0003\u00c0\u003f\u00fc\u0003\u00c0\u003f\u00fc\u0003\u00f0\u003c\u00f0\u000f\u00f0\u003c\u00f0\u000f\u00f0\u0030\u00c3\u000f\u00f0\u0030\u00c3\u000f\u00f0\u0003\u00c3\u000f\u00f0\u0003\u00c3\u000f\u00f0\u000f\u00f0\u000f\u00f0\u000f\u00f0\u000f\u00f0\u000f\u00f0\u000f\u00f0\u000f\u00f0\u000f\u00f0\u0003\u00c3\u000f\u00f0\u0003\u00c3\u000f\u00f0\u0030\u00c3\u000f\u00f0\u0030\u00c3\u000f\u00f0\u003c\u00f0\u000f\u00f0\u003c\u00f0\u000f\u00c0\u003f\u00fc\u0003\u00c0\u003f\u00fc\u0003\u00c0\u003f\u00ff\u0003\u00c0\u003f\u00ff\u0003\u0000\u00ff\u00ff\u0000\u0000\u00ff\u00ff\u0000\u0000\u00f0\u000f\u0000\u0000\u00f0\u000f\u0000";
     private static final String ICWifi = "\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u00f8\u001f\u0000\u0000\u00ff\u00ff\u0000\u00c0\u00ff\u00ff\u0003\u00f0\u00ff\u00ff\u000f\u00f8\u003f\u00fc\u001f\u00fe\u0003\u00c0\u007f\u00ff\u0000\u0000\u00ff\u003f\u0000\u0000\u00fc\u001f\u0000\u0000\u00f8\u000e\u00f8\u001f\u0070\u0000\u00fe\u007f\u0000\u0000\u00ff\u00ff\u0000\u0080\u00ff\u00ff\u0001\u00c0\u003f\u00fc\u0003\u00c0\u0007\u00e0\u0003\u00c0\u0003\u00c0\u0001\u0000\u0000\u0000\u0000\u0000\u00c0\u0003\u0000\u0000\u00e0\u0007\u0000\u0000\u00e0\u0007\u0000\u0000\u00e0\u0007\u0000\u0000\u00e0\u0007\u0000\u0000\u00c0\u0003\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000";
+    private static final String ICPAN = "\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u00f8\u001f\u0000\u0000\u00ff\u00ff\u0000\u00c0\u00ff\u00ff\u0003\u00f0\u00ff\u00ff\u000f\u00f8\u003f\u00fc\u001f\u00fe\u0003\u00c0\u007f\u00ff\u0000\u0000\u00ff\u003f\u0000\u0000\u00fc\u001f\u0000\u0000\u00f8\u000e\u00f8\u001f\u0070\u0000\u00fe\u007f\u0000\u0000\u00ff\u00ff\u0000\u0080\u00ff\u00ff\u0001\u00c0\u003f\u00fc\u0003\u00c0\u0007\u00e0\u0003\u00c0\u0003\u00c0\u0001\u0000\u0000\u0000\u0000\u0000\u00c0\u0003\u0000\u0000\u00e0\u0007\u0000\u0000\u00e0\u0007\u0000\u0000\u00e0\u0007\u0000\u0000\u00e0\u0007\u0000\u0000\u00c0\u0003\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000";
    
     private static final String ICSound = "\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u00c0\u0000\u0003\u0000\u00c0\u0000\u0003\u0000\u00f0\u0030\u000c\u0000\u00f0\u0030\u000c\u0000\u00cc\u00c0\u0030\u0000\u00cc\u00c0\u0030\u0000\u00c3\u000c\u0033\u0000\u00c3\u000c\u0033\u00fc\u00c3\u0030\u0033\u00fc\u00c3\u0030\u0033\u000c\u00c3\u0030\u0033\u000c\u00c3\u0030\u0033\u000c\u00c3\u0030\u0033\u000c\u00c3\u0030\u0033\u003c\u00c3\u0030\u0033\u003c\u00c3\u0030\u0033\u00cc\u00cf\u0030\u0033\u00cc\u00cf\u0030\u0033\u00fc\u00f3\u0030\u0033\u00fc\u00f3\u0030\u0033\u0000\u00cf\u000c\u0033\u0000\u00cf\u000c\u0033\u0000\u00fc\u00c0\u0030\u0000\u00fc\u00c0\u0030\u0000\u00f0\u0030\u000c\u0000\u00f0\u0030\u000c\u0000\u00c0\u0000\u0003\u0000\u00c0\u0000\u0003\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000";
 
@@ -143,11 +145,11 @@ public class GraphicStartup implements Menu {
     private boolean btVisibility;
     private static String version = "Unknown";
     private static String hostname;
-    private static List<String> ips = getIPAddresses();
+    private static List<String> ips;
     private static LocalBTDevice bt;
-	private static GraphicStartup menu = new GraphicStartup();
+	private static GraphicStartup menu;
 	
-	private static TextLCD lcd = LocalEV3.get().getTextLCD();
+	private static TextLCD lcd;
 	
 	private static Process program; // the running user program, if any
 	private static String programName; // The name of the running program
@@ -163,7 +165,7 @@ public class GraphicStartup implements Menu {
 	public static void main(String[] args) throws Exception {
 		Thread.setDefaultUncaughtExceptionHandler(new ExceptionHandler());
 		System.out.println("Menu started");
-		
+		LocalEV3.get().getLED().setPattern(3);
         if (args.length > 0) {    	
         	hostname = args[0];
         }
@@ -174,7 +176,11 @@ public class GraphicStartup implements Menu {
         
         System.out.println("Host name: " + hostname);
         System.out.println("Version: " + version);
-        
+        waitForEV3BootComplete();
+        System.out.println("Boot complete");
+        LocalEV3.get().getLED().setPattern(1);
+        menu = new GraphicStartup();
+        lcd = LocalEV3.get().getTextLCD();
         // Check for autorun
     	File file = getDefaultProgram();
     	if (file != null)
@@ -208,12 +214,334 @@ public class GraphicStartup implements Menu {
         menu.start();  
         
         System.out.println("Starting the menu");
+        LocalEV3.get().getLED().setPattern(0);
         menu.mainMenu();
         
         System.out.println("Menu finished");    
         System.exit(0);
 	}
-	
+
+	private static void waitForEV3BootComplete()
+	{
+	    File bootLog = new File("/tmp/logfile");
+	    while (bootLog.exists())
+	        Delay.msDelay(1000);
+	}
+
+	/**
+	 * Class to handle PAN configuration
+	 * @author andy
+	 *
+	 */
+	class PANConfig
+	{
+	    static final int MODE_NONE = 0;
+        static final int MODE_AP = 1;
+        static final int MODE_APP = 2;
+        static final int MODE_BTC = 3;
+        static final int MODE_USBC = 4;
+
+        final String[] modeIDS = { "NONE", "AP", "AP+", "BT", "USB" };
+        final String[] modeNames = { "None", "Access Point", "Access Point+", "BT Client", "USB Client" };
+        static final String autoIP = "0.0.0.0";
+        static final String anyAP = "*";
+        
+        String[] IPAddresses = {autoIP, autoIP, autoIP, autoIP, autoIP };
+        String[] IPNames = {"Address", "Netmask", "Brdcast", "Gateway", "DNS    "};
+        String[] IPIDS = {"IP", "NM", "BC", "GW", "DN"};
+        
+        int curMode = MODE_NONE;
+        String BTAPName = anyAP;
+        String BTAPAddress = anyAP;
+        
+        public void init(int mode)
+        {
+            for(int i = 0; i < IPAddresses.length; i++)
+                IPAddresses[i] = autoIP;
+            if (mode == MODE_AP)
+                IPAddresses[0] = "10.0.1.1";
+            BTAPName = anyAP;
+            BTAPAddress = anyAP;
+            curMode = mode;
+        }
+
+        /**
+         * Test to see if the IP address string is the special case auto address
+         * @param ip
+         * @return true if the address is the auto address.
+         */
+        private boolean isAutoIP(String ip)
+        {
+            return ip.equals(autoIP);
+        }
+
+        /**
+         * Return an IP address suitable for display, replace the auto address with a
+         * more readable version.
+         * @param ip
+         * @return the display string
+         */
+        private String getDisplayIP(String ip)
+        {
+            return isAutoIP(ip) ? "<Auto>" : ip;
+        }
+
+        private boolean isAnyAP(String bt)
+        {
+            return bt.equals(anyAP);
+        }
+        private String getDisplayAP(String bt)
+        {
+            return isAnyAP(bt) ? "Any Access Point" : bt;
+        }
+        
+        /**
+         * Validate and cleanup the IP address
+         * @param address
+         * @return validated IP or null if there is an error.
+         */
+        private String getValidatedIP(String address)
+        {
+            try 
+            {
+                return InetAddress.getByName(address).getHostAddress();
+            }
+            catch (UnknownHostException e)
+            {
+                return null;
+            }
+        }
+        
+
+        /**
+         * Allow the user to enter an IP address
+         * @param title String to display as the title of the screen
+         * @param ip IP address to edit
+         * @return new validated address
+         */
+        private String enterIP(String title, String ip)
+        {
+            String[] parts = ip.split("\\.");
+            for(int i = 0; i < parts.length; i++)
+                parts[i] = "000".substring(parts[i].length()) + parts[i];
+            String address = parts[0] + "." + parts[1] + "." + parts[2] + "." + parts[3];
+            int curDigit = 0;
+            while (true)
+            {
+                newScreen(title);
+                lcd.drawString(address, 2, 4);
+                if (curDigit < 0)
+                    curDigit = 14;
+                if (curDigit >= 15)
+                    curDigit = 0;
+                Utils.drawRect(curDigit * 10 + 18, 60, 14, 20);
+                lcd.refresh();
+                int key = getButtonPress();
+                switch (key)
+                {
+                    case Button.ID_ENTER:
+                    { // ENTER
+                        // remove leading zeros
+                        String ret = getValidatedIP(address);
+                        if (ret == null)
+                            msg("Invalid address");
+                        else
+                            return ret;
+                        break;
+                    }
+                    case Button.ID_LEFT:
+                    { // LEFT
+                        curDigit--;
+                        if (address.charAt(curDigit) == '.')
+                            curDigit--;
+                        break;
+                    }
+                    case Button.ID_RIGHT:
+                    { // RIGHT
+                        curDigit++;
+                        if (address.charAt(curDigit) == '.')
+                            curDigit++;
+                        break;
+                    }
+                    case Button.ID_ESCAPE:
+                    { // ESCAPE
+                        return ip;
+                    }
+                    case Button.ID_UP:
+                    {
+                        int val = (address.charAt(curDigit) - '0');
+                        if (++val > 9)
+                            val = 0;
+                        address = address.substring(0, curDigit) + ((char)('0' + val)) + address.substring(curDigit + 1);
+                        break;
+                    }
+                    case Button.ID_DOWN:
+                    {
+                        int val = (address.charAt(curDigit) - '0');
+                        if (--val < 0)
+                            val = 9;
+                        address = address.substring(0, curDigit) + ((char)('0' + val)) + address.substring(curDigit + 1);
+                        break;
+                    }
+                }               
+            }
+        }
+
+        /**
+         * Allow the user to choose between an automatic or manual IP address if
+         * manual allow the address to be edited 
+         * @param title
+         * @param ip
+         * @return new ip address
+         */
+        private String getIPAddress(String title, String ip)
+        {
+            String [] strings = {"Automatic", "Advanced"};
+            String [] icons = new String[strings.length];
+            GraphicMenu menu = new GraphicListMenu(strings,icons, 4);
+            newScreen(title);
+            String dispIP = getDisplayIP(ip);
+            lcd.drawString(dispIP, (lcd.getTextWidth() - dispIP.length())/2, 2);
+            menu.setItems(strings, icons);
+            int selection = getSelection(menu, isAutoIP(ip) ? 0 : 1);
+            switch (selection)
+            {
+            case 0:
+                return autoIP;
+            case 1:
+                return enterIP(title, ip);
+            default:
+                return ip;
+            }
+        }
+        
+        
+        public void configureIPs()
+        {
+            int selection = 0;
+            String [] strings = new String[IPAddresses.length];
+            String [] icons = new String[IPAddresses.length];
+            for(int i = 0; i < IPAddresses.length; i++)
+                strings[i] = IPIDS[i] + IPAddresses[i];
+            GraphicMenu menu = new GraphicListMenu(strings,icons);
+            do
+            {
+                newScreen(modeNames[curMode]);
+                for(int i = 0; i < IPAddresses.length; i++)
+                    strings[i] = IPNames[i] + " " + getDisplayIP(IPAddresses[i]);
+                menu.setItems(strings, icons);
+                selection = getSelection(menu, selection);
+                if (selection >= 0)
+                {
+                    IPAddresses[selection] = getIPAddress(IPNames[selection], IPAddresses[selection]);
+                }
+
+            } while (selection >= 0);
+        }
+        
+        
+        /**
+         * Display all currently known Bluetooth devices.
+         */
+        private void selectAP()
+        {
+            newScreen("Devices");
+            lcd.drawString("Searching...", 3, 2);
+            List<RemoteBTDevice> devList;
+            try {
+                devList = (List<RemoteBTDevice>) Bluetooth.getLocalDevice().search();
+            } catch (IOException e) {
+                return;
+            }
+            if (devList.size() <= 0)
+            {
+                msg("No known devices");
+                return;
+            }
+            
+            String[] names = new String[devList.size()];
+            String[] icons = new String[devList.size()];
+            int i=0;
+            for (RemoteBTDevice btrd: devList)
+            {
+                names[i] = btrd.getName();
+                i++;
+            }
+
+            GraphicListMenu deviceMenu = new GraphicListMenu(names, icons);
+            int selected = 0;
+            newScreen("Devices");
+            selected = getSelection(deviceMenu, selected);
+            if (selected >= 0)
+            {
+                RemoteBTDevice btrd = devList.get(selected);
+                //byte[] devclass = btrd.getDeviceClass();
+                BTAPName = btrd.getName();
+                BTAPAddress = btrd.getAddress();
+
+            }
+        }
+        
+        public void configureBTClient(String title)
+        {
+            String [] strings = {"Any", "Select", "Advanced"};
+            String [] icons = new String[strings.length];
+            GraphicMenu menu = new GraphicListMenu(strings, icons, 4);
+            while (true)
+            {
+                newScreen(title);
+                String dispIP = getDisplayAP(BTAPName);
+                lcd.drawString(dispIP, (lcd.getTextWidth() - dispIP.length())/2, 2);
+                if (!isAnyAP(BTAPName))
+                    lcd.drawString(BTAPAddress, (lcd.getTextWidth() - BTAPAddress.length())/2, 3);                    
+                int selection = getSelection(menu, isAnyAP(BTAPName) ? 0 : 1);
+                switch (selection)
+                {
+                case 0:
+                    BTAPName = anyAP;
+                    BTAPAddress = anyAP;
+                    return;
+                case 1:
+                    selectAP();
+                    break;
+                case 2:
+                    configureIPs();
+                    break;
+                default:
+                    return;
+                }    
+            }
+        }
+        
+        public void configure()
+        {
+            if (curMode == MODE_BTC)
+                configureBTClient(modeNames[curMode]);
+            else
+                configureIPs();
+        }
+        
+        public void panMenu()
+        {
+            int selection = 0;
+            GraphicMenu menu = new GraphicMenu(null,null,3);
+            do
+            {
+                newScreen("PAN");
+                menu.setItems(modeNames,
+                        new String[]{ICEV3,ICEV3,ICEV3,ICEV3,ICEV3});
+                selection = getSelection(menu, curMode);
+                if (selection >= 0)
+                {
+                    if (selection != curMode)
+                        init(selection);
+                    configure();
+                }
+
+            } while (selection >= 0);
+        }
+
+	}
 	
 	/**
 	 * Start-up thread
@@ -305,8 +633,8 @@ public class GraphicStartup implements Menu {
     {
         GraphicMenu menu = new GraphicMenu(new String[]
                 {
-                    "Run Default", "Programs", "Samples", "Tools", "Bluetooth", "Wifi", "Sound", "System", "Version"
-                },new String[] {ICDefault,ICFiles,ICSamples,ICTools,ICBlue,ICWifi,ICSound,ICEV3,ICLeJOS},3);
+                    "Run Default", "Programs", "Samples", "Tools", "Bluetooth", "Wifi", "PAN", "Sound", "System", "Version"
+                },new String[] {ICDefault,ICFiles,ICSamples,ICTools,ICBlue,ICWifi,ICPAN, ICSound,ICEV3,ICLeJOS},3);
         int selection = 0;
         do
         {
@@ -337,12 +665,16 @@ public class GraphicStartup implements Menu {
                     wifiMenu();
                     break;
                 case 6:
-                    soundMenu();
+                    PANConfig pc = new PANConfig();
+                    pc.panMenu();
                     break;
                 case 7:
-                    systemMenu();
+                    soundMenu();
                     break;
                 case 8:
+                    systemMenu();
+                    break;
+                case 9:
                     displayVersion();
                     break;
             }
@@ -1023,10 +1355,10 @@ public class GraphicStartup implements Menu {
      */
     private void bluetoothMenu()
     {
-    	// Check if BT initialisation is complete
+        // Check if BT initialisation is complete
         if (bt == null) {
-        	msg("BT not started");
-        	return;
+            msg("BT not started");
+            return;
         }
         
         int selection = 0;
@@ -1055,14 +1387,14 @@ public class GraphicStartup implements Menu {
                     bluetoothDevices();
                     break;
                 case 2:
-                	visible = !visible;
+                    visible = !visible;
                     btVisibility = visible;
                     System.out.println("Setting visibility to " + btVisibility);
-					try {
-						bt.setVisibility(btVisibility);
-					} catch (IOException e) {
-						System.err.println("Failed to set visibility: " + e);
-					}
+                    try {
+                        bt.setVisibility(btVisibility);
+                    } catch (IOException e) {
+                        System.err.println("Failed to set visibility: " + e);
+                    }
                     //updateBTIcon();
                     ind.updateNow();
                     break;
@@ -1072,10 +1404,10 @@ public class GraphicStartup implements Menu {
             }
         } while (selection >= 0);
     }
-    
+
     /**
      * Clears the screen, displays a number and allows user to change
-     * the digits of the number individually using the NXT buttons.
+     * the digits of the number individually using the EV3 buttons.
      * Note the array of bytes represent ASCII characters, not actual numbers.
      * 
      * @param digits Number of digits in the PIN.
@@ -1105,21 +1437,33 @@ public class GraphicStartup implements Menu {
             {
                 case Button.ID_ENTER:
                 { // ENTER
-                    curDigit++;
-                    break;
+                    return true;
+
                 }
-                case Button.ID_LEFT:
+                case Button.ID_DOWN:
                 { // LEFT
                     number[curDigit]--;
                     if (number[curDigit] < '0')
                         number[curDigit] = '9';
                     break;
                 }
-                case Button.ID_RIGHT:
+                case Button.ID_UP:
                 { // RIGHT
                     number[curDigit]++;
                     if (number[curDigit] > '9')
                         number[curDigit] = '0';
+                    break;
+                }
+                case Button.ID_LEFT:
+                { // LEFT
+                    if (--curDigit < 0)
+                        curDigit = digits - 1;
+                    break;
+                }
+                case Button.ID_RIGHT:
+                { // RIGHT
+                    if (++curDigit >= digits)
+                        curDigit = 0;
                     break;
                 }
                 case Button.ID_ESCAPE:
