@@ -1,14 +1,9 @@
 package lejos.hardware;
 
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Properties;
-
-import org.freedesktop.dbus.exceptions.DBusException;
+import java.util.List;
 
 import com.sun.jna.LastErrorException;
 
@@ -17,108 +12,144 @@ import lejos.internal.io.NativeHCI;
 
 public class LocalBTDevice {
 	private NativeHCI hci = new NativeHCI();
-	private HashMap<String,String> knownDevices = new HashMap<String,String>();
-	private Properties props = new Properties();
-	private FileReader fr;
-	private String userHome = System.getProperty( "user.home" );
-	private String cacheFile = userHome + "/nxj.cache";
 	private DBusBluez db; 
 	
 	public LocalBTDevice() {
 		try {
-			db = new DBusBluez();
-			fr = new FileReader(cacheFile);
-			props.load(fr);
-		    Enumeration<?> e = (Enumeration<?>) props.propertyNames();
-
-		    while (e.hasMoreElements()) {
-		      String key = (String) e.nextElement();
-		      if (key.startsWith("NXT_")) {
-		    	  knownDevices.put(props.getProperty(key), key.substring(4));
-		      }
-		    }
-		} catch (IOException e) {
-			System.out.println("Failed to load nxj.cache: " + e);
-		} catch (DBusException e1) {
-			System.err.println("Failed to create DBusJava: " + e1);
+			db = new DBusBluez();		
+		} catch (Exception e) {
+			System.err.println("Failed to create DBusJava: " + e);
+			throw(new BluetoothException(e.getMessage(), e));
 		}
 	}
-	
-	public Collection<RemoteBTDevice> search() throws IOException {
+
+	/**
+	 * Search for and return a list of Bluetooth devices.
+	 * @return The found devices.
+	 * @throws IOException
+	 */
+	public Collection<RemoteBTDevice> search() {
 		try {
 			Collection<RemoteBTDevice> results = hci.hciInquiry();
 			for(RemoteBTDevice d: results) {
 				System.out.println("Found " + d.getName());
-				knownDevices.put(d.getName(), d.getAddress());
-				props.setProperty("NXT_" + d.getAddress(), d.getName());
 			}
-			saveKnownDevices();
 			return results;
 		} catch (LastErrorException e) {
-			throw(new IOException(e.getMessage()));
+            throw(new BluetoothException(e.getMessage(), e));
 		}
 	}
-	
-	public void setVisibility(boolean visible) throws IOException {
+
+	/**
+	 * Return a list of the devices we are paired with
+	 * @return the list of paired devices
+	 */
+    public Collection<RemoteBTDevice> getPairedDevices() {
+        try {
+            List<String> devices = db.retrieveDevices(true);
+            Collection<RemoteBTDevice> result = new ArrayList<RemoteBTDevice>();        
+            for(String d: devices) {
+                RemoteBTDevice rd = new RemoteBTDevice(db.getDeviceName(d), Bluetooth.getAddress(d), db.getDeviceClass(d));
+                result.add(rd);
+            }
+            return result;
+        } catch (Exception e) {
+            throw(new BluetoothException(e.getMessage(), e));
+        }
+    }
+
+    /**
+     * Set the visibility state of the device
+     * @param visible new visibility state
+     */
+	public void setVisibility(boolean visible) {
 		try {
 			hci.hciSetVisible(visible);
 		} catch (LastErrorException e) {
-			throw(new IOException(e.getMessage()));
+            throw(new BluetoothException(e.getMessage(), e));
 		}
 	}
-	
+
+	/**
+	 * return the current visibility of the device
+	 * @return true if the device is visible
+	 */
 	public boolean getVisibility() {
-		return hci.hcigetVisible();
+        try {
+            return hci.hcigetVisible();
+        } catch (LastErrorException e) {
+            throw(new BluetoothException(e.getMessage(), e));
+        }
 	}
-	
+
+	/**
+	 * Check to see if the device is currently powered on
+	 * @return true if the device is on
+	 */
 	public static boolean isPowerOn() {
 		return true;
 	}
-	
+
+	/**
+	 * Return the address of the local device
+	 * @return A string version of the Bluetooth device address
+	 */
 	public String getBluetoothAddress() {
-		StringBuilder sb = new StringBuilder();
-		for(int j=5;j>=0;j--) {
-			String hex = Integer.toHexString(getDeviceInfo() .bdaddr[j] & 0xFF).toUpperCase();
-			if (hex.length() == 1) sb.append('0');
-			sb.append(hex);
-			if (j>0) sb.append(':');
-		}
-		return sb.toString();
+        try {
+            return Bluetooth.getAddress(getDeviceInfo().bdaddr);
+        } catch (LastErrorException e) {
+            throw(new BluetoothException(e.getMessage(), e));
+        }
 	}
-	
+
+	/**
+	 * Return the name of the local device
+	 * @return A string containing the device name
+	 */
 	public String getFriendlyName() {
-		return "EV3";
+        try {
+            return db.getAdapterName();
+        } catch (Exception e) {
+            throw(new BluetoothException(e.getMessage(), e));
+        }
 	}
-	
+
+	/**
+	 * Return a structure providing information about the local device 
+	 * @return
+	 */
 	public NativeHCI.DeviceInfo getDeviceInfo() {
-		return hci.hciGetDeviceInfo();
+        try {
+            return hci.hciGetDeviceInfo();
+        } catch (LastErrorException e) {
+            throw(new BluetoothException(e.getMessage(), e));
+        }
 	}
-	
-	private void saveKnownDevices() {	
-		try {
-			props.store(new FileWriter(cacheFile), null);
-		} catch (IOException e) {
-			System.err.println("Failed to save properties file: " + e);
-		}
-		
-	}
-	
-	public static byte[] getBDAddr(String addr) {
-		byte[] bdaddr = new byte[6];
-		
-		for(int i=0;i<addr.length();i += 3) {
-			byte b = Byte.parseByte(addr.substring(i,i+2), 16);
-			bdaddr[5 - (i/3)] = b;
-		}
-		
-		return bdaddr;
-	}
-	
+
+	/**
+	 * Authenticate/pair the local device with the specified device
+	 * @param deviceAddress address of the device to pair with
+	 * @param pin Pin to use for pairing with the device
+	 */
 	public void authenticate(String deviceAddress, String pin) {
 		try {
 			db.authenticateRemoteDevice(deviceAddress, pin);
-		} catch (DBusException e) {
+		} catch (Exception e) {
 			System.err.println("Failed to authenticate remote device: " + e);
+            throw(new BluetoothException(e.getMessage(), e));
 		}
+	}
+
+	/**
+	 * Remove the specified device from the known/paired list
+	 * @param deviceAddress address of the device to remove
+	 */
+	public void removeDevice(String deviceAddress) {
+        try {
+            db.removeAuthenticationWithRemoteDevice(deviceAddress);
+        } catch (Exception e) {
+            System.err.println("Failed to remove device: " + e);
+            throw(new BluetoothException(e.getMessage(), e));
+        }
 	}
 }

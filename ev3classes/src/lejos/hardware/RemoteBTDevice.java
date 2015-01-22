@@ -7,9 +7,9 @@ public class RemoteBTDevice implements Serializable {
 	private static final long serialVersionUID = -1668354353670941450L;
 	private String name;
 	private byte[] address;
-	private byte[] cod;
+	private int cod;
 	
-	public RemoteBTDevice(String name, byte[] address, byte[] cod) {
+	public RemoteBTDevice(String name, byte[] address, int cod) {
 		this.name = name;
 		this.address = address;
 		this.cod = cod;
@@ -23,19 +23,12 @@ public class RemoteBTDevice implements Serializable {
 		return address;
 	}
 	
-	public byte[] getDeviceClass() {
+	public int getDeviceClass() {
 		return cod;
 	}
 	
 	public String getAddress() {
-		StringBuilder sb = new StringBuilder();
-		for(int j=5;j>=0;j--) {
-			String hex = Integer.toHexString(address[j] & 0xFF).toUpperCase();
-			if (hex.length() == 1) sb.append('0');
-			sb.append(hex);
-			if (j>0) sb.append(':');
-		}
-		return sb.toString();
+	    return Bluetooth.getAddress(address);
 	}
 	
 	public void authenticate(String pin) {

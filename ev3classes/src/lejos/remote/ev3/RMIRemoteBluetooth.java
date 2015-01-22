@@ -6,6 +6,7 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.Collection;
 
 import lejos.hardware.Bluetooth;
+import lejos.hardware.BluetoothException;
 import lejos.hardware.LocalBTDevice;
 import lejos.hardware.RemoteBTDevice;
 
@@ -21,26 +22,34 @@ public class RMIRemoteBluetooth extends UnicastRemoteObject implements RMIBlueto
 	public Collection<RemoteBTDevice> search() throws RemoteException {
 		try {
 			return blue.search();
-		} catch (IOException e) {
+		} catch (BluetoothException e) {
 			throw new RemoteException(e.getMessage());
 		}
 	}
 
 	@Override
 	public String getBluetoothAddress() throws RemoteException {
-		return blue.getBluetoothAddress();
+        try {
+            return blue.getBluetoothAddress();
+        } catch (BluetoothException e) {
+            throw new RemoteException(e.getMessage());
+        }
 	}
 
 	@Override
 	public boolean getVisibility() throws RemoteException {
-		return blue.getVisibility();
+        try {
+            return blue.getVisibility();
+        } catch (BluetoothException e) {
+            throw new RemoteException(e.getMessage());
+        }
 	}
 
 	@Override
 	public void setVisibility(boolean visible) throws RemoteException {
 		try {
 			blue.setVisibility(visible);
-		} catch (IOException e) {
+		} catch (BluetoothException e) {
 			throw new RemoteException(e.getMessage());
 		}		
 	}

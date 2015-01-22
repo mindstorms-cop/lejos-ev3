@@ -109,7 +109,7 @@ public class BTGPS{
 		Collection<RemoteBTDevice> devList = null;
 		try {
 			devList = Bluetooth.getLocalDevice().search();
-		} catch (IOException e) {
+		} catch (Exception e) {
 			LCD.drawString("Search failed", 0, 1);
 			LCD.refresh();
 		}

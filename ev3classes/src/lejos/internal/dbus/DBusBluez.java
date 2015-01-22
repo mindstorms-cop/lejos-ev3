@@ -2,9 +2,12 @@ package lejos.internal.dbus;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Vector;
 
 import org.freedesktop.dbus.DBusConnection;
 import org.freedesktop.dbus.Path;
+import org.freedesktop.dbus.Variant;
 import org.freedesktop.dbus.exceptions.DBusException;
 
 public class DBusBluez {
@@ -23,6 +26,39 @@ public class DBusBluez {
         adapter = dbusConn.getRemoteObject("org.bluez", adapterPath.getPath(), Adapter.class);
         this.adapterPath = adapterPath;
     }
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.bluez.BlueZAPI#getAdapterAddress()
+     */
+    public String getAdapterAddress() {
+        return DBusProperties.getStringValue(adapter, Adapter.Properties.Address);
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.bluez.BlueZAPI#getAdapterDeviceClass()
+     */
+    public int getAdapterDeviceClass() {
+        // Since BlueZ 4.34
+        Integer deviceClass = DBusProperties.getIntValue(adapter, Adapter.Properties.Class);
+        if (deviceClass == null) {
+            return 0; // What should we return?
+        } else {
+            return deviceClass.intValue();
+        }
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.bluez.BlueZAPI#getAdapterName()
+     */
+    public String getAdapterName() {
+        return DBusProperties.getStringValue(adapter, Adapter.Properties.Name);
+    }
+    
     
     public boolean authenticateRemoteDevice(String deviceAddress, final String passkey) throws DBusException {
     	 
@@ -80,4 +116,70 @@ public class DBusBluez {
     	}
     	return a;
     }
+    
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.bluez.BlueZAPI#retrieveDevices(boolean)
+     */
+    public List<String> retrieveDevices(boolean preKnown) {
+        Path[] devices = adapter.ListDevices();
+        List<String> addresses = new Vector<String>();
+        if (devices != null) {
+            for (Path devicePath : devices) {
+                System.out.println("Path " + devicePath.getPath());
+                try {
+                    Device device = dbusConn.getRemoteObject("org.bluez", devicePath.getPath(), Device.class);
+                    Map<String, Variant<?>> properties = device.GetProperties();
+                    if (properties != null) {
+                        String address = DBusProperties.getStringValue(properties, Device.Properties.Address);
+                        boolean paired = DBusProperties.getBooleanValue(properties, Device.Properties.Paired, false);
+                        boolean trusted = DBusProperties.getBooleanValue(properties, Device.Properties.Trusted, false);
+                        if ((!preKnown) || paired || trusted) {
+                            addresses.add(address);
+                        }
+                    }
+                } catch (DBusException e) {
+                    System.out.println("can't get device " + devicePath + " exception" + e);
+                }
+            }
+        }
+        return addresses;
+    }
+    
+    public void removeAuthenticationWithRemoteDevice(String deviceAddress) throws DBusException {
+        Path devicePath = adapter.FindDevice(deviceAddress);
+        adapter.RemoveDevice(devicePath);
+    }    
+    
+    public String getDeviceName(String deviceAddress) {
+        try {
+            Path devicePath = adapter.FindDevice(deviceAddress);
+            Device device = dbusConn.getRemoteObject("org.bluez", devicePath.getPath(), Device.class);
+            Map<String, Variant<?>> properties = device.GetProperties();
+            if (properties != null) {
+                String name = DBusProperties.getStringValue(properties, Device.Properties.Name);
+                return name;
+            }
+        } catch (DBusException e) {
+            System.out.println("Can't get property for " + deviceAddress + " " + e);
+        }        
+        return "";
+    }
+    
+    public int getDeviceClass(String deviceAddress) {
+        try {
+            Path devicePath = adapter.FindDevice(deviceAddress);
+            Device device = dbusConn.getRemoteObject("org.bluez", devicePath.getPath(), Device.class);
+            Map<String, Variant<?>> properties = device.GetProperties();
+            if (properties != null) {
+                int cod = DBusProperties.getIntValue(properties, Device.Properties.Class);
+                return cod;
+            }
+        } catch (DBusException e) {
+            System.out.println("Can't get property for " + deviceAddress + " " + e);
+        }        
+        return 0;
+    }
+    
 }

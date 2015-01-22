@@ -127,6 +127,7 @@ public class NativeHCI {
 			byte[] name = new byte[248];		
 			byte[] bdaddr =  ii.getByteArray(i*INQUIRY_INFO_SIZE, 6);
 			byte[] cod =  ii.getByteArray(i*INQUIRY_INFO_SIZE + 9, 3);
+			int icod = (cod[0] & 0xff) | ((cod[1] & 0xff) << 8) | ((cod[2] & 0xff) << 16);
 			StringBuilder nameBuilder = new StringBuilder();
 			
 			blue.hci_read_remote_name(socket, bdaddr, name.length, ByteBuffer.wrap(name), 0);
@@ -135,7 +136,7 @@ public class NativeHCI {
 				nameBuilder.append((char) name[j]);
 			}
 			
-			remoteDevices.add(new RemoteBTDevice(nameBuilder.toString(),bdaddr, cod));
+			remoteDevices.add(new RemoteBTDevice(nameBuilder.toString(),bdaddr, icod));
 		}
 		return remoteDevices;
 	}

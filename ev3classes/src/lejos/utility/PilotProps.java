@@ -67,6 +67,8 @@ public class PilotProps extends Properties
 			return Motor.B;
 		else if (motor.equals("C"))
 			return Motor.C;
+        else if (motor.equals("D"))
+            return Motor.D;
 		else
 			return null;
 	}

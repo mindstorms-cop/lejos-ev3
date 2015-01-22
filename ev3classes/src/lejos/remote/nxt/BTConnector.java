@@ -6,6 +6,7 @@ import java.util.Collection;
 import com.sun.jna.LastErrorException;
 
 import lejos.hardware.Bluetooth;
+import lejos.hardware.BluetoothException;
 import lejos.hardware.RemoteBTDevice;
 import lejos.internal.io.NativeHCI;
 import lejos.internal.io.NativeSocket;
@@ -61,7 +62,7 @@ public class BTConnector extends NXTCommConnector  {
 				
 				return new BTConnection(socket, mode);
 				
-			} catch (IOException e) {
+			} catch (BluetoothException e) {
 				System.err.println("Error getting remote devices: " + e);
 				return null;
 			}
