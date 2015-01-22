@@ -5,12 +5,14 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.lang.reflect.Constructor;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -32,6 +34,7 @@ import lejos.utility.Delay;
 import lejos.ev3.startup.Config;
 import lejos.hardware.Battery;
 import lejos.hardware.Bluetooth;
+import lejos.hardware.BluetoothException;
 import lejos.hardware.BrickFinder;
 import lejos.hardware.Button;
 import lejos.hardware.LocalBTDevice;
@@ -101,8 +104,12 @@ public class GraphicStartup implements Menu {
     private static final String ICTools = "\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u00f0\u000f\u0000\u0000\u00f8\u001f\u0000\u0000\u001c\u0038\u0000\u0000\u000c\u0030\u0000\u0000\u000c\u0030\u0000\u0000\u0000\u0000\u0000\u00f0\u00ff\u00ff\u000f\u00fc\u00ff\u00ff\u003f\u00fe\u00ff\u00ff\u007f\u00fe\u00ff\u00ff\u007f\u007e\u00f8\u001f\u007e\u0000\u0000\u0000\u0000\u007e\u00f8\u001f\u007e\u007e\u00f8\u001f\u007e\u00fe\u00ff\u00ff\u007f\u00fe\u00ff\u00ff\u007f\u00fe\u00ff\u00ff\u007f\u00fe\u00ff\u00ff\u007f\u00fe\u00ff\u00ff\u007f\u00fe\u00ff\u00ff\u007f\u00fe\u00ff\u00ff\u007f\u00fe\u00ff\u00ff\u007f\u00fc\u00ff\u00ff\u003f\u00f0\u00ff\u00ff\u000f\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000";
     private static final String ICBlue = "\u0000\u00f0\u000f\u0000\u0000\u00f0\u000f\u0000\u0000\u00ff\u00ff\u0000\u0000\u00ff\u00ff\u0000\u00c0\u003f\u00ff\u0003\u00c0\u003f\u00ff\u0003\u00c0\u003f\u00fc\u0003\u00c0\u003f\u00fc\u0003\u00f0\u003c\u00f0\u000f\u00f0\u003c\u00f0\u000f\u00f0\u0030\u00c3\u000f\u00f0\u0030\u00c3\u000f\u00f0\u0003\u00c3\u000f\u00f0\u0003\u00c3\u000f\u00f0\u000f\u00f0\u000f\u00f0\u000f\u00f0\u000f\u00f0\u000f\u00f0\u000f\u00f0\u000f\u00f0\u000f\u00f0\u0003\u00c3\u000f\u00f0\u0003\u00c3\u000f\u00f0\u0030\u00c3\u000f\u00f0\u0030\u00c3\u000f\u00f0\u003c\u00f0\u000f\u00f0\u003c\u00f0\u000f\u00c0\u003f\u00fc\u0003\u00c0\u003f\u00fc\u0003\u00c0\u003f\u00ff\u0003\u00c0\u003f\u00ff\u0003\u0000\u00ff\u00ff\u0000\u0000\u00ff\u00ff\u0000\u0000\u00f0\u000f\u0000\u0000\u00f0\u000f\u0000";
     private static final String ICWifi = "\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u00f8\u001f\u0000\u0000\u00ff\u00ff\u0000\u00c0\u00ff\u00ff\u0003\u00f0\u00ff\u00ff\u000f\u00f8\u003f\u00fc\u001f\u00fe\u0003\u00c0\u007f\u00ff\u0000\u0000\u00ff\u003f\u0000\u0000\u00fc\u001f\u0000\u0000\u00f8\u000e\u00f8\u001f\u0070\u0000\u00fe\u007f\u0000\u0000\u00ff\u00ff\u0000\u0080\u00ff\u00ff\u0001\u00c0\u003f\u00fc\u0003\u00c0\u0007\u00e0\u0003\u00c0\u0003\u00c0\u0001\u0000\u0000\u0000\u0000\u0000\u00c0\u0003\u0000\u0000\u00e0\u0007\u0000\u0000\u00e0\u0007\u0000\u0000\u00e0\u0007\u0000\u0000\u00e0\u0007\u0000\u0000\u00c0\u0003\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000";
-    private static final String ICPAN = "\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u00f8\u001f\u0000\u0000\u00ff\u00ff\u0000\u00c0\u00ff\u00ff\u0003\u00f0\u00ff\u00ff\u000f\u00f8\u003f\u00fc\u001f\u00fe\u0003\u00c0\u007f\u00ff\u0000\u0000\u00ff\u003f\u0000\u0000\u00fc\u001f\u0000\u0000\u00f8\u000e\u00f8\u001f\u0070\u0000\u00fe\u007f\u0000\u0000\u00ff\u00ff\u0000\u0080\u00ff\u00ff\u0001\u00c0\u003f\u00fc\u0003\u00c0\u0007\u00e0\u0003\u00c0\u0003\u00c0\u0001\u0000\u0000\u0000\u0000\u0000\u00c0\u0003\u0000\u0000\u00e0\u0007\u0000\u0000\u00e0\u0007\u0000\u0000\u00e0\u0007\u0000\u0000\u00e0\u0007\u0000\u0000\u00c0\u0003\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000";
-   
+    private static final String ICPAN = "\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u00fc\u003f\u0000\u0000\u00fc\u003f\u0000\u0000\u000c\u0038\u0000\u0000\u000c\u0038\u0000\u0000\u000c\u0038\u0000\u0000\u000c\u0038\u0000\u0000\u00fc\u003f\u0000\u0000\u00fc\u003f\u0000\u0000\u00f8\u001f\u0000\u0000\u00c0\u0001\u0000\u0000\u00c0\u0001\u0000\u00f0\u00ff\u00ff\u000f\u00f0\u00ff\u00ff\u000f\u0070\u0000\u0000\u000e\u0070\u0000\u0000\u000e\u00ff\u0007\u00e0\u00ff\u00ff\u000f\u00f0\u00ff\u0003\u000e\u0070\u00c0\u0003\u000e\u0070\u00c0\u0003\u000e\u0070\u00c0\u0003\u000e\u0070\u00c0\u00ff\u000f\u00f0\u00ff\u00ff\u000f\u00f0\u00ff\u00ff\u0007\u00e0\u00ff\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000";
+    private static final String ICAccessPoint = "\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u00c0\u0001\u0080\u0003\u00e0\u0001\u0080\u0007\u00f0\u0001\u0080\u000f\u00f0\u000c\u0030\u000f\u0078\u001e\u0078\u001e\u0078\u001f\u00f8\u001e\u0078\u00cf\u00f3\u001e\u0038\u00ef\u00f7\u001c\u0038\u00e7\u00e7\u001c\u0038\u00e7\u00e7\u001c\u0038\u00ef\u00f7\u001c\u0078\u00cf\u00f3\u001e\u0078\u001f\u00f8\u001e\u00f8\u001e\u0078\u001f\u00f0\u000c\u0030\u000f\u00f0\u0001\u0080\u000f\u00e0\u0003\u00c0\u0007\u00c0\u0001\u0080\u0003\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000";
+    private static final String ICAccessPointPlus = "\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u00c0\u0001\u0080\u0003\u00e0\u0001\u0080\u0007\u00f0\u0001\u0080\u000f\u00f0\u000c\u0030\u000f\u0070\u001e\u0078\u000e\u0078\u001e\u0078\u001e\u0078\u00cf\u00f3\u001e\u0038\u00ef\u00f7\u001c\u0038\u00e7\u00e7\u001c\u0038\u00e7\u00e7\u001c\u0038\u00ef\u0077\u001c\u0078\u00cf\u00e3\u0017\u0078\u001e\u00f0\u000f\u0070\u001e\u0078\u001e\u00f0\u000c\u007c\u003e\u00f0\u0001\u007c\u003e\u00e0\u0003\u000c\u0030\u00c0\u0001\u000c\u0030\u0000\u0000\u007c\u003e\u0000\u0000\u007c\u003e\u0000\u0000\u0078\u001e\u0000\u0000\u00f0\u000f\u0000\u0000\u00e0\u0007\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000";
+    private static final String ICUSBClient = "\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0030\u0000\u0000\u0000\u003e\u0000\u0000\u0080\u001f\u0000\u0000\u00e0\u001f\u0000\u0078\u00c0\u001f\u0000\u00fc\u00c0\u000f\u0000\u00fe\u00c1\u000f\u0000\u00fe\u00e1\u0007\u0000\u00fe\u00f1\u0004\u0000\u00fe\u0079\u0000\u0000\u00ff\u003c\u0000\u0080\u007f\u001e\u0001\u0080\u0003\u008f\u0003\u0000\u0083\u00c7\u0007\u0000\u00c7\u00e3\u000f\u0000\u00e6\u00f1\u001f\u0000\u00fe\u00e1\u000f\u0000\u00fc\u00e7\u0007\u00e0\u003f\u00ff\u0003\u00f8\u001f\u003e\u0001\u00f8\u000f\u0018\u0000\u00fc\u000f\u0000\u0000\u00fc\u000f\u0000\u0000\u00fc\u000f\u0000\u0000\u00fc\u000f\u0000\u0000\u00f8\u0007\u0000\u0000\u00f8\u0007\u0000\u0000\u00e0\u0001\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000";
+    private static final String ICNone = "\u00c0\u00ff\u00ff\u0003\u00e0\u00ff\u00ff\u0007\u0070\u0000\u0000\u000e\u0038\u0000\u0000\u001c\u007c\u0000\u0000\u0038\u00fe\u0000\u0000\u0070\u00f7\u0001\u0000\u00e0\u00e3\u0003\u0080\u00c3\u00e3\u0007\u0080\u00c7\u00f3\u000f\u0080\u00cf\u00f3\u001f\u0030\u00cf\u007b\u003e\u0078\u00de\u007b\u007f\u00f8\u00de\u007b\u00ff\u00f3\u00de\u003b\u00ff\u00f7\u00dc\u003b\u00e7\u00e7\u00dc\u003b\u00e7\u00e7\u00dc\u003b\u00ef\u00ff\u00dc\u007b\u00cf\u00ff\u00de\u007b\u001f\u00fe\u00de\u00fb\u001e\u007c\u00df\u00f3\u000c\u00f8\u00cf\u00f3\u0001\u00f0\u00cf\u00e3\u0003\u00e0\u00c7\u00c3\u0001\u00c0\u00c7\u0007\u0000\u0080\u00cf\u000e\u0000\u0000\u00ff\u001c\u0000\u0000\u007e\u0038\u0000\u0000\u003c\u0070\u0000\u0000\u001c\u00e0\u00ff\u00ff\u000f\u00c0\u00ff\u00ff\u0007";
+    private static final String ICBTClient = ICBlue;
     private static final String ICSound = "\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u00c0\u0000\u0003\u0000\u00c0\u0000\u0003\u0000\u00f0\u0030\u000c\u0000\u00f0\u0030\u000c\u0000\u00cc\u00c0\u0030\u0000\u00cc\u00c0\u0030\u0000\u00c3\u000c\u0033\u0000\u00c3\u000c\u0033\u00fc\u00c3\u0030\u0033\u00fc\u00c3\u0030\u0033\u000c\u00c3\u0030\u0033\u000c\u00c3\u0030\u0033\u000c\u00c3\u0030\u0033\u000c\u00c3\u0030\u0033\u003c\u00c3\u0030\u0033\u003c\u00c3\u0030\u0033\u00cc\u00cf\u0030\u0033\u00cc\u00cf\u0030\u0033\u00fc\u00f3\u0030\u0033\u00fc\u00f3\u0030\u0033\u0000\u00cf\u000c\u0033\u0000\u00cf\u000c\u0033\u0000\u00fc\u00c0\u0030\u0000\u00fc\u00c0\u0030\u0000\u00f0\u0030\u000c\u0000\u00f0\u0030\u000c\u0000\u00c0\u0000\u0003\u0000\u00c0\u0000\u0003\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000";
 
     private static final String ICEV3 = "\u00c0\u00ff\u00ff\u0003\u00c0\u00ff\u00ff\u0003\u00f0\u00ff\u00ff\u000f\u00f0\u00ff\u00ff\u000f\u0030\u0000\u0000\u000c\u0030\u0000\u0000\u000c\u0030\u00ff\u00ff\u000c\u0030\u00ff\u00ff\u000c\u0030\u0003\u00c0\u000c\u0030\u0003\u00c0\u000c\u0030\u000f\u00c0\u000c\u0030\u000f\u00c0\u000c\u0030\u0033\u00c0\u000c\u0030\u0033\u00c0\u000c\u0030\u00cf\u00cc\u000c\u0030\u00cf\u00cc\u000c\u0030\u00ff\u00ff\u000c\u0030\u00ff\u00ff\u000c\u0030\u0000\u0000\u000c\u0030\u0000\u0000\u000c\u0030\u00cf\u00f3\u000c\u0030\u00cf\u00f3\u000c\u0030\u00cc\u0033\u000c\u0030\u00cc\u0033\u000c\u00f0\u00c0\u0003\u000c\u00f0\u00c0\u0003\u000c\u0030\u0033\u0000\u000c\u0030\u0033\u0000\u000c\u00f0\u00ff\u00ff\u000f\u00f0\u00ff\u00ff\u000f\u00c0\u00ff\u00ff\u0003\u00c0\u00ff\u00ff\u0003";
@@ -128,6 +135,12 @@ public class GraphicStartup implements Menu {
     private static final String MENU_DIRECTORY = "/home/root/lejos/bin/utils";
     private static final String START_BLUETOOTH = "/home/root/lejos/bin/startbt";
     private static final String START_WLAN = "/home/root/lejos/bin/startwlan";
+    private static final String START_PAN = "/home/root/lejos/bin/startpan";
+    private static final String PAN_CONFIG = "/home/root/lejos/config/pan.config";
+    private static final String WIFI_CONFIG="/home/root/lejos/config/wpa_supplicant.conf";
+    private static final String WIFI_BASE="wpa_supplicant.txt";
+    private static final String WLAN_INTERFACE = "wlan0";
+    private static final String PAN_INTERFACE = "br0";
     
     private static final int defaultSleepTime = 2;
     private static final int maxSleepTime = 10;
@@ -143,9 +156,13 @@ public class GraphicStartup implements Menu {
     //private GraphicMenu curMenu;
     private int timeout = 0;
     private boolean btVisibility;
+    private PANConfig panConfig = new PANConfig();
     private static String version = "Unknown";
     private static String hostname;
-    private static List<String> ips;
+    private static List<String> ips = new ArrayList<String>();
+    private static String wlanAddress;
+    private static String panAddress;
+    
     private static LocalBTDevice bt;
 	private static GraphicStartup menu;
 	
@@ -204,7 +221,7 @@ public class GraphicStartup implements Menu {
         tuneThread.start();
         
         System.out.println("Getting IP addresses");
-        ips = getIPAddresses();
+        menu.updateIPAddresses();
         
         // Start the RMI registry 
         InitThread initThread = new InitThread();
@@ -253,16 +270,80 @@ public class GraphicStartup implements Menu {
         int curMode = MODE_NONE;
         String BTAPName = anyAP;
         String BTAPAddress = anyAP;
+        Boolean changed = false;
+
+        public PANConfig()
+        {
+            loadConfig();
+        }
+        
+        public void saveConfig()
+        {
+            System.out.println("Save PAN config");
+            try {
+                PrintWriter out = new PrintWriter(PAN_CONFIG);
+                out.print(modeIDS[curMode] + " " + BTAPName + " " + BTAPAddress);
+                for(String ip : IPAddresses)
+                    out.print(" " + ip);
+                out.println();
+                out.close();
+                changed = false;
+            } catch (IOException e) {
+                System.out.println("Failed to write PAN config to " + PAN_CONFIG + ": " + e);
+            }            
+        }
+        
+        private String getConfigString(String[] vals, int offset, String def)
+        {
+            if (vals == null || offset >= vals.length || vals[offset] == null || vals[offset].length() == 0)
+                return def;
+            return vals[offset];
+        }
+        
+        public void loadConfig()
+        {
+            System.out.println("Load PAN config");
+            String[] vals = null;
+            try {
+                BufferedReader in = new BufferedReader(new FileReader(PAN_CONFIG));
+                String line = in.readLine();
+                vals = line.split("\\s+");
+                in.close();
+            } catch (IOException e) {
+                System.out.println("Failed to load PAN config from " + PAN_CONFIG + ": " + e);
+            }            
+            String mode = getConfigString(vals, 0, modeIDS[MODE_NONE]);
+            // turn mode into value
+            curMode = MODE_NONE;
+            for(int i = 0; i < modeIDS.length; i++)
+                if (modeIDS[i].equalsIgnoreCase(mode))
+                {
+                    curMode = i;
+                    break;
+                }
+            BTAPName = getConfigString(vals, 1, anyAP);
+            BTAPAddress = getConfigString(vals, 2, anyAP);
+            for(int i = 0; i < IPAddresses.length; i++)
+                IPAddresses[i] = getConfigString(vals, i + 3, autoIP);
+            if (curMode == MODE_AP && IPAddresses[0].equals(autoIP))
+                IPAddresses[0] = "10.0.1.1";
+            changed = false;
+        }
+        
         
         public void init(int mode)
         {
-            for(int i = 0; i < IPAddresses.length; i++)
-                IPAddresses[i] = autoIP;
-            if (mode == MODE_AP)
-                IPAddresses[0] = "10.0.1.1";
-            BTAPName = anyAP;
-            BTAPAddress = anyAP;
-            curMode = mode;
+            if (mode != curMode)
+            {
+                for(int i = 0; i < IPAddresses.length; i++)
+                    IPAddresses[i] = autoIP;
+                if (mode == MODE_AP)
+                    IPAddresses[0] = "10.0.1.1";
+                BTAPName = anyAP;
+                BTAPAddress = anyAP;
+                curMode = mode;
+                changed = true;
+            }
         }
 
         /**
@@ -434,6 +515,7 @@ public class GraphicStartup implements Menu {
                 if (selection >= 0)
                 {
                     IPAddresses[selection] = getIPAddress(IPNames[selection], IPAddresses[selection]);
+                    changed = true;
                 }
 
             } while (selection >= 0);
@@ -449,8 +531,8 @@ public class GraphicStartup implements Menu {
             lcd.drawString("Searching...", 3, 2);
             List<RemoteBTDevice> devList;
             try {
-                devList = (List<RemoteBTDevice>) Bluetooth.getLocalDevice().search();
-            } catch (IOException e) {
+                devList = (List<RemoteBTDevice>) Bluetooth.getLocalDevice().getPairedDevices();
+            } catch (BluetoothException e) {
                 return;
             }
             if (devList.size() <= 0)
@@ -478,7 +560,7 @@ public class GraphicStartup implements Menu {
                 //byte[] devclass = btrd.getDeviceClass();
                 BTAPName = btrd.getName();
                 BTAPAddress = btrd.getAddress();
-
+                changed = true;
             }
         }
         
@@ -500,6 +582,7 @@ public class GraphicStartup implements Menu {
                 case 0:
                     BTAPName = anyAP;
                     BTAPAddress = anyAP;
+                    changed = true;
                     return;
                 case 1:
                     selectAP();
@@ -515,6 +598,8 @@ public class GraphicStartup implements Menu {
         
         public void configure()
         {
+            if (curMode == MODE_NONE)
+                return;
             if (curMode == MODE_BTC)
                 configureBTClient(modeNames[curMode]);
             else
@@ -529,18 +614,20 @@ public class GraphicStartup implements Menu {
             {
                 newScreen("PAN");
                 menu.setItems(modeNames,
-                        new String[]{ICEV3,ICEV3,ICEV3,ICEV3,ICEV3});
+                        new String[]{ICNone,ICAccessPoint,ICAccessPointPlus,ICBTClient,ICUSBClient});
                 selection = getSelection(menu, curMode);
                 if (selection >= 0)
                 {
-                    if (selection != curMode)
-                        init(selection);
+                    init(selection);
                     configure();
                 }
-
             } while (selection >= 0);
+            if (changed)
+            {
+                saveConfig();
+                startNetwork(START_PAN);
+            }
         }
-
 	}
 	
 	/**
@@ -571,14 +658,9 @@ public class GraphicStartup implements Menu {
         	// Start the RMI server
             System.out.println("Starting RMI");
             
-            // Use last IP address, which will be Wifi, it it exists
-            String lastIp = null;
-            for (String ip: ips) {
-            	lastIp = ip;
-            }
-            
-            System.out.println("Setting java.rmi.server.hostname to " + lastIp);
-            System.setProperty("java.rmi.server.hostname", lastIp);
+            String rmiIP = (wlanAddress != null ? wlanAddress : (panAddress != null ? panAddress : "127.0.0.1"));
+            System.out.println("Setting java.rmi.server.hostname to " + rmiIP);
+            System.setProperty("java.rmi.server.hostname", rmiIP);
             
             try { //special exception handler for registry creation
                 LocateRegistry.createRegistry(1099); 
@@ -664,9 +746,8 @@ public class GraphicStartup implements Menu {
                 case 5:
                     wifiMenu();
                     break;
-                case 6:
-                    PANConfig pc = new PANConfig();
-                    pc.panMenu();
+                case 6:                    
+                    panConfig.panMenu();
                     break;
                 case 7:
                     soundMenu();
@@ -1392,7 +1473,7 @@ public class GraphicStartup implements Menu {
                     System.out.println("Setting visibility to " + btVisibility);
                     try {
                         bt.setVisibility(btVisibility);
-                    } catch (IOException e) {
+                    } catch (BluetoothException e) {
                         System.err.println("Failed to set visibility: " + e);
                     }
                     //updateBTIcon();
@@ -1491,7 +1572,7 @@ public class GraphicStartup implements Menu {
             pin[i] = (byte) pinStr.charAt(i);
 
         // 2. Call enterNumber() method
-        if (enterNumber("Enter NXT PIN", pin, 4))
+        if (enterNumber("Enter EV3 PIN", pin, 4))
         {
             // 3. Set PIN in system memory.
         	StringBuilder sb = new StringBuilder();
@@ -1529,20 +1610,12 @@ public class GraphicStartup implements Menu {
     {
         newScreen("Searching");
         ArrayList<RemoteBTDevice> devList; 
-        //indiBT.incCount();
         devList = null;
-        try
-        {
-        	// 0 means "search for all"
-	        try {
-				devList = (ArrayList<RemoteBTDevice>) bt.search();
-			} catch (IOException e) {
-				return;
-			}
-        }
-	    finally
-	    {
-	    }
+        try {
+			devList = (ArrayList<RemoteBTDevice>) bt.search();
+		} catch (BluetoothException e) {
+			return;
+		}
         if (devList == null || devList.size() <= 0)
         {
             msg("No devices found");
@@ -1604,12 +1677,7 @@ public class GraphicStartup implements Menu {
      */
     private void bluetoothDevices()
     {
-        List<RemoteBTDevice> devList;
-		try {
-			devList = (List<RemoteBTDevice>) Bluetooth.getLocalDevice().search();
-		} catch (IOException e) {
-			return;
-		}
+        List<RemoteBTDevice> devList = (List<RemoteBTDevice>) Bluetooth.getLocalDevice().getPairedDevices();
         if (devList.size() <= 0)
         {
             msg("No known devices");
@@ -1637,16 +1705,25 @@ public class GraphicStartup implements Menu {
             {
                 newScreen();
                 RemoteBTDevice btrd = devList.get(selected);
-                byte[] devclass = btrd.getDeviceClass();
+                int devclass = btrd.getDeviceClass();
                 lcd.drawString(btrd.getName(), 2, 2);
                 lcd.drawString(btrd.getAddress(), 0, 3);
                 // TODO device class is overwritten by menu
-                // LCD.drawString("0x"+Integer.toHexString(devclass), 0, 4);
+                //LCD.drawString("0x"+Integer.toHexString(devclass), 0, 4);
                 int subSelection = getSelection(subMenu, 0);
                 if (subSelection == 0)
                 {
-                    //Bluetooth.removeDevice(btrd);
-                    break;
+                    try {
+                        Bluetooth.getLocalDevice().removeDevice(btrd.getAddress());
+                        // Indicate Success or failure:
+                        lcd.drawString("Deleted!      ", 0, 6);
+                    } catch (Exception e)
+                    {
+                        System.err.println("Failed to delete:" + e);
+                        lcd.drawString("UNSUCCESSFUL  ", 0, 6);
+                    }
+                    lcd.drawString("Press any key", 0, 7);
+                    getButtonPress();
                 }
             }
         } while (selected >= 0);
@@ -2476,7 +2553,7 @@ public class GraphicStartup implements Menu {
 	    		{
 	    			long time = System.currentTimeMillis();
 	    			
-	    			indiBA.setWifi(ips.size() > 1);
+	    			indiBA.setWifi(wlanAddress != null);
 	    			indiBA.draw(time);
 	    			lcd.refresh();
     			
@@ -2503,17 +2580,20 @@ public class GraphicStartup implements Menu {
 	/**
 	 * Get all the IP addresses for the device
 	 */
-    public static List<String> getIPAddresses()
+    public void updateIPAddresses()
     {
         List<String> result = new ArrayList<String>();
         Enumeration<NetworkInterface> interfaces;
+        wlanAddress = null;
+        panAddress = null;
+        ips.clear();
         try
         {
             interfaces = NetworkInterface.getNetworkInterfaces();
         } catch (SocketException e)
         {
             System.err.println("Failed to get network interfaces: " + e);
-            return null;
+            return;
         }
         while (interfaces.hasMoreElements()){
             NetworkInterface current = interfaces.nextElement();
@@ -2529,19 +2609,24 @@ public class GraphicStartup implements Menu {
                 InetAddress current_addr = addresses.nextElement();
                 if (current_addr.isLoopbackAddress()) continue;
                 result.add(current_addr.getHostAddress());
+                System.out.println("Interface name " + current.getName());
+                if (current.getName().equals(WLAN_INTERFACE))
+                    wlanAddress = current_addr.getHostAddress();
+                else if (current.getName().equals(PAN_INTERFACE))
+                    panAddress = current_addr.getHostAddress();
             }
         }
-        return result;
+        ips = result;
     } 
  
     public static void drawLaunchScreen() {
     	GraphicsLCD g = LocalEV3.get().getGraphicsLCD();
     	g.setFont(Font.getDefaultFont());
-    	g.drawRegion(duke, 0, 0, duke.getWidth(), duke.getHeight(), GraphicsLCD.TRANS_NONE, 50, 65, GraphicsLCD.HCENTER | GraphicsLCD.VCENTER);
+    	g.drawRegion(hourglass, 0, 0, hourglass.getWidth(), hourglass.getHeight(), GraphicsLCD.TRANS_NONE, 50, 65, GraphicsLCD.HCENTER | GraphicsLCD.VCENTER);
     	int x = LCD.SCREEN_WIDTH/2;
-    	g.drawString("Wait", x, 30, 0);
-    	g.drawString("a", x, 45, 0);
-    	g.drawString("second...", x, 60, 0);
+    	g.drawString("Wait", x, 40, 0);
+    	g.drawString("a", x, 55, 0);
+    	g.drawString("second...", x, 70, 0);
     	g.refresh(); // TODO: Needed?
     }
     
@@ -2668,8 +2753,8 @@ public class GraphicStartup implements Menu {
             	String pwd = k.getString();
             	if (pwd != null) {
                    	System.out.println("Password is " + pwd);
-                	WPASupplicant.writeConfiguration("wpa_supplicant.txt",  "wpa_supplicant.conf",  names[selection], pwd);
-                	startWlan();
+                	WPASupplicant.writeConfiguration(WIFI_BASE,  WIFI_CONFIG,  names[selection], pwd);
+                	startNetwork(START_WLAN);
             	}
              	selection = -1;
             }
@@ -2763,12 +2848,13 @@ public class GraphicStartup implements Menu {
 			System.err.println("Failed to execute hostname: " + e);
 		}
 		
-		startWlan();
+		startNetwork(START_WLAN);
+		startNetwork(START_PAN);
 	}
 	
-	private void startWlan() {
+	private void startNetwork(String startup) {
     	try {
-			Process p = Runtime.getRuntime().exec(START_WLAN);
+			Process p = Runtime.getRuntime().exec(startup);
             BufferedReader input = new BufferedReader(new InputStreamReader(p.getInputStream()));
             BufferedReader err= new BufferedReader(new InputStreamReader(p.getErrorStream()));
             PrintStream lcdStream = new PrintStream(new LCDOutputStream());
@@ -2778,20 +2864,16 @@ public class GraphicStartup implements Menu {
             
             ind.suspend();
             lcd.clear();
-            lcdStream.println("Restarting wlan\n");
+            lcdStream.println("Restarting...\n");
             
             echoIn.start();
             echoErr.start();
             
 			int status = p.waitFor();
-			System.out.println("startwlan returned " + status);
+			System.out.println("start returned " + status);
 			// Get IP addresses again
-			ips = getIPAddresses();
-            String lastIp = null;
-            for (String ip: ips) {
-            	lastIp = ip;
-            }
-			System.setProperty("java.rmi.server.hostname", lastIp);
+			updateIPAddresses ();
+			System.setProperty("java.rmi.server.hostname", (wlanAddress != null ? wlanAddress : (panAddress != null ? panAddress : "127.0.0.1")));
 			
             try {
     			RMIRemoteEV3 ev3 = new RMIRemoteEV3();
@@ -2805,7 +2887,7 @@ public class GraphicStartup implements Menu {
 			lcd.clear();
         	ind.resume();
 		} catch (Exception e) {
-			System.err.println("Failed to execute startwlan: " + e);
+			System.err.println("Failed to execute: " + startup + " : " + e);
 		}
 	}
 	
@@ -2865,172 +2947,108 @@ public class GraphicStartup implements Menu {
 		ind.resume();
 	}
 	
-	static final Image duke = new Image(100, 64, new byte[] {(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
-            (byte) 0x00, (byte) 0x00, (byte) 0x1c, (byte) 0x00, (byte) 0x00, 
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
-            (byte) 0x1e, (byte) 0x04, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x1e, (byte) 0x0f, 
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
-            (byte) 0x60, (byte) 0x3e, (byte) 0x0f, (byte) 0x00, (byte) 0x00, 
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0xf0, (byte) 0xbe, 
-            (byte) 0x0f, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
-            (byte) 0x00, (byte) 0xf0, (byte) 0xbe, (byte) 0x07, (byte) 0x00, 
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0xf0, 
-            (byte) 0xfd, (byte) 0x07, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
-            (byte) 0x00, (byte) 0x01, (byte) 0xe0, (byte) 0xff, (byte) 0x07, 
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x03, 
-            (byte) 0xe0, (byte) 0xff, (byte) 0x07, (byte) 0x00, (byte) 0x00, 
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
-            (byte) 0x00, (byte) 0x00, (byte) 0x0f, (byte) 0xc0, (byte) 0xff, 
-            (byte) 0x07, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
-            (byte) 0x1f, (byte) 0xc0, (byte) 0xff, (byte) 0x07, (byte) 0x00, 
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x3f, (byte) 0x80, 
-            (byte) 0xff, (byte) 0x07, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
-            (byte) 0x00, (byte) 0x7f, (byte) 0x00, (byte) 0xff, (byte) 0x07, 
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0xff, 
-            (byte) 0x00, (byte) 0xff, (byte) 0x0f, (byte) 0x00, (byte) 0x00, 
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
-            (byte) 0x00, (byte) 0x00, (byte) 0xff, (byte) 0xe1, (byte) 0xff, 
-            (byte) 0x07, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
-            (byte) 0xff, (byte) 0xf3, (byte) 0xff, (byte) 0x07, (byte) 0x00, 
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0xff, (byte) 0xf7, 
-            (byte) 0xff, (byte) 0x03, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
-            (byte) 0x00, (byte) 0xff, (byte) 0xef, (byte) 0xfe, (byte) 0x01, 
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0xff, 
-            (byte) 0x0f, (byte) 0xf8, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
-            (byte) 0x00, (byte) 0x00, (byte) 0xff, (byte) 0x1f, (byte) 0xe0, 
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
-            (byte) 0xff, (byte) 0x3f, (byte) 0xc0, (byte) 0x00, (byte) 0x00, 
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0xff, (byte) 0x7f, 
-            (byte) 0xc0, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
-            (byte) 0x00, (byte) 0xff, (byte) 0x7f, (byte) 0xc0, (byte) 0x00, 
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0xff, 
-            (byte) 0xff, (byte) 0xc0, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
-            (byte) 0x00, (byte) 0x00, (byte) 0xff, (byte) 0xff, (byte) 0xc1, 
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
-            (byte) 0xff, (byte) 0xff, (byte) 0xc0, (byte) 0x00, (byte) 0x00, 
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0xff, (byte) 0xfd, 
-            (byte) 0xc3, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
-            (byte) 0x00, (byte) 0x3f, (byte) 0xea, (byte) 0x7f, (byte) 0x00, 
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x5f, 
-            (byte) 0x55, (byte) 0x7f, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
-            (byte) 0x00, (byte) 0x80, (byte) 0x8f, (byte) 0xf8, (byte) 0x3c, 
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x80, 
-            (byte) 0x57, (byte) 0x55, (byte) 0x3c, (byte) 0x00, (byte) 0x00, 
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
-            (byte) 0x00, (byte) 0x00, (byte) 0x80, (byte) 0xaf, (byte) 0xea, 
-            (byte) 0x38, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
-            (byte) 0x80, (byte) 0x55, (byte) 0x55, (byte) 0x38, (byte) 0x00, 
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0xc0, (byte) 0xad, 
-            (byte) 0x7a, (byte) 0x30, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
-            (byte) 0x00, (byte) 0xc0, (byte) 0x5d, (byte) 0x15, (byte) 0x30, 
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0xc0, 
-            (byte) 0xb9, (byte) 0x1e, (byte) 0x60, (byte) 0x00, (byte) 0x00, 
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
-            (byte) 0x00, (byte) 0x00, (byte) 0xe0, (byte) 0xf0, (byte) 0x07, 
-            (byte) 0x60, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
-            (byte) 0xf0, (byte) 0x80, (byte) 0x00, (byte) 0xe0, (byte) 0x00, 
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0xf8, (byte) 0x00, 
-            (byte) 0x00, (byte) 0xc0, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
-            (byte) 0x00, (byte) 0xf8, (byte) 0x00, (byte) 0x00, (byte) 0xc0, 
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0xcc, 
-            (byte) 0x00, (byte) 0x00, (byte) 0x80, (byte) 0x01, (byte) 0x00, 
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
-            (byte) 0x00, (byte) 0x00, (byte) 0x6c, (byte) 0x00, (byte) 0x00, 
-            (byte) 0x80, (byte) 0x01, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
-            (byte) 0x6c, (byte) 0x00, (byte) 0x00, (byte) 0x80, (byte) 0x01, 
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x6c, (byte) 0x00, 
-            (byte) 0x00, (byte) 0x80, (byte) 0x01, (byte) 0x00, (byte) 0x00, 
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
-            (byte) 0x00, (byte) 0x6c, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
-            (byte) 0x03, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x78, 
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x03, (byte) 0x00, 
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
-            (byte) 0x00, (byte) 0x00, (byte) 0x38, (byte) 0x00, (byte) 0x00, 
-            (byte) 0x00, (byte) 0x03, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
-            (byte) 0x38, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x03, 
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x38, (byte) 0x00, 
-            (byte) 0x00, (byte) 0x00, (byte) 0x03, (byte) 0x00, (byte) 0x00, 
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
-            (byte) 0x00, (byte) 0x38, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
-            (byte) 0x06, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x3c, 
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x06, (byte) 0x00, 
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
-            (byte) 0x00, (byte) 0x00, (byte) 0x3c, (byte) 0x00, (byte) 0x00, 
-            (byte) 0x00, (byte) 0x06, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
-            (byte) 0x1e, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x06, 
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x1f, (byte) 0x00, 
-            (byte) 0x0c, (byte) 0x00, (byte) 0x06, (byte) 0x00, (byte) 0x00, 
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
-            (byte) 0x00, (byte) 0x1f, (byte) 0x80, (byte) 0x7f, (byte) 0x00, 
-            (byte) 0x06, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x1f, 
-            (byte) 0xe0, (byte) 0xff, (byte) 0x00, (byte) 0x06, (byte) 0x00, 
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
-            (byte) 0x00, (byte) 0x00, (byte) 0x18, (byte) 0xf0, (byte) 0x80, 
-            (byte) 0x01, (byte) 0x06, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
-            (byte) 0x18, (byte) 0x38, (byte) 0x00, (byte) 0x03, (byte) 0x06, 
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x18, (byte) 0x1c, 
-            (byte) 0x00, (byte) 0x06, (byte) 0x07, (byte) 0x00, (byte) 0x00, 
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
-            (byte) 0x00, (byte) 0x18, (byte) 0x07, (byte) 0x00, (byte) 0x0e, 
-            (byte) 0x03, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x98, 
-            (byte) 0x03, (byte) 0x00, (byte) 0x0c, (byte) 0x03, (byte) 0x00, 
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
-            (byte) 0x00, (byte) 0x00, (byte) 0xf8, (byte) 0x01, (byte) 0x00, 
-            (byte) 0x18, (byte) 0x03, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
-            (byte) 0x70, (byte) 0x00, (byte) 0x00, (byte) 0xf0, (byte) 0x01, 
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
-            (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
-            (byte) 0x00, (byte) 0xe0, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
-            (byte) 0x00, (byte) 0x00, });
+	static final Image hourglass = new Image(64, 64, new byte[] {(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+	        (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+	        (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+	        (byte) 0x00, (byte) 0x00, (byte) 0xf0, (byte) 0xff, (byte) 0xff, 
+	        (byte) 0xff, (byte) 0xff, (byte) 0x07, (byte) 0x00, (byte) 0x00, 
+	        (byte) 0xf0, (byte) 0xff, (byte) 0xff, (byte) 0xff, (byte) 0xff, 
+	        (byte) 0x07, (byte) 0x00, (byte) 0x00, (byte) 0xf0, (byte) 0xff, 
+	        (byte) 0xff, (byte) 0xff, (byte) 0xff, (byte) 0x07, (byte) 0x00, 
+	        (byte) 0x00, (byte) 0xf0, (byte) 0xff, (byte) 0xff, (byte) 0xff, 
+	        (byte) 0xff, (byte) 0x07, (byte) 0x00, (byte) 0x00, (byte) 0xc0, 
+	        (byte) 0xff, (byte) 0xff, (byte) 0xff, (byte) 0xff, (byte) 0x01, 
+	        (byte) 0x00, (byte) 0x00, (byte) 0xc0, (byte) 0xff, (byte) 0xff, 
+	        (byte) 0xff, (byte) 0xff, (byte) 0x01, (byte) 0x00, (byte) 0x00, 
+	        (byte) 0xc0, (byte) 0xff, (byte) 0xff, (byte) 0xff, (byte) 0xff, 
+	        (byte) 0x01, (byte) 0x00, (byte) 0x00, (byte) 0xc0, (byte) 0xff, 
+	        (byte) 0xff, (byte) 0xff, (byte) 0xff, (byte) 0x01, (byte) 0x00, 
+	        (byte) 0x00, (byte) 0xc0, (byte) 0xff, (byte) 0xff, (byte) 0xff, 
+	        (byte) 0xff, (byte) 0x01, (byte) 0x00, (byte) 0x00, (byte) 0xc0, 
+	        (byte) 0xff, (byte) 0xff, (byte) 0xff, (byte) 0xff, (byte) 0x01, 
+	        (byte) 0x00, (byte) 0x00, (byte) 0x80, (byte) 0xff, (byte) 0xff, 
+	        (byte) 0xff, (byte) 0xff, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+	        (byte) 0x80, (byte) 0xff, (byte) 0xff, (byte) 0xff, (byte) 0xff, 
+	        (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x80, (byte) 0xff, 
+	        (byte) 0xff, (byte) 0xff, (byte) 0x7f, (byte) 0x00, (byte) 0x00, 
+	        (byte) 0x00, (byte) 0x00, (byte) 0xff, (byte) 0xff, (byte) 0xff, 
+	        (byte) 0x7f, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+	        (byte) 0xff, (byte) 0xff, (byte) 0xff, (byte) 0x7f, (byte) 0x00, 
+	        (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0xff, (byte) 0xff, 
+	        (byte) 0xff, (byte) 0x3f, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+	        (byte) 0x00, (byte) 0xff, (byte) 0xff, (byte) 0xff, (byte) 0x3f, 
+	        (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0xbe, 
+	        (byte) 0xff, (byte) 0xff, (byte) 0x1f, (byte) 0x00, (byte) 0x00, 
+	        (byte) 0x00, (byte) 0x00, (byte) 0x3c, (byte) 0xfe, (byte) 0x1f, 
+	        (byte) 0x1f, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+	        (byte) 0x7c, (byte) 0xe0, (byte) 0x81, (byte) 0x0f, (byte) 0x00, 
+	        (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0xf8, (byte) 0x00, 
+	        (byte) 0xc0, (byte) 0x07, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+	        (byte) 0x00, (byte) 0xf0, (byte) 0x01, (byte) 0xe0, (byte) 0x07, 
+	        (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0xe0, 
+	        (byte) 0x03, (byte) 0xf0, (byte) 0x03, (byte) 0x00, (byte) 0x00, 
+	        (byte) 0x00, (byte) 0x00, (byte) 0xc0, (byte) 0x0f, (byte) 0xf8, 
+	        (byte) 0x01, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+	        (byte) 0x80, (byte) 0x1f, (byte) 0x7c, (byte) 0x00, (byte) 0x00, 
+	        (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x1f, 
+	        (byte) 0x3e, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+	        (byte) 0x00, (byte) 0x00, (byte) 0x3e, (byte) 0x1e, (byte) 0x00, 
+	        (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+	        (byte) 0x3c, (byte) 0x0f, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+	        (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x38, (byte) 0x0f, 
+	        (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+	        (byte) 0x00, (byte) 0x38, (byte) 0x07, (byte) 0x00, (byte) 0x00, 
+	        (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x38, 
+	        (byte) 0x07, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+	        (byte) 0x00, (byte) 0x00, (byte) 0x38, (byte) 0x0f, (byte) 0x00, 
+	        (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+	        (byte) 0x3c, (byte) 0x0f, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+	        (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x3e, (byte) 0x1f, 
+	        (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+	        (byte) 0x00, (byte) 0x3f, (byte) 0x3f, (byte) 0x00, (byte) 0x00, 
+	        (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x80, (byte) 0x3f, 
+	        (byte) 0x7f, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+	        (byte) 0x00, (byte) 0xc0, (byte) 0x3f, (byte) 0xff, (byte) 0x01, 
+	        (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0xe0, 
+	        (byte) 0x3f, (byte) 0xff, (byte) 0x03, (byte) 0x00, (byte) 0x00, 
+	        (byte) 0x00, (byte) 0x00, (byte) 0xf0, (byte) 0x3f, (byte) 0xff, 
+	        (byte) 0x07, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+	        (byte) 0xf8, (byte) 0x3f, (byte) 0xff, (byte) 0x07, (byte) 0x00, 
+	        (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0xfc, (byte) 0x3f, 
+	        (byte) 0xff, (byte) 0x0f, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+	        (byte) 0x00, (byte) 0xfc, (byte) 0x3f, (byte) 0xff, (byte) 0x1f, 
+	        (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0xfe, 
+	        (byte) 0x3f, (byte) 0xff, (byte) 0x1f, (byte) 0x00, (byte) 0x00, 
+	        (byte) 0x00, (byte) 0x00, (byte) 0xff, (byte) 0x3f, (byte) 0xff, 
+	        (byte) 0x3f, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+	        (byte) 0xff, (byte) 0x3f, (byte) 0xff, (byte) 0x3f, (byte) 0x00, 
+	        (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0xff, (byte) 0x1f, 
+	        (byte) 0xfc, (byte) 0x7f, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+	        (byte) 0x00, (byte) 0xff, (byte) 0x07, (byte) 0xf0, (byte) 0x7f, 
+	        (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x80, (byte) 0xff, 
+	        (byte) 0x01, (byte) 0xe0, (byte) 0x7f, (byte) 0x00, (byte) 0x00, 
+	        (byte) 0x00, (byte) 0x80, (byte) 0x7f, (byte) 0x00, (byte) 0x80, 
+	        (byte) 0xff, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x80, 
+	        (byte) 0x1f, (byte) 0x00, (byte) 0x00, (byte) 0xfe, (byte) 0x00, 
+	        (byte) 0x00, (byte) 0x00, (byte) 0xc0, (byte) 0x0f, (byte) 0x00, 
+	        (byte) 0x00, (byte) 0xf8, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+	        (byte) 0xc0, (byte) 0x03, (byte) 0x00, (byte) 0x00, (byte) 0xf0, 
+	        (byte) 0x01, (byte) 0x00, (byte) 0x00, (byte) 0xc0, (byte) 0x03, 
+	        (byte) 0x00, (byte) 0x00, (byte) 0xe0, (byte) 0x01, (byte) 0x00, 
+	        (byte) 0x00, (byte) 0xc0, (byte) 0x03, (byte) 0x00, (byte) 0x00, 
+	        (byte) 0xe0, (byte) 0x01, (byte) 0x00, (byte) 0x00, (byte) 0xc0, 
+	        (byte) 0x03, (byte) 0x00, (byte) 0x00, (byte) 0xe0, (byte) 0x01, 
+	        (byte) 0x00, (byte) 0x00, (byte) 0xc0, (byte) 0x03, (byte) 0x00, 
+	        (byte) 0x00, (byte) 0xe0, (byte) 0x01, (byte) 0x00, (byte) 0x00, 
+	        (byte) 0xf0, (byte) 0xff, (byte) 0xff, (byte) 0xff, (byte) 0xff, 
+	        (byte) 0x07, (byte) 0x00, (byte) 0x00, (byte) 0xf0, (byte) 0xff, 
+	        (byte) 0xff, (byte) 0xff, (byte) 0xff, (byte) 0x07, (byte) 0x00, 
+	        (byte) 0x00, (byte) 0xf0, (byte) 0xff, (byte) 0xff, (byte) 0xff, 
+	        (byte) 0xff, (byte) 0x07, (byte) 0x00, (byte) 0x00, (byte) 0xf0, 
+	        (byte) 0xff, (byte) 0xff, (byte) 0xff, (byte) 0xff, (byte) 0x07, 
+	        (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+	        (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+	        (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
+	        (byte) 0x00, (byte) 0x00, });
 	
 }
