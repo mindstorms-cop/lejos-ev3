@@ -1,6 +1,6 @@
-package lejos.ev3.newstartup;
+package lejos.ev3.startup;
 
-import lejos.ev3.newstartup.gui.Submenu;
+import lejos.ev3.startup.gui.Submenu;
 import lejos.hardware.lcd.Image;
 
 public class WiFiMenu extends Submenu{
@@ -31,6 +31,12 @@ public class WiFiMenu extends Submenu{
 		return new Image[] { new Image(16, 16, Utils.stringToBytes8(ICPIN) ),
 				new Image(16, 16, Utils.stringToBytes8(ICNXT) ),
 				new Image(16, 16, Utils.stringToBytes8(ICPOWER) )};
+	}
+
+	@Override
+	public int select(int selection) {
+		// TODO Auto-generated method stub
+		return 0;
 	}
 	
 }

@@ -1,4 +1,4 @@
-package lejos.ev3.newstartup;
+package lejos.ev3.startup;
 
 import lejos.hardware.ev3.LocalEV3;
 import lejos.hardware.lcd.GraphicsLCD;

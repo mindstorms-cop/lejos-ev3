@@ -1,4 +1,4 @@
-package lejos.ev3.newstartup.gui;
+package lejos.ev3.startup.gui;
 
 import lejos.hardware.Button;
 import lejos.hardware.ev3.LocalEV3;

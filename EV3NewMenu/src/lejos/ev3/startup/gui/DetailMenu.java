@@ -1,7 +1,7 @@
-package lejos.ev3.newstartup.gui;
+package lejos.ev3.startup.gui;
 
-import lejos.ev3.newstartup.Utils;
-import lejos.ev3.newstartup.gui.IconCarousel.CarouselListener;
+import lejos.ev3.startup.Utils;
+import lejos.ev3.startup.gui.IconCarousel.CarouselListener;
 import lejos.hardware.ev3.LocalEV3;
 import lejos.hardware.lcd.Font;
 import lejos.hardware.lcd.GraphicsLCD;
@@ -58,9 +58,10 @@ public class DetailMenu implements CarouselListener {
 				Submenu menu = _submenus[ selectA ];
 				bottombar.setIcons( menu.getItems(), 16, 16 );
 				_activebar = 2;
-				render();
 				do {
+					render();
 					selectB = bottombar.select();
+					menu.select( selectB );
 				} while( selectB >= 0 );
 			}
 		} while( selectA >= 0 );
