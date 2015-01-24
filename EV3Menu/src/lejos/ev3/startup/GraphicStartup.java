@@ -150,7 +150,6 @@ public class GraphicStartup implements Menu {
     private BatteryIndicator indiBA = new BatteryIndicator();
     private PipeReader pipeReader = new PipeReader();
     private RConsole rcons = new RConsole();
-    private BroadcastThread broadcast = new BroadcastThread();
     private RemoteMenuThread remoteMenuThread = new RemoteMenuThread();
     
     //private GraphicMenu curMenu;
@@ -640,8 +639,6 @@ public class GraphicStartup implements Menu {
          * 
          * Start the RMI server
          * 
-         * Broadcast device availability
-         * 
          * Get the time from a name server
          */            
         @Override
@@ -679,9 +676,6 @@ public class GraphicStartup implements Menu {
     			System.err.println("RMI failed to start: " + e);
     		}
             
-            // Broadcast availability of device
-            Broadcast.broadcast(hostname);
-            
             // Set the date
             try {
 				String dt = SntpClient.getDate(Settings.getProperty(ntpProperty, "1.uk.pool.ntp.org"));
@@ -703,7 +697,7 @@ public class GraphicStartup implements Menu {
     	ind.start();
     	rcons.start();
     	pipeReader.start();
-    	broadcast.start();
+    	BrickFinder.startDiscoveryServer();
     	remoteMenuThread.start();
     }
 	
@@ -2517,18 +2511,6 @@ public class GraphicStartup implements Menu {
 				return;
 			}
     	}	
-    }
-    
-    class BroadcastThread extends Thread {
-    	
-    	@Override
-		public synchronized void run()
-    	{
-    		while(true) {
-    			Broadcast.broadcast(hostname);
-    			Delay.msDelay(1000);
-    		}
-    	}
     }
     
     /**

@@ -1409,11 +1409,8 @@ public class EV3Control implements ListSelectionListener, NXTProtocol, ConsoleVi
 		closeAll();
 		clearFiles();
 		updateConnectButton(false);
-		BrickInfo[] devices = null;
-		
-		try {
-			devices = BrickFinder.discover();
-		} catch (IOException e) {
+		BrickInfo[] devices = BrickFinder.discover();
+		if (devices.length == 0) {
 			showMessage("No EV3s found");
 			return;
 		}
