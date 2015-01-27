@@ -251,11 +251,11 @@ public class GraphicStartup implements Menu {
 	 */
 	class PANConfig
 	{
-	    static final int MODE_NONE = 0;
-        static final int MODE_AP = 1;
-        static final int MODE_APP = 2;
-        static final int MODE_BTC = 3;
-        static final int MODE_USBC = 4;
+	    public static final int MODE_NONE = 0;
+        public static final int MODE_AP = 1;
+        public static final int MODE_APP = 2;
+        public static final int MODE_BTC = 3;
+        public static final int MODE_USBC = 4;
 
         final String[] modeIDS = { "NONE", "AP", "AP+", "BT", "USB" };
         final String[] modeNames = { "None", "Access Point", "Access Point+", "BT Client", "USB Client" };
@@ -274,6 +274,11 @@ public class GraphicStartup implements Menu {
         public PANConfig()
         {
             loadConfig();
+        }
+
+        public int getCurrentMode()
+        {
+            return curMode;
         }
         
         public void saveConfig()
@@ -336,8 +341,25 @@ public class GraphicStartup implements Menu {
             {
                 for(int i = 0; i < IPAddresses.length; i++)
                     IPAddresses[i] = autoIP;
-                if (mode == MODE_AP)
+                switch(mode)
+                {
+                case MODE_AP:
                     IPAddresses[0] = "10.0.1.1";
+                    break;
+                case MODE_APP:
+                    // For access point plus we need to use a sub-net within the
+                    // sub-net being used for WiFi. Set a default that may work for
+                    // most - well it does for me!
+                    if (wlanAddress != null)
+                    {
+                        String[] parts = wlanAddress.split("\\.");
+                        if (parts.length == 4)
+                        {
+                            IPAddresses[0] = parts[0] + "." + parts[1] + "." + parts[2] + ".208";
+                        }
+                    }
+                    break;
+                }
                 BTAPName = anyAP;
                 BTAPAddress = anyAP;
                 curMode = mode;
@@ -370,6 +392,7 @@ public class GraphicStartup implements Menu {
         {
             return bt.equals(anyAP);
         }
+        
         private String getDisplayAP(String bt)
         {
             return isAnyAP(bt) ? "Any Access Point" : bt;
@@ -625,6 +648,8 @@ public class GraphicStartup implements Menu {
             {
                 saveConfig();
                 startNetwork(START_PAN);
+                BrickFinder.stopDiscoveryServer();
+                BrickFinder.startDiscoveryServer(curMode == MODE_APP);
             }
         }
 	}
@@ -697,7 +722,7 @@ public class GraphicStartup implements Menu {
     	ind.start();
     	rcons.start();
     	pipeReader.start();
-    	BrickFinder.startDiscoveryServer();
+    	BrickFinder.startDiscoveryServer(panConfig.getCurrentMode() == PANConfig.MODE_APP);
     	remoteMenuThread.start();
     }
 	
