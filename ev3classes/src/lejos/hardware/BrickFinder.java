@@ -21,6 +21,7 @@ public class BrickFinder {
 	private static Brick defaultBrick, localBrick;
 	private static final int MAX_DISCOVERY_TIME = 2000;
 	private static final int MAX_PACKET_SIZE = 32;
+	private static final int MAX_HOPS = 2;
 
 	/**
 	 * Internal class to implement a name server that can respond to queries 
@@ -32,7 +33,14 @@ public class BrickFinder {
 	private static class DiscoveryServer implements Runnable
 	{
 	    DatagramSocket socket;
+	    boolean forward;
 	    static DiscoveryServer server;
+	    static Thread serverThread;
+
+	    private DiscoveryServer(boolean forward)
+	    {
+	        this.forward = forward;
+	    }
 	    
 	    public void run()
 	    {
@@ -60,53 +68,72 @@ public class BrickFinder {
                     String message = new String(packet.getData()).trim();
                     System.out.println("Message " + message);
                     String[] args = message.split("\\s+");
-                    if (args.length == 2 && args[0].equalsIgnoreCase(FIND_CMD))
+                    if (args.length == 5 && args[0].equalsIgnoreCase(FIND_CMD))
                     {
+                        InetAddress replyAddr = InetAddress.getByName(args[2]);
+                        int replyPort = Integer.parseInt(args[3]);
+                        int hops = Integer.parseInt(args[4]);
                         String hostname = localBrick.getName();
-                        if (args[1].equalsIgnoreCase("*") || args[1].equalsIgnoreCase(hostname))
+                        if ((!forward || hops == MAX_HOPS) && (args[1].equalsIgnoreCase("*") || args[1].equalsIgnoreCase(hostname)))
                         {
                             byte[] sendData = hostname.getBytes();
     
                             // Send a response
                             DatagramPacket sendPacket = new DatagramPacket(
-                                    sendData, sendData.length, packet.getAddress(),
-                                    packet.getPort());
+                                    sendData, sendData.length, replyAddr,
+                                    replyPort);
                             socket.send(sendPacket);
 
                             System.out.println(getClass().getName()
                                     + ">>>Sent packet to: "
                                     + sendPacket.getAddress().getHostAddress());
                         }
+                        if (forward && --hops > 0)
+                            broadcastFindRequest(socket, args[1], replyAddr, replyPort, hops);
                     }
                 }
 	        } catch (IOException ex) {
 	          System.out.println("Got error " + ex);
 	        } finally {
-    	        synchronized(DiscoveryServer.class)
-    	        {
-        	        if (socket != null)
-        	            socket.close();
-        	        socket = null;
-        	        server = null;
-    	        }
+        	    if (socket != null)
+        	        socket.close();
 	        }
 	    }
-	    
-	    public static synchronized void start()
+
+	    /**
+	     * Start the discovery server for this device
+	     * @param forward true if requests should be forwarded to other devices
+	     */
+	    public static synchronized void start(boolean forward)
 	    {
 	        if (server == null)
 	        {
-	            server = new DiscoveryServer();
-	            new Thread(server).start();
+	            server = new DiscoveryServer(forward);
+	            serverThread = new Thread(server);
+	            serverThread.setDaemon(true);
+	            serverThread.start();
 	        }
 	    }
-	    
+
+	    /**
+	     * Stop the discovery service on this device. Wait for the server to exit.
+	     */
 	    public static synchronized void stop()
 	    {
 	        if (server != null && server.socket != null)
 	        {
 	            // abort the running server
-	            server.socket.close();
+	            if (server.socket != null)
+	                server.socket.close();
+	            try
+                {
+                    serverThread.join();
+                } catch (InterruptedException e)
+                {
+                    // not a lot to do
+                }
+	            server.socket = null;
+	            server = null;	            
 	        }
 	    }
 	}
@@ -137,25 +164,11 @@ public class BrickFinder {
 			}
 		}
 	}
-
-	/**
-	 * Search for a named EV3. Return a table of the addresses that can be used to contact
-	 * the device. An empty table is returned if no EV3s are found.
-	 * @param name
-	 * @return A table of matching devices
-	 */
-	public static BrickInfo[] find(String name)
+	
+	private static void broadcastFindRequest(DatagramSocket socket, String name, InetAddress replyAddr, int replyPort, int hop)
 	{
-        DatagramSocket socket=null;
-        Map<String,BrickInfo> ev3s = new HashMap<String,BrickInfo>();
         try
         {
-            socket = new DatagramSocket();
-            socket.setBroadcast(true);
-            boolean findAll = name.equalsIgnoreCase("*");
-            String message = FIND_CMD + " " + name;
-            byte[] sendData = message.getBytes();
-
             // Broadcast the message over all the network interfaces
             Enumeration<NetworkInterface> interfaces = NetworkInterface
                     .getNetworkInterfaces();
@@ -176,10 +189,19 @@ public class BrickFinder {
                     InetAddress broadcast = interfaceAddress.getBroadcast();
                     if (broadcast == null)
                         continue;
+                    String message = FIND_CMD + " " + name;
+                    if (replyAddr == null)
+                        message += " " + interfaceAddress.getAddress().getHostAddress() + " " + socket.getLocalPort();
+                    else
+                        message += " " + replyAddr.getHostAddress() + " " + replyPort;
+                    message += " " + hop;
+                        
+                    byte[] sendData = message.getBytes();
 
                     // Send the broadcast packet.
                     try
                     {
+                        System.out.println("Send to " + broadcast.getHostAddress() + " port " + DISCOVERY_PORT );
                         DatagramPacket sendPacket = new DatagramPacket(
                                 sendData, sendData.length, broadcast, DISCOVERY_PORT);
                         socket.send(sendPacket);
@@ -192,7 +214,29 @@ public class BrickFinder {
                     }
                 }
             }
-            socket.setSoTimeout(MAX_DISCOVERY_TIME);
+        } catch (IOException ex)
+        {
+            System.err.println("Exception opening socket : " + ex);
+        }	    
+	}
+
+	/**
+	 * Search for a named EV3. Return a table of the addresses that can be used to contact
+	 * the device. An empty table is returned if no EV3s are found.
+	 * @param name
+	 * @return A table of matching devices
+	 */
+	public static BrickInfo[] find(String name)
+	{
+        DatagramSocket socket=null;
+        Map<String,BrickInfo> ev3s = new HashMap<String,BrickInfo>();
+        try
+        {
+            socket = new DatagramSocket();
+            socket.setBroadcast(true);
+            boolean findAll = name.equalsIgnoreCase("*");
+            broadcastFindRequest(socket, name, null, -1, MAX_HOPS);
+            socket.setSoTimeout(MAX_DISCOVERY_TIME/4);
             DatagramPacket packet = new DatagramPacket (new byte[MAX_PACKET_SIZE], MAX_PACKET_SIZE);
     
             long start = System.currentTimeMillis();
@@ -200,7 +244,7 @@ public class BrickFinder {
             while ((System.currentTimeMillis() - start) < MAX_DISCOVERY_TIME) {
                 try {
                     socket.receive (packet);
-                    message = new String(packet.getData(), "UTF-8").trim();
+                    String message = new String(packet.getData(), "UTF-8").trim();
                     if (findAll || message.equalsIgnoreCase(name))
                     {
                         String ip = packet.getAddress().getHostAddress();
@@ -208,8 +252,8 @@ public class BrickFinder {
                     }
                 } catch (SocketTimeoutException e)
                 {
-                    // Timeout if we get no responses
-                    break;
+                    // No response ask again
+                    broadcastFindRequest(socket, name, null, -1, MAX_HOPS);                    
                 }
             }
         } catch (IOException ex)
@@ -256,15 +300,17 @@ public class BrickFinder {
 		defaultBrick = brick;
 	}
 
+	
 	/**
 	 * Start the discovery server running. There should be a single discovery server
 	 * running on each EV3. This provides responses to remote discover and find
 	 * requests. Normally this server will be run by the leJOS menu and so user code
 	 * does not need to start a copy.
+     * @param forward true if requests should be forwarded to other devices
 	 */
-	public static void startDiscoveryServer()
+	public static void startDiscoveryServer(boolean forward)
 	{
-	    DiscoveryServer.start();
+	    DiscoveryServer.start(forward);
 	}
 
 	/**
