@@ -582,7 +582,11 @@ public class EV3MotorPort extends EV3IOPort implements TachoMotorPort {
             {
                 updateRegulatorInformation();
                 if (curState >= ST_START && curState <= ST_MOVE)
-                    genMove(curVelocity, curPosition, curCnt, curTime, newSpeed, curAcc, curLimit, curHold);
+                {
+                    curSpeed = newSpeed;
+                    newMove = true;
+                    executeMove();
+                }
             }
         }
 
@@ -596,7 +600,11 @@ public class EV3MotorPort extends EV3IOPort implements TachoMotorPort {
             {
                 updateRegulatorInformation();
                 if (curState >= ST_START && curState <= ST_MOVE)
-                    genMove(curVelocity, curPosition, curCnt, curTime, curSpeed, newAcc, curLimit, curHold);
+                {
+                    curAcc = newAcc;
+                    newMove = true;
+                    executeMove();
+                }
             }
         }
 
