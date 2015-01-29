@@ -8,7 +8,7 @@ import lejos.robotics.SampleProvider;
  */
 public abstract class AbstractFilter implements SampleProvider {
 	protected final SampleProvider source;
-	protected final int sampleSize;
+	protected int sampleSize;
 	
 	public AbstractFilter(SampleProvider source) {
 		this.source=source;

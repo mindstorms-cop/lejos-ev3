@@ -2,6 +2,7 @@ package lejos.robotics.filter;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Properties;
@@ -135,31 +136,21 @@ public abstract class AbstractCalibrationFilter extends AbstractFilter implement
    * This method raises an exception when the stored calibration parameters do not match the sensor or the calibration class.
    * @param filename
    * filename of the stored calibration parameters
-   * @return
-   * True when calibration parameters are sccesfully loaded
-   * False when the file does not exist
+   * @throws FileNotFoundException 
    */
-  protected boolean load(String filename) {
+  protected void load(String filename) throws FileNotFoundException, IOException {
+    FileInputStream in=null;
     props.clear();
-    try {
       File f = getFile(filename);
-      if (f.exists()) {
-        FileInputStream in = new FileInputStream(f);
+        in = new FileInputStream(f);
         props.load(in);
-        in.close();
         if (!props.getProperty("type").equals(this.toString())) 
           throw new CalibrationFileException("Invalid Calibration file. Wrong type for filter.");
         if (Integer.parseInt(props.getProperty("sampleSize"))!=sampleSize) 
           throw new CalibrationFileException("Invalid Calibration file. Sample size does not match.");
-      }
-      else return false;
+        if (in != null)
+        in.close();
     }
-    catch (IOException e) {
-      e.printStackTrace();
-      return false;
-    }
-    return true;
-  }
 
   /** Saves the current set of calibration parameters to the file system. <p>
    * Calibration files are stored in  /home/root/sensorCalibration/filename  
