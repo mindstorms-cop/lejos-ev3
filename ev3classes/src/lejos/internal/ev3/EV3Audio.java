@@ -25,7 +25,7 @@ public class EV3Audio implements Audio
     private static final short RIFF_FMT_16BITS = 0x1000;
     private static final int RIFF_DATA_SIG = 0x64617461;
     
-    private static final int PCM_BUFFER_SIZE = 1024;
+    private static final int PCM_BUFFER_SIZE = 8*1024;
     
     public static final String VOL_SETTING = "lejos.volume";
     
@@ -220,8 +220,8 @@ public class EV3Audio implements Audio
             buf[offset] = OP_SERVICE;
             int len = dataLen - offset;
             int written = dev.write(buf, offset, len + 1);
+            System.out.println("Written " + written);
             if (written < 0) return -1;
-            //System.out.println("Written " + written);
             if (written < (len + 1))
             {
                 Delay.msDelay(5);
@@ -294,7 +294,7 @@ public class EV3Audio implements Audio
         try
         {
         	f = new FileInputStream(file);
-        	d = new DataInputStream(f);
+        	d = new DataInputStream(new BufferedInputStream(f));
 
             if (d.readInt() != RIFF_RIFF_SIG)
                 return -1;
@@ -341,7 +341,7 @@ public class EV3Audio implements Audio
                         // optimized case for native format
                         while(dataLen > 0 && (read = d.read(PCMBuffer, 1, (PCMBuffer.length - 1 < dataLen ? PCMBuffer.length -1 : dataLen))) > 0)
                         {
-                            //System.out.println("read " + read);
+                            System.out.println("read " + read);
                             writePCMBuffer(PCMBuffer, read);
                             dataLen -= read;
                         }
