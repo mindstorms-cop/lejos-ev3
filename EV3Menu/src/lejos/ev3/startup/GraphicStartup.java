@@ -156,6 +156,7 @@ public class GraphicStartup implements Menu {
     private int timeout = 0;
     private boolean btVisibility;
     private PANConfig panConfig = new PANConfig();
+    private WaitScreen waitScreen = new WaitScreen();
     private static String version = "Unknown";
     private static String hostname;
     private static List<String> ips = new ArrayList<String>();
@@ -239,9 +240,9 @@ public class GraphicStartup implements Menu {
 
 	private static void waitForEV3BootComplete()
 	{
-	    File bootLog = new File("/tmp/logfile");
-	    while (bootLog.exists())
-	        Delay.msDelay(1000);
+	    File bootLock = new File("/var/run/bootlock");
+	    while (bootLock.exists())
+	        Delay.msDelay(500);
 	}
 
 	/**
@@ -646,11 +647,65 @@ public class GraphicStartup implements Menu {
             } while (selection >= 0);
             if (changed)
             {
+                waitScreen.begin("Restart\nPAN\nServices");
+                waitScreen.status("Save configuration");
                 saveConfig();
-                startNetwork(START_PAN);
+                startNetwork(START_PAN, true);
+                waitScreen.status("Restart name server");
                 BrickFinder.stopDiscoveryServer();
                 BrickFinder.startDiscoveryServer(curMode == MODE_APP);
+                waitScreen.end();
             }
+        }
+	}
+	
+	private class WaitScreen
+	{
+        final GraphicsLCD g = LocalEV3.get().getGraphicsLCD();
+        final int scrWidth;
+        final int scrHeight;
+        final int chHeight;
+        final int basePos;
+        final int statusPos;
+        
+        public WaitScreen()
+        {
+            g.setFont(Font.getDefaultFont());
+            scrWidth = g.getWidth();
+            scrHeight = g.getHeight();
+            chHeight = g.getFont().getHeight();
+            basePos = scrHeight/3;
+            statusPos = basePos*2;
+        }
+
+        public void begin(String title)
+        {
+            System.out.println("Start wait");
+            ind.suspend();
+            g.clear();
+            g.drawRegion(hourglass, 0, 0, hourglass.getWidth(), hourglass.getHeight(), GraphicsLCD.TRANS_NONE, 50, 50, GraphicsLCD.HCENTER | GraphicsLCD.VCENTER);
+            int x = LCD.SCREEN_WIDTH/2;
+            String[] strings = title.split("\n");
+            int y = basePos - (strings.length/2)*chHeight;
+            for(String s : strings)
+            {
+                g.drawString(s, x, y, 0);
+                y += chHeight;
+            }
+            g.refresh();                
+        }
+        
+        public void end()
+        {
+            g.clear();
+            ind.resume();            
+        }
+        
+        public void status(String msg)
+        {
+            g.bitBlt(null, scrWidth, chHeight, 0, 0, 0, statusPos, scrWidth, chHeight, GraphicsLCD.ROP_CLEAR);
+            g.drawString(msg, 0, statusPos, 0);
+            g.refresh();            
         }
 	}
 	
@@ -676,40 +731,8 @@ public class GraphicStartup implements Menu {
         	} catch (Exception e) {
         		// Ignore
         	}
-            
-        	// Start the RMI server
-            System.out.println("Starting RMI");
-            
-            String rmiIP = (wlanAddress != null ? wlanAddress : (panAddress != null ? panAddress : "127.0.0.1"));
-            System.out.println("Setting java.rmi.server.hostname to " + rmiIP);
-            System.setProperty("java.rmi.server.hostname", rmiIP);
-            
-            try { //special exception handler for registry creation
-                LocateRegistry.createRegistry(1099); 
-                System.out.println("java RMI registry created.");
-            } catch (RemoteException e) {
-                //do nothing, error means registry already exists
-                System.out.println("java RMI registry already exists.");
-            }
-            
-            try {
-    			RMIRemoteEV3 ev3 = new RMIRemoteEV3();
-    			Naming.rebind("//localhost/RemoteEV3", ev3);
-    			RMIRemoteMenu remoteMenu = new RMIRemoteMenu(menu);
-    			Naming.rebind("//localhost/RemoteMenu", remoteMenu);
-    		} catch (Exception e) {
-    			System.err.println("RMI failed to start: " + e);
-    		}
-            
-            // Set the date
-            try {
-				String dt = SntpClient.getDate(Settings.getProperty(ntpProperty, "1.uk.pool.ntp.org"));
-				System.out.println("Date and time is " + dt);
-				Runtime.getRuntime().exec("date -s " + dt);
-			} catch (IOException e) {
-				System.err.println("Failed to get time from ntp: " + e);
-			}
-            
+        	System.out.println("Got bluetooth device");
+            menu.startNetworkServices();            
             System.out.println("Initialisation complete");
         }
     }
@@ -2760,8 +2783,11 @@ public class GraphicStartup implements Menu {
             	String pwd = k.getString();
             	if (pwd != null) {
                    	System.out.println("Password is " + pwd);
+                   	waitScreen.begin("Restart\nWiFi\nServices");
+                   	waitScreen.status("Save configuration");
                 	WPASupplicant.writeConfiguration(WIFI_BASE,  WIFI_CONFIG,  names[selection], pwd);
-                	startNetwork(START_WLAN);
+                	startNetwork(START_WLAN, true);
+                	waitScreen.end();
             	}
              	selection = -1;
             }
@@ -2836,8 +2862,9 @@ public class GraphicStartup implements Menu {
 
 	@Override
 	public void setName(String name) {
+	    waitScreen.begin("Change\nSystem\nName");
 		hostname = name;
-		
+		waitScreen.status("Save new name");
 		// Write host to /etc/hostname
 		try {
 			PrintStream out = new PrintStream(new FileOutputStream("/etc/hostname"));
@@ -2855,46 +2882,71 @@ public class GraphicStartup implements Menu {
 			System.err.println("Failed to execute hostname: " + e);
 		}
 		
-		startNetwork(START_WLAN);
-		startNetwork(START_PAN);
+		startNetwork(START_WLAN, false);
+		startNetwork(START_PAN, true);
+		waitScreen.end();
+	}
+
+	private void startNetworkServices()
+	{
+        // Start the RMI server
+        System.out.println("Starting RMI");
+        
+        String rmiIP = (wlanAddress != null ? wlanAddress : (panAddress != null ? panAddress : "127.0.0.1"));
+        System.out.println("Setting java.rmi.server.hostname to " + rmiIP);
+        System.setProperty("java.rmi.server.hostname", rmiIP);
+        
+        try { //special exception handler for registry creation
+            LocateRegistry.createRegistry(1099); 
+            System.out.println("java RMI registry created.");
+        } catch (RemoteException e) {
+            //do nothing, error means registry already exists
+            System.out.println("java RMI registry already exists.");
+        }
+        
+        try {
+            RMIRemoteEV3 ev3 = new RMIRemoteEV3();
+            Naming.rebind("//localhost/RemoteEV3", ev3);
+            RMIRemoteMenu remoteMenu = new RMIRemoteMenu(menu);
+            Naming.rebind("//localhost/RemoteMenu", remoteMenu);
+        } catch (Exception e) {
+            System.err.println("RMI failed to start: " + e);
+        }
+        
+        // Set the date
+        try {
+            String dt = SntpClient.getDate(Settings.getProperty(ntpProperty, "1.uk.pool.ntp.org"));
+            System.out.println("Date and time is " + dt);
+            Runtime.getRuntime().exec("date -s " + dt);
+        } catch (IOException e) {
+            System.err.println("Failed to get time from ntp: " + e);
+        }
 	}
 	
-	private void startNetwork(String startup) {
+	
+	private void startNetwork(String startup, boolean startServices) {
     	try {
-			Process p = Runtime.getRuntime().exec(startup);
+    	    Process p = Runtime.getRuntime().exec(startup);
             BufferedReader input = new BufferedReader(new InputStreamReader(p.getInputStream()));
-            BufferedReader err= new BufferedReader(new InputStreamReader(p.getErrorStream()));
-            PrintStream lcdStream = new PrintStream(new LCDOutputStream());
-            
-            EchoThread echoIn = new EchoThread(null, input, lcdStream);
-            EchoThread echoErr = new EchoThread(null, err, lcdStream);
-            
-            ind.suspend();
-            lcd.clear();
-            lcdStream.println("Restarting...\n");
-            
-            echoIn.start();
-            echoErr.start();
-            
+            String statusMsg;
+            while((statusMsg = input.readLine()) != null)
+            {
+                waitScreen.status(statusMsg);
+            }
 			int status = p.waitFor();
 			System.out.println("start returned " + status);
-			// Get IP addresses again
-			updateIPAddresses ();
-			System.setProperty("java.rmi.server.hostname", (wlanAddress != null ? wlanAddress : (panAddress != null ? panAddress : "127.0.0.1")));
-			
-            try {
-    			RMIRemoteEV3 ev3 = new RMIRemoteEV3();
-    			Naming.rebind("//localhost/RemoteEV3", ev3);
-    			RMIRemoteMenu remoteMenu = new RMIRemoteMenu(menu);
-    			Naming.rebind("//localhost/RemoteMenu", remoteMenu);
-    		} catch (Exception e) {
-    			System.err.println("RMI failed to start: " + e);
-    		}
-            
-			lcd.clear();
-        	ind.resume();
-		} catch (Exception e) {
+            updateIPAddresses ();
+            Delay.msDelay(2000);
+			if (startServices)
+			{
+			    waitScreen.status("Start services");
+                startNetworkServices();
+                Delay.msDelay(2000);
+			}
+    	} catch (Exception e) {
 			System.err.println("Failed to execute: " + startup + " : " + e);
+			e.printStackTrace();
+		
 		}
 	}
 	
