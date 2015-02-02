@@ -6,6 +6,7 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.InterfaceAddress;
 import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.util.Collection;
 import java.util.Enumeration;
@@ -61,12 +62,12 @@ public class BrickFinder {
                     // Receive a packet
                     socket.receive(packet);
                     // Packet received
-                    System.out.println(getClass().getName()
-                            + ">>>Discovery packet received from: "
-                            + packet.getAddress().getHostAddress());
+                    //System.out.println(getClass().getName()
+                    //        + ">>>Discovery packet received from: "
+                    //        + packet.getAddress().getHostAddress());
                     // See if the packet holds the right command (message)
                     String message = new String(packet.getData()).trim();
-                    System.out.println("Message " + message);
+                    //System.out.println("Message " + message);
                     String[] args = message.split("\\s+");
                     if (args.length == 5 && args[0].equalsIgnoreCase(FIND_CMD))
                     {
@@ -82,21 +83,27 @@ public class BrickFinder {
                             DatagramPacket sendPacket = new DatagramPacket(
                                     sendData, sendData.length, replyAddr,
                                     replyPort);
-                            socket.send(sendPacket);
+                            try {
+                                socket.send(sendPacket);
+                            } catch (IOException e)
+                            {
+                                // ignore errors on send , we need to keep running
+                            }
 
-                            System.out.println(getClass().getName()
-                                    + ">>>Sent packet to: "
-                                    + sendPacket.getAddress().getHostAddress());
+                            //System.out.println(getClass().getName()
+                                    //+ ">>>Sent packet to: "
+                                    //+ sendPacket.getAddress().getHostAddress());
                         }
                         if (forward && --hops > 0)
                             broadcastFindRequest(socket, args[1], replyAddr, replyPort, hops);
                     }
                 }
-	        } catch (IOException ex) {
-	          System.out.println("Got error " + ex);
+	        } catch (SocketException e) {
+	            // do nothing we use this to force an exit of the thread
+	        } catch (IOException e) {
+	            System.out.println("Brickfinder Got error " + e);
 	        } finally {
-        	    if (socket != null)
-        	        socket.close();
+    	        socket.close();
 	        }
 	    }
 
@@ -201,7 +208,7 @@ public class BrickFinder {
                     // Send the broadcast packet.
                     try
                     {
-                        System.out.println("Send to " + broadcast.getHostAddress() + " port " + DISCOVERY_PORT );
+                        //System.out.println("Send to " + broadcast.getHostAddress() + " port " + DISCOVERY_PORT );
                         DatagramPacket sendPacket = new DatagramPacket(
                                 sendData, sendData.length, broadcast, DISCOVERY_PORT);
                         socket.send(sendPacket);

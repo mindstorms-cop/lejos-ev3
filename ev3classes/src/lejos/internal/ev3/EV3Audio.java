@@ -220,7 +220,6 @@ public class EV3Audio implements Audio
             buf[offset] = OP_SERVICE;
             int len = dataLen - offset;
             int written = dev.write(buf, offset, len + 1);
-            System.out.println("Written " + written);
             if (written < 0) return -1;
             if (written < (len + 1))
             {
@@ -341,7 +340,6 @@ public class EV3Audio implements Audio
                         // optimized case for native format
                         while(dataLen > 0 && (read = d.read(PCMBuffer, 1, (PCMBuffer.length - 1 < dataLen ? PCMBuffer.length -1 : dataLen))) > 0)
                         {
-                            System.out.println("read " + read);
                             writePCMBuffer(PCMBuffer, read);
                             dataLen -= read;
                         }
