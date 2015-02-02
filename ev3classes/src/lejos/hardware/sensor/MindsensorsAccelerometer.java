@@ -68,6 +68,7 @@ public class MindsensorsAccelerometer extends I2CSensor  {
 	 */
 	public MindsensorsAccelerometer(I2CPort port, int address) {
 		super(port, address);
+		init();
 	}
 	
 	/**
@@ -77,6 +78,7 @@ public class MindsensorsAccelerometer extends I2CSensor  {
 	 */
 	public MindsensorsAccelerometer(I2CPort port) {
 		super(port);
+		init();
 	}
 	
 	/**
