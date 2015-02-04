@@ -1,4 +1,4 @@
-package lejos.ev3.newstartup.gui;
+package lejos.ev3.startup.gui;
 
 import lejos.hardware.lcd.Image;
 
@@ -38,5 +38,12 @@ public abstract class Submenu {
 	 * @return <i>Image[]</i> - The icons for the menu items
 	 */
 	public abstract Image[] getItems();
+	
+	/**
+	 * Called when one of this menu's items is selected, or when this menu was selected if it doesn't contain any items
+	 * @param selection <i>int</i> - The item that was selected from the menu
+	 * @return <i>int</i> - Response code ( -1 to leave menu )
+	 */
+	public abstract int select( int selection );
 	
 }

@@ -1,7 +1,7 @@
-package lejos.ev3.newstartup;
+package lejos.ev3.startup;
 
-import lejos.ev3.newstartup.gui.DetailMenu;
-import lejos.ev3.newstartup.gui.Submenu;
+import lejos.ev3.startup.gui.DetailMenu;
+import lejos.ev3.startup.gui.Submenu;
 
 public class Startup {
 	

@@ -1,4 +1,4 @@
-package lejos.ev3.newstartup;
+package lejos.ev3.startup;
 
 public class Config
 {

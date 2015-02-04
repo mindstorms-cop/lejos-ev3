@@ -1,6 +1,6 @@
-package lejos.ev3.newstartup;
+package lejos.ev3.startup;
 
-import lejos.ev3.newstartup.gui.Submenu;
+import lejos.ev3.startup.gui.Submenu;
 import lejos.hardware.lcd.Image;
 
 public class BluetoothMenu extends Submenu {
@@ -25,6 +25,12 @@ public class BluetoothMenu extends Submenu {
 	@Override
 	public Image[] getItems() {
 		return null;
+	}
+
+	@Override
+	public int select(int selection) {
+		// TODO Auto-generated method stub
+		return 0;
 	}
 
 }
