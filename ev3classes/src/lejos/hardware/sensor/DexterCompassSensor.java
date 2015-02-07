@@ -54,7 +54,7 @@ import lejos.utility.EndianTools;
  * @author Aswin Bouwmeester
  * 
  */
-public class DexterCompassSensor extends I2CSensor {
+public class DexterCompassSensor extends I2CSensor implements SensorModes{
 
     // sensor configuration
     static final int             MODE_NORMAL        = 0;

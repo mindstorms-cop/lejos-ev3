@@ -65,12 +65,13 @@ public class EV3GyroSensor extends UARTSensor {
   private short[] raw=new short[2];
 
   public EV3GyroSensor(Port port) {
-    super(port);
+    super(port, 3);
     setModes(new SensorMode[] { new RateMode(), new AngleMode(), new RateAndAngleMode() });
+
   }
 
   public EV3GyroSensor(UARTPort port) {
-    super(port);
+    super(port, 3);
     setModes(new SensorMode[] { new RateMode(), new AngleMode(), new RateAndAngleMode() });
   }
 
@@ -145,6 +146,8 @@ public class EV3GyroSensor extends UARTSensor {
   public void reset() {
     // Reset mode (4) is not used here as it behaves eratically. Instead the reset is done implicitly by going to mode 1.
     switchMode(1, SWITCHDELAY);
+    // And back to 3 to prevent another reset when fetching the next sample
+    switchMode(3, SWITCHDELAY);
   }
 
   private class AngleMode implements SampleProvider, SensorMode {
