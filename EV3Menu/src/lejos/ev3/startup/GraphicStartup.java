@@ -142,6 +142,10 @@ public class GraphicStartup implements Menu {
     private static final String WLAN_INTERFACE = "wlan0";
     private static final String PAN_INTERFACE = "br0";
     
+    private static final int IND_NONE = 0;
+    private static final int IND_NORMAL = 1;
+    private static final int IND_FULL = 2;
+    
     private static final int defaultSleepTime = 2;
     private static final int maxSleepTime = 10;
 
@@ -260,6 +264,7 @@ public class GraphicStartup implements Menu {
 
         final String[] modeIDS = { "NONE", "AP", "AP+", "BT", "USB" };
         final String[] modeNames = { "None", "Access Point", "Access Point+", "BT Client", "USB Client" };
+        final String[] serviceNames={"NAP", "PANU", "GN"};
         static final String autoIP = "0.0.0.0";
         static final String anyAP = "*";
         
@@ -270,6 +275,8 @@ public class GraphicStartup implements Menu {
         int curMode = MODE_NONE;
         String BTAPName = anyAP;
         String BTAPAddress = anyAP;
+        String BTService = "NAP";
+        String persist = "N";
         Boolean changed = false;
 
         public PANConfig()
@@ -290,6 +297,7 @@ public class GraphicStartup implements Menu {
                 out.print(modeIDS[curMode] + " " + BTAPName + " " + BTAPAddress);
                 for(String ip : IPAddresses)
                     out.print(" " + ip);
+                out.print(" " + BTService + " " + persist);
                 out.println();
                 out.close();
                 changed = false;
@@ -332,6 +340,8 @@ public class GraphicStartup implements Menu {
                 IPAddresses[i] = getConfigString(vals, i + 3, autoIP);
             if (curMode == MODE_AP && IPAddresses[0].equals(autoIP))
                 IPAddresses[0] = "10.0.1.1";
+            BTService = getConfigString(vals, 8, "NAP");
+            persist = getConfigString(vals, 9, "N");
             changed = false;
         }
         
@@ -363,6 +373,8 @@ public class GraphicStartup implements Menu {
                 }
                 BTAPName = anyAP;
                 BTAPAddress = anyAP;
+                BTService = "NAP";
+                persist = "N";
                 curMode = mode;
                 changed = true;
             }
@@ -519,29 +531,71 @@ public class GraphicStartup implements Menu {
             }
         }
         
+        /**
+         * Allow the user to choose the Bluetooth service to connect to.
+         * @param title
+         * @param service
+         * @return new service
+         */
+        private String getBTService(String title, String service)
+        {
+            String [] strings = serviceNames;
+            String [] icons = new String[strings.length];
+            GraphicMenu menu = new GraphicListMenu(strings,icons, 4);
+            newScreen(title);
+            lcd.drawString(service, (lcd.getTextWidth() - service.length())/2, 2);
+            menu.setItems(strings, icons);
+            int item = 0;
+            while(!strings[item].equalsIgnoreCase(service))
+                item++;
+            int selection = getSelection(menu, item);
+            if (selection > 0)
+                return strings[selection];
+            else
+                return service;
+        }
         
-        public void configureIPs()
+        
+        public void configureAdvanced()
         {
             int selection = 0;
-            String [] strings = new String[IPAddresses.length];
-            String [] icons = new String[IPAddresses.length];
-            for(int i = 0; i < IPAddresses.length; i++)
-                strings[i] = IPIDS[i] + IPAddresses[i];
+            int extra = (curMode == MODE_BTC ? 2 : curMode == MODE_USBC ? 1 : 0);
+            String [] strings = new String[IPAddresses.length + extra];
+            String [] icons = new String[IPAddresses.length+ extra];
             GraphicMenu menu = new GraphicListMenu(strings,icons);
-            do
+            for(;;)
             {
                 newScreen(modeNames[curMode]);
                 for(int i = 0; i < IPAddresses.length; i++)
                     strings[i] = IPNames[i] + " " + getDisplayIP(IPAddresses[i]);
+                if (extra > 0)
+                    strings[IPAddresses.length] = "Persist " + persist;
+                if (extra > 1)
+                    strings[IPAddresses.length+1] = "Service " + BTService;
+                
                 menu.setItems(strings, icons);
                 selection = getSelection(menu, selection);
-                if (selection >= 0)
-                {
+                if (selection < 0) break;
+                changed = true;
+                if (selection < IPAddresses.length)
                     IPAddresses[selection] = getIPAddress(IPNames[selection], IPAddresses[selection]);
-                    changed = true;
+                else if (selection == IPAddresses.length)
+                {
+                    switch (getYesNo("Persist Connection", persist.equalsIgnoreCase("Y")))
+                    {
+                    case 0:
+                        persist = "N";
+                        break;
+                    case 1:
+                        persist = "Y";
+                        break;
+                    }
                 }
+                else
+                    BTService = getBTService("Service", BTService);
 
-            } while (selection >= 0);
+
+            }
         }
         
         
@@ -611,7 +665,7 @@ public class GraphicStartup implements Menu {
                     selectAP();
                     break;
                 case 2:
-                    configureIPs();
+                    configureAdvanced();
                     break;
                 default:
                     return;
@@ -626,7 +680,7 @@ public class GraphicStartup implements Menu {
             if (curMode == MODE_BTC)
                 configureBTClient(modeNames[curMode]);
             else
-                configureIPs();
+                configureAdvanced();
         }
         
         public void panMenu()
@@ -681,7 +735,7 @@ public class GraphicStartup implements Menu {
         public void begin(String title)
         {
             System.out.println("Start wait");
-            ind.suspend();
+            ind.setDisplayState(IND_NONE);
             g.clear();
             g.drawRegion(hourglass, 0, 0, hourglass.getWidth(), hourglass.getHeight(), GraphicsLCD.TRANS_NONE, 50, 50, GraphicsLCD.HCENTER | GraphicsLCD.VCENTER);
             int x = LCD.SCREEN_WIDTH/2;
@@ -698,7 +752,7 @@ public class GraphicStartup implements Menu {
         public void end()
         {
             g.clear();
-            ind.resume();            
+            //ind.resume();            
         }
         
         public void status(String msg)
@@ -763,11 +817,9 @@ public class GraphicStartup implements Menu {
         do
         {
             newScreen(hostname);
-            int row = 1;
-            for(String ip: ips) {
-            	lcd.drawString(ip,8 - ip.length()/2,row++);
-            }
+            ind.setDisplayState(IND_FULL);
             selection = getSelection(menu, selection);
+            ind.setDisplayState(IND_NORMAL);
             switch (selection)
             {
                 case 0:
@@ -2568,6 +2620,8 @@ public class GraphicStartup implements Menu {
      */
 	class IndicatorThread extends Thread
     {
+	    int displayState = IND_NONE;
+	   
 		public IndicatorThread()
     	{
     		super();
@@ -2579,17 +2633,40 @@ public class GraphicStartup implements Menu {
     	{
     		try
     		{
+    		    int updateIPCountdown = 0;
 	    		while (true)
 	    		{
 	    			long time = System.currentTimeMillis();
-	    			
-	    			indiBA.setWifi(wlanAddress != null);
-	    			indiBA.draw(time);
-	    			lcd.refresh();
+	    			if (updateIPCountdown <= 0 && displayState >= IND_FULL)
+	    			{
+	    			    updateIPAddresses();
+	    			    updateIPCountdown = Config.IP_UPDATE;
+	    			}
+	    			if (displayState >= IND_NORMAL)
+	    			{
+	    			    indiBA.setWifi(wlanAddress != null);
+	    			    indiBA.draw(time);
+	    			    if (displayState >= IND_FULL)
+	    			    {
+	                        if (updateIPCountdown <= 0)
+	                        {
+	                            updateIPAddresses();
+	                            updateIPCountdown = Config.IP_UPDATE;
+	                        }
+	    		            lcd.clear(1);
+	    		            lcd.clear(2);
+	    		            int row = 1;
+	    		            for(String ip: ips) {
+	    		                lcd.drawString(ip,8 - ip.length()/2,row++);
+	    		            }	    			        
+	    			    }
+	    			    lcd.refresh();
+	    			}
     			
     				// wait until next tick
     				time = System.currentTimeMillis();
     				this.wait(Config.ANIM_DELAY - (time % Config.ANIM_DELAY));
+                    updateIPCountdown -= Config.ANIM_DELAY;
     			}
     		}
     		catch (InterruptedException e)
@@ -2605,13 +2682,20 @@ public class GraphicStartup implements Menu {
     	{
     		this.notifyAll();
     	}
+    	
+    	public void setDisplayState(int state)
+    	{
+    	    displayState = state;
+    	    updateNow();
+    	}
     }
 	
 	/**
 	 * Get all the IP addresses for the device
 	 */
-    public void updateIPAddresses()
+    public synchronized void updateIPAddresses()
     {
+        System.out.println("Update IP addresses");
         List<String> result = new ArrayList<String>();
         Enumeration<NetworkInterface> interfaces;
         wlanAddress = null;
@@ -2669,7 +2753,7 @@ public class GraphicStartup implements Menu {
 			jar = new JarFile(jarFile);
 			String mainClass = jar.getManifest().getMainAttributes().getValue("Main-class");
 			jar.close();
-	    	ind.suspend();
+	    	ind.setDisplayState(IND_NONE);
 	    	startProgram(JAVA_RUN_CP + fullName + " lejos.internal.ev3.EV3Wrapper " + mainClass, jarFile);
 		} catch (IOException e) {
 			System.err.println("Failed to run program");
@@ -2701,7 +2785,7 @@ public class GraphicStartup implements Menu {
 			jar = new JarFile(jarFile);
 			String mainClass = jar.getManifest().getMainAttributes().getValue("Main-class");
 			jar.close();
-	    	ind.suspend();
+	    	ind.setDisplayState(IND_NONE);
 	    	startProgram(JAVA_RUN_CP + fullName + " lejos.internal.ev3.EV3Wrapper " + mainClass, jarFile);
 		} catch (IOException e) {
 			System.err.println("Failed to run program");
@@ -2717,7 +2801,7 @@ public class GraphicStartup implements Menu {
 			jar = new JarFile(jarFile);
 			String mainClass = jar.getManifest().getMainAttributes().getValue("Main-class");
 			jar.close();
-	    	ind.suspend();
+	    	ind.setDisplayState(IND_NONE);
 			startProgram(JAVA_DEBUG_CP + fullName + " lejos.internal.ev3.EV3Wrapper " + mainClass, jarFile);
 		} catch (IOException e) {
 			System.err.println("Failed to run program");
@@ -2994,7 +3078,7 @@ public class GraphicStartup implements Menu {
 
 	@Override
 	public void suspend() {
-		ind.suspend();
+		ind.setDisplayState(IND_NONE);
 		LCD.clearDisplay();
         suspend = true;
         curMenu.quit();
@@ -3003,7 +3087,7 @@ public class GraphicStartup implements Menu {
 	@Override
 	public void resume() {
 		suspend = false;
-		ind.resume();
+		//ind.resume();
 	}
 	
 	static final Image hourglass = new Image(64, 64, new byte[] {(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
