@@ -166,6 +166,7 @@ public class GraphicStartup implements Menu {
     private static List<String> ips = new ArrayList<String>();
     private static String wlanAddress;
     private static String panAddress;
+    private static String rmiAddress = "";
     
     private static LocalBTDevice bt;
 	private static GraphicStartup menu;
@@ -263,7 +264,7 @@ public class GraphicStartup implements Menu {
         public static final int MODE_USBC = 4;
 
         final String[] modeIDS = { "NONE", "AP", "AP+", "BT", "USB" };
-        final String[] modeNames = { "None", "Access Point", "Access Point+", "BT Client", "USB Client" };
+        final String[] modeNames = { "None", "Access Pt", "Access Pt+", "BT Client", "USB Client" };
         final String[] serviceNames={"NAP", "PANU", "GN"};
         static final String autoIP = "0.0.0.0";
         static final String anyAP = "*";
@@ -450,7 +451,7 @@ public class GraphicStartup implements Menu {
                     curDigit = 14;
                 if (curDigit >= 15)
                     curDigit = 0;
-                Utils.drawRect(curDigit * 10 + 18, 60, 14, 20);
+                Utils.drawRect(curDigit * 10 + 18, 60, 13, 20);
                 lcd.refresh();
                 int key = getButtonPress();
                 switch (key)
@@ -468,6 +469,8 @@ public class GraphicStartup implements Menu {
                     case Button.ID_LEFT:
                     { // LEFT
                         curDigit--;
+                        if (curDigit < 0)
+                            curDigit = 14;
                         if (address.charAt(curDigit) == '.')
                             curDigit--;
                         break;
@@ -475,6 +478,8 @@ public class GraphicStartup implements Menu {
                     case Button.ID_RIGHT:
                     { // RIGHT
                         curDigit++;
+                        if (curDigit >= 15)
+                            curDigit = 0;
                         if (address.charAt(curDigit) == '.')
                             curDigit++;
                         break;
@@ -2637,22 +2642,21 @@ public class GraphicStartup implements Menu {
 	    		while (true)
 	    		{
 	    			long time = System.currentTimeMillis();
-	    			if (updateIPCountdown <= 0 && displayState >= IND_FULL)
-	    			{
-	    			    updateIPAddresses();
-	    			    updateIPCountdown = Config.IP_UPDATE;
-	    			}
 	    			if (displayState >= IND_NORMAL)
 	    			{
+	                    if (updateIPCountdown <= 0)
+	                    {
+	                        if (updateIPAddresses())
+	                        {
+	                            System.out.println("Address changed");
+	                            startNetworkServices();
+	                        }
+	                        updateIPCountdown = Config.IP_UPDATE;
+	                    }
 	    			    indiBA.setWifi(wlanAddress != null);
 	    			    indiBA.draw(time);
 	    			    if (displayState >= IND_FULL)
 	    			    {
-	                        if (updateIPCountdown <= 0)
-	                        {
-	                            updateIPAddresses();
-	                            updateIPCountdown = Config.IP_UPDATE;
-	                        }
 	    		            lcd.clear(1);
 	    		            lcd.clear(2);
 	    		            int row = 1;
@@ -2691,13 +2695,16 @@ public class GraphicStartup implements Menu {
     }
 	
 	/**
-	 * Get all the IP addresses for the device
+	 * Get all the IP addresses for the device, return true if either the wlan or
+	 * pan address has changed.
 	 */
-    public synchronized void updateIPAddresses()
+    public synchronized boolean updateIPAddresses()
     {
-        System.out.println("Update IP addresses");
+        //System.out.println("Update IP addresses");
         List<String> result = new ArrayList<String>();
         Enumeration<NetworkInterface> interfaces;
+        String oldWlan = wlanAddress;
+        String oldPan = panAddress;
         wlanAddress = null;
         panAddress = null;
         ips.clear();
@@ -2707,7 +2714,7 @@ public class GraphicStartup implements Menu {
         } catch (SocketException e)
         {
             System.err.println("Failed to get network interfaces: " + e);
-            return;
+            return false;
         }
         while (interfaces.hasMoreElements()){
             NetworkInterface current = interfaces.nextElement();
@@ -2723,7 +2730,7 @@ public class GraphicStartup implements Menu {
                 InetAddress current_addr = addresses.nextElement();
                 if (current_addr.isLoopbackAddress()) continue;
                 result.add(current_addr.getHostAddress());
-                System.out.println("Interface name " + current.getName());
+                //System.out.println("Interface name " + current.getName());
                 if (current.getName().equals(WLAN_INTERFACE))
                     wlanAddress = current_addr.getHostAddress();
                 else if (current.getName().equals(PAN_INTERFACE))
@@ -2731,6 +2738,9 @@ public class GraphicStartup implements Menu {
             }
         }
         ips = result;
+        // have any of the important addresses changed?
+        return !(oldWlan == wlanAddress || (oldWlan != null && wlanAddress != null && wlanAddress.equals(oldWlan))) ||
+                !(oldPan == panAddress || (oldPan != null && panAddress != null && panAddress.equals(oldPan)));
     } 
  
     public static void drawLaunchScreen() {
@@ -2970,7 +2980,7 @@ public class GraphicStartup implements Menu {
 		startNetwork(START_PAN, true);
 		waitScreen.end();
 	}
-
+	
 	private void startNetworkServices()
 	{
         // Start the RMI server
