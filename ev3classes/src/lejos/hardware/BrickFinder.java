@@ -63,10 +63,10 @@ public class BrickFinder {
                     socket.receive(packet);
                     // Packet received
                     //System.out.println(getClass().getName()
-                    //        + ">>>Discovery packet received from: "
-                    //        + packet.getAddress().getHostAddress());
+                            //+ ">>>Discovery packet received from: "
+                            //+ packet.getAddress().getHostAddress());
                     // See if the packet holds the right command (message)
-                    String message = new String(packet.getData()).trim();
+                    String message = new String(packet.getData(), 0, packet.getLength()).trim();
                     //System.out.println("Message " + message);
                     String[] args = message.split("\\s+");
                     if (args.length == 5 && args[0].equalsIgnoreCase(FIND_CMD))
@@ -78,7 +78,7 @@ public class BrickFinder {
                         if ((!forward || hops == MAX_HOPS) && (args[1].equalsIgnoreCase("*") || args[1].equalsIgnoreCase(hostname)))
                         {
                             byte[] sendData = hostname.getBytes();
-    
+                            //System.out.println("Send response to " + replyAddr);
                             // Send a response
                             DatagramPacket sendPacket = new DatagramPacket(
                                     sendData, sendData.length, replyAddr,
@@ -87,6 +87,7 @@ public class BrickFinder {
                                 socket.send(sendPacket);
                             } catch (IOException e)
                             {
+                                System.out.println("Error in send" + e);
                                 // ignore errors on send , we need to keep running
                             }
 
