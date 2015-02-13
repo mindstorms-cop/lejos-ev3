@@ -97,7 +97,7 @@ public class Move implements Transmittable {
    */
   public void setValues(MoveType type, float distance, float angle,boolean isMoving)
   {
-    this.moveType = Move.calcMoveType(distance, angle);
+  this.moveType = type;
 	this.distanceTraveled = distance;
 	this.angleTurned = angle;
 	this.isMoving = isMoving;
