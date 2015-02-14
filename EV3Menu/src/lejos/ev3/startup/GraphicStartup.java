@@ -47,7 +47,6 @@ import lejos.hardware.lcd.Font;
 import lejos.hardware.lcd.GraphicsLCD;
 import lejos.hardware.lcd.Image;
 import lejos.hardware.lcd.LCD;
-import lejos.hardware.lcd.LCDOutputStream;
 import lejos.hardware.lcd.TextLCD;
 import lejos.hardware.motor.EV3LargeRegulatedMotor;
 import lejos.hardware.motor.EV3MediumRegulatedMotor;
@@ -142,6 +141,7 @@ public class GraphicStartup implements Menu {
     private static final String WLAN_INTERFACE = "wlan0";
     private static final String PAN_INTERFACE = "br0";
     
+    private static final int IND_SUSPEND = -1;
     private static final int IND_NONE = 0;
     private static final int IND_NORMAL = 1;
     private static final int IND_FULL = 2;
@@ -740,7 +740,7 @@ public class GraphicStartup implements Menu {
         public void begin(String title)
         {
             System.out.println("Start wait");
-            ind.setDisplayState(IND_NONE);
+            suspend();
             g.clear();
             g.drawRegion(hourglass, 0, 0, hourglass.getWidth(), hourglass.getHeight(), GraphicsLCD.TRANS_NONE, 50, 50, GraphicsLCD.HCENTER | GraphicsLCD.VCENTER);
             int x = LCD.SCREEN_WIDTH/2;
@@ -757,7 +757,7 @@ public class GraphicStartup implements Menu {
         public void end()
         {
             g.clear();
-            //ind.resume();            
+            resume();
         }
         
         public void status(String msg)
@@ -1841,7 +1841,6 @@ public class GraphicStartup implements Menu {
         else
         {
         	System.out.println("Executing default program " + file.getPath());
-        	ind.suspend();
 			try {
 				JarFile jar = new JarFile(file);
 				String mainClass = jar.getManifest().getMainAttributes().getValue("Main-class");
@@ -1850,7 +1849,6 @@ public class GraphicStartup implements Menu {
 			} catch (IOException e) {
 				System.err.println("Exception running program");
 			}
-        	ind.resume();
         }
     }
     
@@ -1922,21 +1920,15 @@ public class GraphicStartup implements Menu {
                 	}
                 	break;
                 case 5:
-                	ind.suspend();
-                	lcd.clear();
-                	lcd.refresh();
-                	lcd.setAutoRefresh(false);
+                    suspend();
                 	System.out.println("Menu suspended");
                     while(true) {
                         int b = Button.getButtons(); 
                         if (b == 6) break;
                         Delay.msDelay(200);
                     }
-                    lcd.setAutoRefresh(true);
-                    lcd.clear();
-                    lcd.refresh();            	
-                	ind.resume();
-                	System.out.println("Menu resumed");
+                    resume();
+                    System.out.println("Menu resumed");
                 	break;
                 case 6:
                     Settings.setProperty(defaultProgramProperty, "");
@@ -2104,9 +2096,16 @@ public class GraphicStartup implements Menu {
      */
     private int getButtonPress()
     {
-        int value = Button.waitForAnyPress(timeout*60000);
-        if (value == 0) shutdown();
-        return value;
+        long timeoutCnt = (timeout == 0 ? Long.MAX_VALUE : (timeout*60000)/200);
+        while (timeoutCnt-- > 0)
+        {    
+            int value = Button.waitForAnyPress(200);
+            if (value != 0) return value;
+            if (suspend)
+                waitResume();
+        }
+        shutdown();
+        return 0;
     }
 	
     /**
@@ -2162,19 +2161,15 @@ public class GraphicStartup implements Menu {
 	        {
 	            case 0:
 	            	System.out.println("Running program: " + file.getPath());
-	            	ind.suspend();
 	            	if (type == TYPE_TOOL) {
 	            		execInThisJVM(file);
-	            		ind.resume();
 	            	} else {
 						JarFile jar = null;
 						try {
 							jar = new JarFile(file);
 							String mainClass = jar.getManifest().getMainAttributes().getValue("Main-class");
 							jar.close();
-				            ind.suspend();
 				            exec(file, JAVA_RUN_CP + file.getPath() + " lejos.internal.ev3.EV3Wrapper " + mainClass, directory);
-				            ind.resume();
 						} catch (IOException e) {
 							System.err.println("Exception running program");
 						}
@@ -2188,9 +2183,7 @@ public class GraphicStartup implements Menu {
 						jar = new JarFile(file);
 						String mainClass = jar.getManifest().getMainAttributes().getValue("Main-class");
 						jar.close();
-			            ind.suspend();
 			            exec(file, JAVA_DEBUG_CP + file.getPath() + " lejos.internal.ev3.EV3Wrapper " + mainClass, directory);
-			            ind.resume();
 					} catch (IOException e) {
 						System.err.println("Exception running program");
 					}
@@ -2228,9 +2221,7 @@ public class GraphicStartup implements Menu {
         String ext = Utils.getExtension(fileName);
         if (ext.equals("jar"))
         {
-        	ind.suspend();
     		execInThisJVM(file);
-    		ind.resume();
         }
     }
 
@@ -2239,14 +2230,12 @@ public class GraphicStartup implements Menu {
      * Execute a program and display its output to System.out and error stream to System.err
      */
     private static void exec(File jar, String command, String directory) {
+        menu.suspend();
         try {
         	if (jar != null) {
         		String jarName = jar.getName();
         		programName = jarName.substring(0, jarName.length() - 4); // Remove .jar
         	}
-        	lcd.clear();
-        	lcd.refresh();
-        	lcd.setAutoRefresh(false);
 
         	drawLaunchScreen();
                     	
@@ -2278,15 +2267,17 @@ public class GraphicStartup implements Menu {
             program.waitFor();
             System.out.println("Program finished");
       	    // Turn the LED off, in case left on
-      	    Button.LEDPattern(0);
-            lcd.setAutoRefresh(true);
-            lcd.clear();
-            lcd.refresh();
-            program = null;
           }
           catch (Exception e) {
             System.err.println("Failed to execute program: " + e);
-          } 	
+          }
+          finally
+          {
+              resetMotors();
+              Button.LEDPattern(0);
+              program = null;
+              menu.resume();
+          }
     }
     
     /**
@@ -2294,13 +2285,8 @@ public class GraphicStartup implements Menu {
      */
     private static void startProgram(String command, File jar) {
         try {
+            System.out.println("Start sus " + GraphicStartup.suspend + " program null " + (program == null));
         	if (program != null) return;
-        	lcd.clear();
-        	lcd.refresh();
-        	lcd.setAutoRefresh(false);
-        	
-        	drawLaunchScreen();
-        	
         	String[] args = command.split(" ");
         	File directory = jar.getParentFile();
         	
@@ -2316,19 +2302,19 @@ public class GraphicStartup implements Menu {
             
             echoIn.start();
             echoErr.start();
+            menu.suspend();
+            drawLaunchScreen();          
             
         	System.out.println("Executing " + command + " in " + directory);
-        	
-            suspend = true;
-            curMenu.quit(); // Quit the current menu and go into the suspend loop
-            
         } catch (Exception e) {
         	System.err.println("Failed to start program: " + e);
+        	menu.resume();
         } 
     }
     
     public void stopProgram() {           
         try {  
+            System.out.println("Stop sus " + GraphicStartup.suspend + " program null " + (program == null));
         	if (program == null) return;
         	
         	program.destroy();
@@ -2336,19 +2322,18 @@ public class GraphicStartup implements Menu {
             System.out.println("Waiting for process to die");;
             program.waitFor();
             System.out.println("Program finished");
-            resetMotors();
-      	    // Turn the LED off, in case left on
-      	    Button.LEDPattern(0);
-            lcd.setAutoRefresh(true);
-            lcd.clear();
-            lcd.refresh();
-            program = null;
-            suspend = false;
-        	ind.resume();
           }
           catch (Exception e) {
             System.err.println("Failed to stop program: " + e);
-          } 	
+          }
+          finally
+          {
+              resetMotors();
+              // Turn the LED off, in case left on
+              Button.LEDPattern(0);
+              program = null;
+              menu.resume();              
+          }
     }
    
     /**
@@ -2524,6 +2509,30 @@ public class GraphicStartup implements Menu {
         	button = buttons2 & ~buttons;
         } while (button != Button.ID_ESCAPE && System.currentTimeMillis() - start < 2000);
     }
+
+    /**
+     * If the menu is suspended wait for it to be resumed. Handle any program exit
+     * while we wait.
+     */
+    private void waitResume()
+    {
+        while (suspend) {
+            if (program != null && !echoIn.isAlive() && !echoErr.isAlive()) {
+                stopProgram();
+                break;
+            }
+            int b = Button.getButtons(); 
+            if (b == 6) {
+                if (program != null)
+                    stopProgram();
+                else
+                    // should we do this?
+                    resume();
+                break;
+            }
+            Delay.msDelay(200);
+        }        
+    }
     
     /**
      * Obtain a menu item selection
@@ -2543,21 +2552,8 @@ public class GraphicStartup implements Menu {
         // If the menu is interrupted by another thread, redisplay
         do {
         	selection = menu.select(cur, timeout*60000);
-        	
-            while (suspend) {
-            	if (program != null && !echoIn.isAlive() && !echoErr.isAlive()) {
-            		stopProgram();
-            		ind.resume();
-            		break;
-            	}
-                int b = Button.getButtons(); 
-                if (b == 6) {
-                	if (program != null) stopProgram();
-                	ind.resume();
-                	break;
-                }
-                Delay.msDelay(200);
-            }
+        	if (suspend)
+        	    waitResume();
         } while (selection == -2);
         
         if (selection == -3)
@@ -2576,7 +2572,7 @@ public class GraphicStartup implements Menu {
      */
     public void shutdown() {
     	System.out.println("Shutting down the EV3");
-        ind.suspend();
+    	suspend();
     	try {
 			Runtime.getRuntime().exec("init 0");
 		} catch (IOException e) {
@@ -2623,16 +2619,23 @@ public class GraphicStartup implements Menu {
      * The top line of the display shows battery state, menu titles, and I/O
      * activity.
      */
-	class IndicatorThread extends Thread
+	class IndicatorThread implements Runnable
     {
 	    int displayState = IND_NONE;
-	   
-		public IndicatorThread()
-    	{
-    		super();
-            setDaemon(true);
-    	}
-    	
+	    int savedState = IND_NONE;
+	    Thread thread;
+	    
+	    public IndicatorThread()
+	    {
+	        thread = new Thread(this);
+	        thread.setDaemon(true);
+	    }
+
+	    public void start()
+	    {
+	        thread.start();
+	    }
+	    
     	@Override
 		public synchronized void run()
     	{
@@ -2641,9 +2644,9 @@ public class GraphicStartup implements Menu {
     		    int updateIPCountdown = 0;
 	    		while (true)
 	    		{
-	    			long time = System.currentTimeMillis();
 	    			if (displayState >= IND_NORMAL)
 	    			{
+	                    long time = System.currentTimeMillis();
 	                    if (updateIPCountdown <= 0)
 	                    {
 	                        if (updateIPAddresses())
@@ -2665,12 +2668,13 @@ public class GraphicStartup implements Menu {
 	    		            }	    			        
 	    			    }
 	    			    lcd.refresh();
+	                    // wait until next tick
+	                    time = System.currentTimeMillis();
+	                    this.wait(Config.ANIM_DELAY - (time % Config.ANIM_DELAY));
+	                    updateIPCountdown -= Config.ANIM_DELAY;
 	    			}
-    			
-    				// wait until next tick
-    				time = System.currentTimeMillis();
-    				this.wait(Config.ANIM_DELAY - (time % Config.ANIM_DELAY));
-                    updateIPCountdown -= Config.ANIM_DELAY;
+	    			else
+	    			    this.wait();
     			}
     		}
     		catch (InterruptedException e)
@@ -2689,7 +2693,25 @@ public class GraphicStartup implements Menu {
     	
     	public void setDisplayState(int state)
     	{
-    	    displayState = state;
+    	    if (displayState != IND_SUSPEND)
+    	    {
+    	        displayState = state;
+    	        updateNow();
+    	    }
+    	    else
+    	        savedState = state;
+    	}
+    	
+    	public void suspend()
+    	{
+    	    savedState = displayState;
+    	    displayState = IND_SUSPEND;
+    	    updateNow();    	    
+    	}
+    	
+    	public void resume()
+    	{
+    	    displayState = savedState;
     	    updateNow();
     	}
     }
@@ -2763,7 +2785,6 @@ public class GraphicStartup implements Menu {
 			jar = new JarFile(jarFile);
 			String mainClass = jar.getManifest().getMainAttributes().getValue("Main-class");
 			jar.close();
-	    	ind.setDisplayState(IND_NONE);
 	    	startProgram(JAVA_RUN_CP + fullName + " lejos.internal.ev3.EV3Wrapper " + mainClass, jarFile);
 		} catch (IOException e) {
 			System.err.println("Failed to run program");
@@ -2795,7 +2816,6 @@ public class GraphicStartup implements Menu {
 			jar = new JarFile(jarFile);
 			String mainClass = jar.getManifest().getMainAttributes().getValue("Main-class");
 			jar.close();
-	    	ind.setDisplayState(IND_NONE);
 	    	startProgram(JAVA_RUN_CP + fullName + " lejos.internal.ev3.EV3Wrapper " + mainClass, jarFile);
 		} catch (IOException e) {
 			System.err.println("Failed to run program");
@@ -2811,7 +2831,6 @@ public class GraphicStartup implements Menu {
 			jar = new JarFile(jarFile);
 			String mainClass = jar.getManifest().getMainAttributes().getValue("Main-class");
 			jar.close();
-	    	ind.setDisplayState(IND_NONE);
 			startProgram(JAVA_DEBUG_CP + fullName + " lejos.internal.ev3.EV3Wrapper " + mainClass, jarFile);
 		} catch (IOException e) {
 			System.err.println("Failed to run program");
@@ -3045,6 +3064,7 @@ public class GraphicStartup implements Menu {
 	}
 	
 	private void execInThisJVM(File jar) {
+	    suspend();
 		try {
 			LCD.clearDisplay();
 			new JarMain(jar);
@@ -3052,6 +3072,10 @@ public class GraphicStartup implements Menu {
 			toolException(e);
 			System.err.println("Exception in execution of tool: " + e);
 			e.printStackTrace();
+		}
+		finally
+		{
+		    resume();
 		}
 	}
 	
@@ -3088,16 +3112,21 @@ public class GraphicStartup implements Menu {
 
 	@Override
 	public void suspend() {
-		ind.setDisplayState(IND_NONE);
-		LCD.clearDisplay();
         suspend = true;
+		ind.suspend();
+		lcd.clear();
+		LCD.setAutoRefresh(false);
+		lcd.refresh();
         curMenu.quit();
 	}
 
 	@Override
 	public void resume() {
-		suspend = false;
-		//ind.resume();
+		lcd.clear();
+		lcd.refresh();
+		LCD.setAutoRefresh(true);
+		ind.resume();
+        suspend = false;
 	}
 	
 	static final Image hourglass = new Image(64, 64, new byte[] {(byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, 
