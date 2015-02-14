@@ -191,12 +191,11 @@ public class NewDifferentialPilot implements ArcRotateMoveController {
     return acceleration;
   }
 
-  @Override
+  /* Sets the travel speed of the robot. If the robot is moving the new travel speed will not be applied to the current move, it will be used for subsequent moves
+   * @see lejos.robotics.navigation.MoveController#setTravelSpeed(double)
+   */
   public void setTravelSpeed(double speed) {
     this.travelSpeed = speed;
-    if (chassis.isMoving()) {
-      chassis.setSpeed(speed);
-    }
   }
 
   @Override

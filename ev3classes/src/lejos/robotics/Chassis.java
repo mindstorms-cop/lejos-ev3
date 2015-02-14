@@ -75,15 +75,6 @@ public interface Chassis {
   public double getSpeed();
 
   /**
-   * Sets the current speed of the robot. If a robot is not moving this method
-   * has no effect.
-   * 
-   * @param speed
-   *          Speed in robot units
-   */
-  public void setSpeed(double speed);
-
-  /**
    * Returns a Move object containing the displacement of the robot since this
    * method was last called
    * 

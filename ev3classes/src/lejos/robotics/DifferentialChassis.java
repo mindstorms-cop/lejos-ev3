@@ -90,17 +90,6 @@ public class DifferentialChassis implements Chassis {
   }
 
   @Override
-  public void setSpeed(double speed) {
-    if (isMoving()) {
-      double current = getSpeed();
-      double ratio = speed / current;
-      for (Wheel wheel : wheels) {
-        wheel.setSpeed(wheel.getSpeed() * ratio);
-      }
-    }
-  }
-
-  @Override
   public Move getDisplacement(Move move, boolean noReset) {
     master.startSynchronization();
     double left = wheels[0].getDisplacement(noReset);
@@ -135,7 +124,6 @@ public class DifferentialChassis implements Chassis {
   private double speedCorrection(double radius) {
     double max = 1;
     for (Wheel wheel : wheels) {
-      wheel.correct(1, radius);
       max = Math.max(max, wheel.correct(1, radius));
     }
     return 1 / max;
