@@ -64,12 +64,7 @@ import lejos.robotics.navigation.MoveListener;
  * 
  **/
 public class NewDifferentialPilot implements ArcRotateMoveController {
-  private double                  minRadius   = 0;                            // TODO:
-                                                                               // This
-                                                                               // actually
-                                                                               // doesn't
-                                                                               // do
-                                                                               // anything
+  private double                  minRadius   = 0;      
   final private Chassis           chassis;
   private ArrayList<MoveListener> _listeners  = new ArrayList<MoveListener>();
   private double                  travelSpeed;
@@ -173,6 +168,7 @@ public class NewDifferentialPilot implements ArcRotateMoveController {
     setTravelSpeed(chassis.getMaxSpeed() * 0.8);
     setAcceleration(getTravelSpeed() * 4);
     this.setRotateSpeed(chassis.getMaxRotateSpeed() * 0.8);
+    minRadius = chassis.getMinRadius();
     _monitor = new Monitor();
     _monitor.start();
 
@@ -181,8 +177,13 @@ public class NewDifferentialPilot implements ArcRotateMoveController {
   // Getters and setters of dynamics
 
   // TODO: setting acceleration should be part of an interface. Note the double
-  // parameter (aka setTravelSpeed) as opposed to the current differentailPilot.
+  // parameter (aka setTravelSpeed) as opposed to the current differentialPilot.
+  
+  // TODO: decide if we want to support mid moves acceleration changes (This is only possible when acceleration increases)
   public void setAcceleration(double acceleration) {
+//    if (_moveActive && acceleration > this.acceleration) {
+//      chassis.setAcceleration(acceleration);
+//    }
     this.acceleration = acceleration;
   }
 
@@ -191,11 +192,15 @@ public class NewDifferentialPilot implements ArcRotateMoveController {
     return acceleration;
   }
 
-  /* Sets the travel speed of the robot. If the robot is moving the new travel speed will not be applied to the current move, it will be used for subsequent moves
-   * @see lejos.robotics.navigation.MoveController#setTravelSpeed(double)
-   */
+  // TODO: update move to reflect new speed
+  @Override
   public void setTravelSpeed(double speed) {
     this.travelSpeed = speed;
+    if (_moveActive) {
+      if (move.getMoveType() != Move.MoveType.TRAVEL) {
+        chassis.setSpeed(travelSpeed);
+      }
+    }
   }
 
   @Override
@@ -208,9 +213,15 @@ public class NewDifferentialPilot implements ArcRotateMoveController {
     return chassis.getMaxSpeed();
   }
 
+  // TODO: update move to reflect new speed
   @Override
   public void setRotateSpeed(double speed) {
     this.rotateSpeed = speed;
+    if (_moveActive) {
+      if (move.getMoveType() == Move.MoveType.TRAVEL) {
+        chassis.setSpeed(rotateSpeed);
+      }
+    }
   }
 
   @Override
@@ -309,10 +320,15 @@ public class NewDifferentialPilot implements ArcRotateMoveController {
     rotate(Double.NEGATIVE_INFINITY, true);
   }
 
+  
   @Override
   public void arc(double radius, double angle, boolean immediateReturn) {
     if (chassis.isMoving()) {
       stop();
+    }
+    if (Math.abs(radius) > minRadius) {
+      // TODO: verify logic to satisfy the minRadius criterium. Do we increase a too small radius to minRadius or do we raise an exception?
+      radius = Math.signum(radius) * minRadius;
     }
     arcNoStop(radius, angle, immediateReturn);
   }

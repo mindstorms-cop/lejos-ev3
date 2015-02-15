@@ -73,7 +73,26 @@ public interface Chassis {
    * @return Speed in robot units
    */
   public double getSpeed();
+  
+  /**
+   * Sets the current speed of the robot. If a robot is not moving this method
+   * has no effect.
+   * 
+   * @param speed
+   *          Speed in robot units
+   */
+  public void setSpeed(double speed);
 
+  /**
+   * Sets the current acceleration of the robot. If a robot is not moving this method
+   * has no effect.
+   * 
+   * @param acceleration
+   *          Speed in robot units
+   */
+  public void setAcceleration(double acceleration);
+  
+  
   /**
    * Returns a Move object containing the displacement of the robot since this
    * method was last called
@@ -113,7 +132,12 @@ public interface Chassis {
    * @return
    */
   public boolean isStalled();
-
+  
+  /** Returns the smallest possible radius this chassis is able turn
+   * @return radius in robot units
+   */
+  public double getMinRadius() ;
+  
 }
 
 

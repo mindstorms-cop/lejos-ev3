@@ -41,8 +41,8 @@ public class Wheel {
     lastTacho = motor.getTachoCount();
   }
 
-  protected int toTacho(double loc) {
-    return (int) (360 * loc / (diameter * Math.PI * gear));
+  protected double toTacho(double loc) {
+    return 360 * loc / (diameter * Math.PI * gear);
   }
 
   protected double fromTacho(double tacho) {
@@ -65,14 +65,14 @@ public class Wheel {
    *          Acceleration in robot units / second^2
    */
   public void travel(double distance, double speed, double acceleration) {
-    motor.setAcceleration(toTacho(acceleration));
-    motor.setSpeed(toTacho(speed));
+    motor.setAcceleration((int) toTacho(acceleration));
+    motor.setSpeed((int) toTacho(speed));
     if (distance == Double.POSITIVE_INFINITY)
       motor.forward();
     else if (distance == Double.NEGATIVE_INFINITY)
       motor.backward();
     else
-      motor.rotate(toTacho(distance), true);
+      motor.rotate((int) toTacho(distance), true);
   }
 
   /**
@@ -135,7 +135,7 @@ public class Wheel {
    *          Speed in robot units
    */
   public void setSpeed(double speed) {
-    motor.setSpeed(toTacho(speed));
+    motor.setSpeed((int) toTacho(speed));
   }
 
 }

@@ -74,19 +74,45 @@ public class DifferentialChassis implements Chassis {
   @Override
   public double getMaxSpeed() {
     double maxSpeed = Double.POSITIVE_INFINITY;
+    master.startSynchronization();
     for (Wheel wheel : wheels) {
       maxSpeed = Math.min(wheel.getMaxSpeed(), maxSpeed);
     }
+    master.endSynchronization();
     return maxSpeed;
   }
 
   @Override
   public double getSpeed() {
     double speed = 0;
+    master.startSynchronization();
     for (Wheel wheel : wheels) {
       speed = Math.max(speed, wheel.getSpeed());
     }
+    master.endSynchronization();
     return speed;
+  }
+  
+  @Override
+  public void setSpeed(double speed) {
+    double current = getSpeed();
+    master.startSynchronization();
+      for (Wheel wheel : wheels) {
+        double ratio =  wheel.getSpeed() / current ;
+        wheel.setSpeed(speed * ratio);
+      }
+      master.endSynchronization();
+  }
+  
+  @Override
+  public void setAcceleration(double acceleration) {
+    double current = getSpeed();
+    master.startSynchronization();
+      for (Wheel wheel : wheels) {
+        double ratio =  wheel.getSpeed() / current ;
+        wheel.setSpeed(acceleration * ratio);
+      }
+      master.endSynchronization();
   }
 
   @Override
@@ -166,6 +192,11 @@ public class DifferentialChassis implements Chassis {
         return true;
     }
     return false;
+  }
+
+  @Override
+  public double getMinRadius() {
+    return 0;
   }
 
 }
