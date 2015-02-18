@@ -1475,6 +1475,13 @@ public class GraphicStartup implements Menu {
 			                			reply.doubleReply = pilot.getTravelSpeed();
 			                			os.writeObject(reply);
 			                			break;
+                          case PILOT_SET_ACCELERATION:
+                            pilot.setAcceleration(request.doubleValue);
+                            break;
+                          case PILOT_GET_ACCELERATION:
+                            reply.doubleReply = pilot.getAcceleration();
+                            os.writeObject(reply);
+                            break;
 			                		case PILOT_GET_MAX_TRAVEL_SPEED:
 			                			reply.doubleReply = pilot.getTravelSpeed();
 			                			os.writeObject(reply);
