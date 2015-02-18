@@ -75,6 +75,7 @@ public class OmniPilot implements ArcRotateMoveController, RegulatedMotorListene
 	 * MoveListeners to notify when a move is started or stopped.
 	 */
 	private ArrayList<MoveListener> listeners= new ArrayList<MoveListener>();
+  private int acceleration;
 	
 	/**
 	 * Instantiates a new omnidirectional pilot.
@@ -246,16 +247,21 @@ private void initMatrices(boolean centralWheelForward, boolean motorReverse) {
 		motor3.setSpeed(motor3Speed);
 	}
 	
-	/**
-	 * Sets the acceleration.
-	 *
-	 * @param accel the new acceleration
-	 */
-	public void setAcceleration(int accel) {
-		this.motor1.setAcceleration(accel);
-		this.motor2.setAcceleration(accel);
-		this.motor3.setAcceleration(accel);
+	@Override
+	public void setAcceleration(double accel) {
+	  // TODO: take relative wheel speeds into account
+	  this.acceleration = (int) accel;
+		this.motor1.setAcceleration(acceleration);
+		this.motor2.setAcceleration(acceleration);
+		this.motor3.setAcceleration(acceleration);
 	}
+
+  @Override
+  public double getAcceleration() {
+    return acceleration;
+  }
+
+	
 	
 	/**
 	 * Start motors.
@@ -807,4 +813,14 @@ private void initMatrices(boolean centralWheelForward, boolean motorReverse) {
 			previousAngle = newAngle;
 		}
 	}
+
+  @Override
+  public void rotateRight() {
+    rotate(Double.NEGATIVE_INFINITY, true);
+      }
+
+  @Override
+  public void rotateLeft() {
+    rotate(Double.POSITIVE_INFINITY, true);
+  }
 }

@@ -63,7 +63,7 @@ import lejos.robotics.navigation.MoveListener;
  * than zero (perhaps 15 cm).
  * 
  **/
-public class NewDifferentialPilot implements ArcRotateMoveController {
+public class NewDifferentialPilot implements LineFollowingMoveController {
   private double                  minRadius   = 0;      
   final private Chassis           chassis;
   private ArrayList<MoveListener> _listeners  = new ArrayList<MoveListener>();
@@ -192,11 +192,11 @@ public class NewDifferentialPilot implements ArcRotateMoveController {
     return acceleration;
   }
 
-  // TODO: update move to reflect new speed
   @Override
   public void setTravelSpeed(double speed) {
     this.travelSpeed = speed;
     if (_moveActive) {
+      move.setDynamics((float)travelSpeed, (float)rotateSpeed);
       if (move.getMoveType() != Move.MoveType.TRAVEL) {
         chassis.setSpeed(travelSpeed);
       }
@@ -213,11 +213,11 @@ public class NewDifferentialPilot implements ArcRotateMoveController {
     return chassis.getMaxSpeed();
   }
 
-  // TODO: update move to reflect new speed
   @Override
   public void setRotateSpeed(double speed) {
     this.rotateSpeed = speed;
     if (_moveActive) {
+      move.setDynamics((float)travelSpeed, (float)rotateSpeed);
       if (move.getMoveType() == Move.MoveType.TRAVEL) {
         chassis.setSpeed(rotateSpeed);
       }
@@ -327,8 +327,7 @@ public class NewDifferentialPilot implements ArcRotateMoveController {
       stop();
     }
     if (Math.abs(radius) > minRadius) {
-      // TODO: verify logic to satisfy the minRadius criterium. Do we increase a too small radius to minRadius or do we raise an exception?
-      radius = Math.signum(radius) * minRadius;
+      throw new RuntimeException("Turn radius too small.");
     }
     arcNoStop(radius, angle, immediateReturn);
   }
@@ -357,21 +356,20 @@ public class NewDifferentialPilot implements ArcRotateMoveController {
 
   // Moves of the steer family, steer moves are a branch of the arc moves.
   // Steer moves can be started before an active move is stopped;
-  // TODO: steer methods are not part of an interface
 
   public void steer(double steerRatio) {
     steer(steerRatio, Double.POSITIVE_INFINITY, true);
   }
 
-  public void steerBack(double steerRatio) {
+  public void steerBackward(double steerRatio) {
     steer(steerRatio, Double.NEGATIVE_INFINITY, true);
   }
 
-  public void steer(double steerRatio, double angle) {
+  private void steer(double steerRatio, double angle) {
     steer(steerRatio, angle, false);
   }
 
-  public void steer(double steerRatio, double angle, boolean immediateReturn) {
+  private void steer(double steerRatio, double angle, boolean immediateReturn) {
     double ratio = Math.abs((100 - Math.abs(steerRatio)) / 100);
     double radius;
     if (ratio == 1) {
@@ -469,7 +467,12 @@ public class NewDifferentialPilot implements ArcRotateMoveController {
 
   @Override
   public Move getMovement() {
+    if (_moveActive) {
     return chassis.getDisplacement(move, true);
+    }
+    else {
+      return new Move(Move.MoveType.STOP, 0, 0, false);
+    }
   }
 
   @Override
@@ -509,4 +512,6 @@ public class NewDifferentialPilot implements ArcRotateMoveController {
       }
     }
   }
+
+
 }

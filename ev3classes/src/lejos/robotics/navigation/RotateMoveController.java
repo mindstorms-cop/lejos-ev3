@@ -33,4 +33,9 @@ public interface RotateMoveController extends MoveController {
    * @return max rotation speed
    */
   public double getRotateMaxSpeed();
+  
+public void rotateRight();
+  
+public void rotateLeft();
+
 }

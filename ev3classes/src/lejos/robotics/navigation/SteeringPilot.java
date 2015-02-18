@@ -343,4 +343,16 @@ public class SteeringPilot implements ArcMoveController, RegulatedMotorListener 
 		}
 		
 	}
+
+  @Override
+  public void setAcceleration(double acceleration) {
+    // TODO: Added for interface, not in effect
+    
+  }
+
+  @Override
+  public double getAcceleration() {
+    // TODO: Added for interface, not in effect
+    return 0;
+  }
 }
