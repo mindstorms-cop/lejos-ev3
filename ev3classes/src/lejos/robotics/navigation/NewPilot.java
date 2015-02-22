@@ -1,21 +1,20 @@
 package lejos.robotics.navigation;
 import java.util.ArrayList;
 
-import lejos.robotics.Chassis;
-import lejos.robotics.Wheel;
-import lejos.robotics.DifferentialChassis;
 import lejos.robotics.RegulatedMotor;
-import lejos.robotics.navigation.ArcRotateMoveController;
+import lejos.robotics.chassis.Chassis;
+import lejos.robotics.chassis.DifferentialChassis;
+import lejos.robotics.chassis.Wheel;
 import lejos.robotics.navigation.Move;
 import lejos.robotics.navigation.MoveListener;
 
 /**
- * The DifferentialPilot class is a software abstraction of the Pilot mechanism
+ * The Pilot class is a software abstraction of the Pilot mechanism
  * of a robot. It contains methods to control robot movements: travel forward or
  * backward in a straight line or a circular path or rotate to a new direction.<br>
- * This class will only work with two or more independently controlled motors to
- * steer differentially, so it can rotate within its own footprint (i.e. turn on
- * one spot). An object of this class assumes that it has exclusive control of
+ * This class will work with any chassis. Some types of chassis might not support all the 
+ * movements this pilot support.  
+ * An object of this class assumes that it has exclusive control of
  * its motors. If any other object makes calls to its motors, the results are
  * unpredictable. <br>
  * This class can be used with robots that have reversed motor design: the robot
@@ -63,7 +62,7 @@ import lejos.robotics.navigation.MoveListener;
  * than zero (perhaps 15 cm).
  * 
  **/
-public class NewDifferentialPilot implements LineFollowingMoveController {
+public class NewPilot implements LineFollowingMoveController {
   private double                  minRadius   = 0;      
   final private Chassis           chassis;
   private ArrayList<MoveListener> _listeners  = new ArrayList<MoveListener>();
@@ -75,7 +74,7 @@ public class NewDifferentialPilot implements LineFollowingMoveController {
   private Move                    move = null;
 
   /**
-   * Allocates a DifferentialPilot object, and sets the physical parameters of
+   * Allocates a Pilot object, and sets the physical parameters of
    * the robot.<br>
    * Assumes Motor.forward() causes the robot to move forward.
    * 
@@ -90,13 +89,13 @@ public class NewDifferentialPilot implements LineFollowingMoveController {
    * @param rightMotor
    *          The right Motor (e.g., Motor.A).
    */
-  public NewDifferentialPilot(final double wheelDiameter, final double trackWidth, final RegulatedMotor leftMotor,
+  public NewPilot(final double wheelDiameter, final double trackWidth, final RegulatedMotor leftMotor,
       final RegulatedMotor rightMotor) {
     this(wheelDiameter, trackWidth, leftMotor, rightMotor, false);
   }
 
   /**
-   * Allocates a DifferentialPilot object, and sets the physical parameters of
+   * Allocates a Pilot object, and sets the physical parameters of
    * the robot.<br>
    * 
    * @param wheelDiameter
@@ -113,13 +112,13 @@ public class NewDifferentialPilot implements LineFollowingMoveController {
    *          If true, the NXT robot moves forward when the motors are running
    *          backward.
    */
-  public NewDifferentialPilot(final double wheelDiameter, final double trackWidth, final RegulatedMotor leftMotor,
+  public NewPilot(final double wheelDiameter, final double trackWidth, final RegulatedMotor leftMotor,
       final RegulatedMotor rightMotor, final boolean reverse) {
     this(wheelDiameter, wheelDiameter, trackWidth, leftMotor, rightMotor, reverse);
   }
 
   /**
-   * Allocates a DifferentialPilot object, and sets the physical parameters of
+   * Allocates a Pilot object, and sets the physical parameters of
    * the robot.<br>
    * 
    * @param leftWheelDiameter
@@ -150,20 +149,19 @@ public class NewDifferentialPilot implements LineFollowingMoveController {
    *          If true, the NXT robot moves forward when the motors are running
    *          backward.
    */
-  public NewDifferentialPilot(final double leftWheelDiameter, final double rightWheelDiameter, final double trackWidth,
+  public NewPilot(final double leftWheelDiameter, final double rightWheelDiameter, final double trackWidth,
       final RegulatedMotor leftMotor, final RegulatedMotor rightMotor, final boolean reverse) {
-    this(new DifferentialChassis(new Wheel[] { new Wheel(leftMotor, trackWidth / 2, leftWheelDiameter, reverse),
-        new Wheel(rightMotor, trackWidth / -2, rightWheelDiameter, reverse) }));
+    this(new DifferentialChassis(new Wheel[] { new Wheel(leftMotor, trackWidth / 2, leftWheelDiameter, 1,reverse),
+        new Wheel(rightMotor, trackWidth / -2, rightWheelDiameter, 1, reverse) }));
   }
 
   /**
-   * Allocates a DifferentialPilot object, and sets the physical parameters of
-   * the robot.<br>
+   * Allocates a Pilot object.<br>
    * 
    * @param chassis
    *          A Chassis object describing the physical parameters of the robot.
    */
-  public NewDifferentialPilot(Chassis chassis) {
+  public NewPilot(Chassis chassis) {
     this.chassis = chassis;
     setTravelSpeed(chassis.getMaxSpeed() * 0.8);
     setAcceleration(getTravelSpeed() * 4);
@@ -176,18 +174,10 @@ public class NewDifferentialPilot implements LineFollowingMoveController {
 
   // Getters and setters of dynamics
 
-  // TODO: setting acceleration should be part of an interface. Note the double
-  // parameter (aka setTravelSpeed) as opposed to the current differentialPilot.
-  
-  // TODO: decide if we want to support mid moves acceleration changes (This is only possible when acceleration increases)
   public void setAcceleration(double acceleration) {
-//    if (_moveActive && acceleration > this.acceleration) {
-//      chassis.setAcceleration(acceleration);
-//    }
     this.acceleration = acceleration;
   }
 
-  // TODO: getting acceleration should be part of an interface.
   public double getAcceleration() {
     return acceleration;
   }
@@ -310,12 +300,10 @@ public class NewDifferentialPilot implements LineFollowingMoveController {
     arc(0, angle, immediateReturn);
   }
 
-  // TODO: Not part of an interface
   public void rotateLeft() {
     rotate(Double.POSITIVE_INFINITY, true);
   }
 
-  // TODO: Not part of an interface
   public void rotateRight() {
     rotate(Double.NEGATIVE_INFINITY, true);
   }
@@ -323,13 +311,15 @@ public class NewDifferentialPilot implements LineFollowingMoveController {
   
   @Override
   public void arc(double radius, double angle, boolean immediateReturn) {
+    preArc(radius);
+    postArc(radius, angle, immediateReturn);
+  }
+  
+  
+  private void preArc(double radius) {
     if (chassis.isMoving()) {
       stop();
     }
-    if (Math.abs(radius) > minRadius) {
-      throw new RuntimeException("Turn radius too small.");
-    }
-    arcNoStop(radius, angle, immediateReturn);
   }
 
   /**
@@ -341,7 +331,10 @@ public class NewDifferentialPilot implements LineFollowingMoveController {
    * @param angle
    * @param immediateReturn
    */
-  private void arcNoStop(double radius, double angle, boolean immediateReturn) {
+  private void postArc(double radius, double angle, boolean immediateReturn) {
+    if (Math.abs(radius) < minRadius) {
+      throw new RuntimeException("Turn radius too small.");
+    }
     if (radius == 0) {
       chassis.arc(radius, angle, rotateSpeed, acceleration);
       move = new Move(Move.MoveType.ROTATE, 0, (float) angle, (float) travelSpeed, (float) rotateSpeed, chassis.isMoving());
@@ -358,18 +351,14 @@ public class NewDifferentialPilot implements LineFollowingMoveController {
   // Steer moves can be started before an active move is stopped;
 
   public void steer(double steerRatio) {
-    steer(steerRatio, Double.POSITIVE_INFINITY, true);
+    steer(steerRatio, Double.POSITIVE_INFINITY);
   }
 
   public void steerBackward(double steerRatio) {
-    steer(steerRatio, Double.NEGATIVE_INFINITY, true);
+    steer(steerRatio, Double.NEGATIVE_INFINITY);
   }
 
   private void steer(double steerRatio, double angle) {
-    steer(steerRatio, angle, false);
-  }
-
-  private void steer(double steerRatio, double angle, boolean immediateReturn) {
     double ratio = Math.abs((100 - Math.abs(steerRatio)) / 100);
     double radius;
     if (ratio == 1) {
@@ -388,7 +377,7 @@ public class NewDifferentialPilot implements LineFollowingMoveController {
       // move
       movementStop();
     }
-    arcNoStop(radius, angle, immediateReturn);
+    postArc(radius, angle, true);
   }
 
   // Stops. Stops must be blocking!
@@ -402,15 +391,6 @@ public class NewDifferentialPilot implements LineFollowingMoveController {
       _monitor.notifyAll();
     }
     while (_moveActive) Thread.yield();
-  }
-
-  // TODO: not part of the interface
-  public void quickStop() {
-    chassis.quickStop();
-    chassis.waitComplete();
-    synchronized (_monitor) {
-      _monitor.notifyAll();
-    }
   }
 
   // State
@@ -460,9 +440,12 @@ public class NewDifferentialPilot implements LineFollowingMoveController {
    */
   private void movementStop() {
     _moveActive = false;
-    chassis.getDisplacement(move);
-    for (MoveListener ml : _listeners)
-      ml.moveStopped(move, this);
+    // Do not to call getDisplacement when there are no listeners. The benefit is that it can then be called from another part of the program
+    if ( ! _listeners.isEmpty()) {
+      chassis.getDisplacement(move);
+      for (MoveListener ml : _listeners)
+        ml.moveStopped(move, this);
+    }
   }
 
   @Override
@@ -498,7 +481,7 @@ public class NewDifferentialPilot implements LineFollowingMoveController {
       while (more) {
         if (_moveActive) {
           if (chassis.isStalled())
-            NewDifferentialPilot.this.stop();
+            NewPilot.this.stop();
           if (!chassis.isMoving()) {
             movementStop();
           }

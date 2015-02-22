@@ -61,7 +61,7 @@ import java.util.ArrayList;
  * than zero (perhaps 15 cm).
  * 
  **/
-public class DifferentialPilot implements ArcRotateMoveController {
+public class DifferentialPilot implements  LineFollowingMoveController {
 	/**
 	 * Allocates a DifferentialPilot object, and sets the physical parameters of
 	 * the NXT robot.<br>

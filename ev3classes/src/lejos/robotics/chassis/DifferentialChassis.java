@@ -1,4 +1,4 @@
-package lejos.robotics;
+package lejos.robotics.chassis;
 import lejos.robotics.RegulatedMotor;
 import lejos.robotics.navigation.Move;
 
@@ -13,8 +13,8 @@ import lejos.robotics.navigation.Move;
  */
 public class DifferentialChassis implements Chassis {
 
-  final private Wheel[]        wheels; // Wheel order should be from left to right
-  final private RegulatedMotor master;
+  final protected Wheel[]        wheels; // Wheel order should be from left to right
+  final protected RegulatedMotor master;
 
   /**
    * @param wheels
@@ -117,6 +117,7 @@ public class DifferentialChassis implements Chassis {
 
   @Override
   public Move getDisplacement(Move move, boolean noReset) {
+    // TODO: This method calculates the distance wrong if the two outer wheels do not have the same offset
     master.startSynchronization();
     double left = wheels[0].getDisplacement(noReset);
     double right = wheels[wheels.length - 1].getDisplacement(noReset);

@@ -1,4 +1,4 @@
-package lejos.robotics;
+package lejos.robotics.chassis;
 import lejos.robotics.navigation.Move;
 
 public interface Chassis {
