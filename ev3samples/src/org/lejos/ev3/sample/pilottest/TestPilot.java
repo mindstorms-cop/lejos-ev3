@@ -1,4 +1,6 @@
 package org.lejos.ev3.sample.pilottest;
+import lejos.hardware.Button;
+import lejos.hardware.Sound;
 import lejos.hardware.motor.Motor;
 import lejos.robotics.chassis.AckermannChassis;
 import lejos.robotics.chassis.Chassis;
@@ -19,31 +21,43 @@ import lejos.robotics.navigation.NewPilot;
  *
  */
 public class TestPilot {
+  static final int OLD_DIFFERENTIAL = 0;
+  static final int NEW_DIFFERENTIAL = 1;
+  static final int NEW_STEERING = 2;
+  
   LineFollowingMoveController  pilot;
   OdometryPoseProvider poseProvider;
-  double diameter = 400;  
+  double diameter = 300;  
   double angle = 90;
-  double distance = 500;
+  double distance = 300;
   long time = 1000;
 
   public static void main(String[] args) {
-    TestPilot foo = new TestPilot();
-    if (foo.pilot.getMinRadius() > 0)  foo.testSteer();
+    TestPilot foo = new TestPilot(OLD_DIFFERENTIAL);
+    foo.pilot.setTravelSpeed(100);
+    foo.pilot.setAcceleration((int) (foo.pilot.getTravelSpeed() * 1));
+    Sound.beep();
+    Button.waitForAnyPress();
+    if (foo.pilot.getMinRadius() != 0) 
+      foo.testSteer();
+    foo.travels();
     foo.circle();
-//    foo.travels();
-//    foo.arcs();
-//    foo.arcDirections();
-//    foo.travelArcs();
-//    if (foo.pilot.getMinRadius() == 0) foo.rotates();
-//    foo.dynamics();
-//    foo.stops();
-//    if (foo.pilot.getMinRadius() == 0) foo.localization();
-//    foo.symmetry();
-//    foo.steers();
+    foo.arcs();
+    foo.arcDirections();
+    foo.travelArcs();
+    if (foo.pilot.getMinRadius() == 0) 
+      foo.rotates();
+    foo.dynamics();
+    foo.stop();
+    if (foo.pilot.getMinRadius() == 0) 
+      foo.localization();
+    foo.steers();
+    foo.symmetry();
   }
   
   private void circle() {
     pilot.arc(diameter, 360);
+    pilot.travel(0);
   }
 
   private void symmetry() {
@@ -59,8 +73,6 @@ public class TestPilot {
 
   private void localization() {
     // Set to zero
-    pilot.setTravelSpeed(pilot.getMaxTravelSpeed() * .5);
-    pilot.setAcceleration((int) (pilot.getTravelSpeed() * 1));
     poseProvider.setPose(new Pose());
     getPose();
     pilot.travel(distance);
@@ -75,20 +87,15 @@ public class TestPilot {
     getPose();
     pilot.rotate(90);
     getPose(); 
-    pilot.setTravelSpeed(pilot.getMaxTravelSpeed() * .8);
-    pilot.setAcceleration((int) (pilot.getTravelSpeed() * 4));
-
   }
 
-  private void stops() {
-    pilot.setAcceleration((int) (pilot.getTravelSpeed() * 1));
+  private void stop() {
     pilot.forward();
     Delay.msDelay(time);
     pilot.stop();
     pilot.backward();
     Delay.msDelay(time);
     pilot.stop();
-    pilot.setAcceleration((int) (pilot.getTravelSpeed() * 4));
   }
 
   private void dynamics() {
@@ -109,7 +116,8 @@ public class TestPilot {
     pilot.rotate(-360);
     pilot.setRotateSpeed(pilot.getRotateMaxSpeed() *.8);
   }
-
+  pilot.setTravelSpeed(100);
+  pilot.setAcceleration((int) (pilot.getTravelSpeed() * 1));
   }
 
   private void steers() {
@@ -133,7 +141,6 @@ public class TestPilot {
 
   private void arcs() {
     // 0.9.0-beta doesn't calculate acceleration or speed properly
-    pilot.setAcceleration((int) (pilot.getTravelSpeed() * 1));
    
     pilot.arc(diameter, angle);
     pilot.arc(diameter, -angle);   // Sometimes behaves strange with 0.9.0-beta, has radius=0;
@@ -186,35 +193,40 @@ public class TestPilot {
     Delay.msDelay(time);
     pilot.backward();
     Delay.msDelay(time);
-    pilot.travel(distance);
-    pilot.travel(-distance);
     pilot.travel(distance, true);
     while (pilot.isMoving());
     pilot.travel(-distance, true);
     while (pilot.isMoving());
+    pilot.travel(distance);
+    pilot.travel(-distance);
   }
 
  
-  private TestPilot() {
+  private TestPilot(int type) {
     Chassis chassis;
     Wheel[] wheels;
     Steer steer;
-//    wheels = new Wheel[]{new Wheel.Modeler(Motor.D, 43.2).offset(66.5).build(), new Wheel.Modeler(Motor.A, 43.2).offset(-66.5).build()};
-//    chassis = new DifferentialChassis(wheels ); 
     
-    wheels = new Wheel[]{ new Wheel.Modeler(Motor.B, 43.2).offset(71).gearing(-1).build(), 
-                          new Wheel.Modeler(Motor.C, 43.2).offset(-71).gearing(-1).build()};
-    steer = new Steer.Modeler(Motor.A, 287).maxAngle(30).gearing(12.0/20.0).build();
-    chassis = new AckermannChassis(wheels, steer);
+    switch (type) {
+      case OLD_DIFFERENTIAL: {
+        pilot = new DifferentialPilot(43.2, 142, Motor.D, Motor.A);
+        return;}
+      case NEW_DIFFERENTIAL: {
+        wheels = new Wheel[]{new Wheel.Modeler(Motor.D, 43.2).offset(72).build(), new Wheel.Modeler(Motor.A, 43.2).offset(-72).build()};
+        chassis = new DifferentialChassis(wheels ); 
+        pilot = new NewPilot(chassis);
+      }
+      case NEW_STEERING: {
+        wheels = new Wheel[]{ new Wheel.Modeler(Motor.D, 81.6).offset(80).gearing(1).build(), 
+            new Wheel.Modeler(Motor.A, 81.6).offset(-80).gearing(1).build()};
+        steer = new Steer.Modeler(Motor.B, -132).maxAngle(30).gearing(.93).build();
+        chassis = new AckermannChassis(wheels, steer);
+        pilot = new NewPilot(chassis);
+      }
+    }
     
-    pilot = new NewPilot(chassis);
-    diameter = Math.max(diameter, chassis.getMinRadius());
-    System.out.println(diameter);    
-
-    
+    diameter = Math.max(diameter, pilot.getMinRadius());
     poseProvider = new OdometryPoseProvider(pilot);
-//    pilot = new DifferentialPilot(43.2, 142, Motor.D, Motor.A);
-//    poseProvider = new OdometryPoseProvider(pilot);
   }
   
   

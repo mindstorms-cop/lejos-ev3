@@ -189,7 +189,7 @@ public class Wheel {
   protected double correct(double v, double radius) {
     if (radius == 0)
       return v;
-    return v * Math.abs(radius - offset) / radius;
+    return v * Math.abs((radius - offset) / radius);
   }
 
   /**
