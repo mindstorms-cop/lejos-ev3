@@ -901,7 +901,7 @@ public class GraphicStartup implements Menu {
                 	System.out.println("Waiting for a remote menu connection");
             		conn = ss.accept();
             		//conn.setSoTimeout(2000);
-            		
+            		conn.setTcpNoDelay(true);
             		ObjectOutputStream os = new ObjectOutputStream(conn.getOutputStream());
             		ObjectInputStream is = new ObjectInputStream(conn.getInputStream());
             		
@@ -1045,9 +1045,11 @@ public class GraphicStartup implements Menu {
 			                			break;
 			                		case LCD_GET_WIDTH:
 			                			reply.reply = LCD.SCREEN_WIDTH;
+                                        os.writeObject(reply);
 			                			break;
 			                		case LCD_GET_HEIGHT:
 			                			reply.reply = LCD.SCREEN_HEIGHT;
+                                        os.writeObject(reply);
 			                			break;
 			                		case LCD_GET_HW_DISPLAY:
 		                				break;
