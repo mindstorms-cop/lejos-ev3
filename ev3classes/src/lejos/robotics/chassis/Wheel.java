@@ -39,7 +39,7 @@ public class Wheel {
     lastTacho = motor.getTachoCount();
   }
 
-  private Wheel(Modeler model) {
+  protected Wheel(Modeler model) {
     this.motor = model.motor;
     this.offset = model.offset;
     this.diameter = model.diameter;
@@ -187,7 +187,7 @@ public class Wheel {
    * @return
    */
   protected double correct(double v, double radius) {
-    if (radius == 0)
+    if (radius == 0 || radius == Double.POSITIVE_INFINITY || radius == Double.NEGATIVE_INFINITY)
       return v;
     return v * Math.abs((radius - offset) / radius);
   }

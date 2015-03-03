@@ -149,6 +149,7 @@ public class DifferentialChassis implements Chassis {
    * @return
    */
   private double speedCorrection(double radius) {
+    if (radius == Double.POSITIVE_INFINITY || radius == Double.NEGATIVE_INFINITY) return 1;
     double max = 1;
     for (Wheel wheel : wheels) {
       max = Math.max(max, wheel.correct(1, radius));
