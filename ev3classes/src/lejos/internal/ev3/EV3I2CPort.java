@@ -126,7 +126,7 @@ public class EV3I2CPort extends EV3IOPort implements I2CPort
         i2c.ioctl(IIC_IO, cmd);
         int result = (int) cmd[1];
         if (result == STATUS_FAIL)
-            throw new I2CException("I2C read error");
+            throw new I2CException("I2C I/O error");
         if (result == STATUS_OK)
         {
             //System.out.println("iic time " + (System.currentTimeMillis() - st));
