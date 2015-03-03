@@ -39,6 +39,7 @@ public class I2CSensor extends BaseSensor implements SensorConstants {
 	protected I2CPort port;
 	protected int address;
 	private byte[] ioBuf = new byte[32];
+	protected int retryCount = 3;
 
 	/**
 	 * Create the sensor using an already open sensor port. Do not configure the hardware
@@ -82,7 +83,27 @@ public class I2CSensor extends BaseSensor implements SensorConstants {
     {
         this(port, address, TYPE_LOWSPEED);
     }
-	
+
+    /**
+     * Set the number of times that a get/send data request should be retried.
+     * @param newCount number of times to try the request
+     */
+    public void setRetryCount(int newCount)
+    {
+        if (newCount <= 0)
+            throw new IllegalArgumentException("Invalid retry count");
+        retryCount = newCount;
+    }
+
+    /**
+     * Return the current get/send retry count value
+     * @return current retry count
+     */
+    public int getRetryCount()
+    {
+        return retryCount;
+    }
+    
 	/**
 	 * Executes an I2C read transaction and waits for the result.
 	 *
@@ -105,7 +126,19 @@ public class I2CSensor extends BaseSensor implements SensorConstants {
 	public synchronized void getData(int register, byte [] buf, int offset, int len) {
         // need to write the internal address.
         ioBuf[0] = (byte)register;
-		port.i2cTransaction(address, ioBuf, 0, 1, buf, offset, len);
+        I2CException error = null;
+        for(int i = 0; i < retryCount; i++)
+        {
+            try {
+                port.i2cTransaction(address, ioBuf, 0, 1, buf, offset, len);
+                return;
+            }
+            catch (I2CException e)
+            {
+                error = e;
+            }
+        }
+        throw error;
 	}
 	
 	/**
@@ -129,12 +162,24 @@ public class I2CSensor extends BaseSensor implements SensorConstants {
 	 */
 	public synchronized void sendData(int register, byte [] buf, int offset, int len) {
         if (len >= ioBuf.length)
-        	throw new IllegalArgumentException();
+        	throw new IllegalArgumentException("Invalid buffer length");
         ioBuf[0] = (byte)register;
 		// avoid NPE in case length==0 and data==null
-        if (len > 0)
+        if (buf != null)
         	System.arraycopy(buf, offset, ioBuf, 1, len);
-        port.i2cTransaction(address, ioBuf, 0, len+1, null, 0, 0);
+        I2CException error = null;
+        for(int i = 0; i < retryCount; i++)
+        {
+            try {
+                port.i2cTransaction(address, ioBuf, 0, len+1, null, 0, 0);
+                return;
+            }
+            catch (I2CException e)
+            {
+                error = e;
+            }
+        }
+        throw error;
 	}
 
 	/**
@@ -146,7 +191,7 @@ public class I2CSensor extends BaseSensor implements SensorConstants {
 	public synchronized void sendData(int register, byte value) {
         ioBuf[0] = (byte)register;
         ioBuf[1] = value;
-        port.i2cTransaction(address, ioBuf, 0, 2, null, 0, 0);
+        sendData(register, null, 0, 1);
 	}
 	
 	/**

@@ -17,6 +17,7 @@ public class DeviceIdentifier extends Device implements EV3SensorConstants
 {
     protected final static int ANALOG_ID_VAR = 50;
     protected final static long VALID_TIME = 2000;
+    protected final static long MIN_TIME = 100;
     protected long openTime;
     protected Port port;
     protected ConfigurationPort configPort;
@@ -57,6 +58,9 @@ public class DeviceIdentifier extends Device implements EV3SensorConstants
     {
         if (configPort == null)
             openConfigPort();
+        long minDelay = (openTime + MIN_TIME) - System.currentTimeMillis();
+        if (minDelay > 0)
+            Delay.msDelay(minDelay);
         // allow time for detection to work
         while (System.currentTimeMillis() < openTime + VALID_TIME)
         {
@@ -154,7 +158,7 @@ public class DeviceIdentifier extends Device implements EV3SensorConstants
         {
             if (i2c != null)
                 i2c.close();
-            configPort = port.open(ConfigurationPort.class);
+            openConfigPort();
         }
         if (product.length() == 0)
             product = "unknown";
