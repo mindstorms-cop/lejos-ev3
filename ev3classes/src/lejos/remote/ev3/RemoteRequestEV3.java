@@ -38,6 +38,7 @@ public class RemoteRequestEV3 implements EV3, Serializable {
 	
 	public RemoteRequestEV3(String host) throws IOException {
 		socket = new Socket(host,PORT);
+		socket.setTcpNoDelay(true);
 		is = new ObjectInputStream(socket.getInputStream());
 		os = new ObjectOutputStream(socket.getOutputStream());
 		createPorts();
@@ -168,6 +169,7 @@ public class RemoteRequestEV3 implements EV3, Serializable {
 	
 	public void disConnect() {
 		try {
+		    os.flush();
 			is.close();
 			os.close();
 			socket.close();
