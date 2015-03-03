@@ -1,4 +1,4 @@
-package lejos.robotics;
+package lejos.robotics.chassis;
 import lejos.robotics.RegulatedMotor;
 import lejos.robotics.navigation.Move;
 
@@ -13,8 +13,8 @@ import lejos.robotics.navigation.Move;
  */
 public class DifferentialChassis implements Chassis {
 
-  final private Wheel[]        wheels; // Wheel order should be from left to right
-  final private RegulatedMotor master;
+  final protected Wheel[]        wheels; // Wheel order should be from left to right
+  final protected RegulatedMotor master;
 
   /**
    * @param wheels
@@ -74,23 +74,50 @@ public class DifferentialChassis implements Chassis {
   @Override
   public double getMaxSpeed() {
     double maxSpeed = Double.POSITIVE_INFINITY;
+    master.startSynchronization();
     for (Wheel wheel : wheels) {
       maxSpeed = Math.min(wheel.getMaxSpeed(), maxSpeed);
     }
+    master.endSynchronization();
     return maxSpeed;
   }
 
   @Override
   public double getSpeed() {
     double speed = 0;
+    master.startSynchronization();
     for (Wheel wheel : wheels) {
       speed = Math.max(speed, wheel.getSpeed());
     }
+    master.endSynchronization();
     return speed;
+  }
+  
+  @Override
+  public void setSpeed(double speed) {
+    double current = getSpeed();
+    master.startSynchronization();
+      for (Wheel wheel : wheels) {
+        double ratio =  wheel.getSpeed() / current ;
+        wheel.setSpeed(speed * ratio);
+      }
+      master.endSynchronization();
+  }
+  
+  @Override
+  public void setAcceleration(double acceleration) {
+    double current = getSpeed();
+    master.startSynchronization();
+      for (Wheel wheel : wheels) {
+        double ratio =  wheel.getSpeed() / current ;
+        wheel.setSpeed(acceleration * ratio);
+      }
+      master.endSynchronization();
   }
 
   @Override
   public Move getDisplacement(Move move, boolean noReset) {
+    // TODO: This method calculates the distance wrong if the two outer wheels do not have the same offset
     master.startSynchronization();
     double left = wheels[0].getDisplacement(noReset);
     double right = wheels[wheels.length - 1].getDisplacement(noReset);
@@ -166,6 +193,11 @@ public class DifferentialChassis implements Chassis {
         return true;
     }
     return false;
+  }
+
+  @Override
+  public double getMinRadius() {
+    return 0;
   }
 
 }

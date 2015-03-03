@@ -61,7 +61,7 @@ import java.util.ArrayList;
  * than zero (perhaps 15 cm).
  * 
  **/
-public class DifferentialPilot implements ArcRotateMoveController {
+public class DifferentialPilot implements  LineFollowingMoveController {
 	/**
 	 * Allocates a DifferentialPilot object, and sets the physical parameters of
 	 * the NXT robot.<br>
@@ -220,16 +220,15 @@ public class DifferentialPilot implements ArcRotateMoveController {
 		return _robotTravelSpeed;
 	}
 
-	/**
-	 * Sets the normal acceleration of the robot in distance/second/second where
-	 * distance is in the units of wheel diameter. The default value is 4 times
-	 * the maximum travel speed.
-	 * 
-	 * @param acceleration
-	 */
-	public void setAcceleration(int acceleration) {
-		_acceleration = acceleration;
+	@Override
+	public void setAcceleration(double acceleration) {
+		_acceleration = (int)acceleration;
 		setMotorAccel(_acceleration);
+	}
+	
+  @Override
+	public double getAcceleration() {
+	  return _acceleration;
 	}
 
 	/**

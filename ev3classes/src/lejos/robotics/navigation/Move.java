@@ -109,6 +109,18 @@ public class Move implements Transmittable {
 	}
 	this.timeStamp = System.currentTimeMillis();
   }
+  
+  /**
+   * use this method to recycle an existing Move instead of creating a new one
+   * @param distance
+   * @param angle
+   * @param isMoving
+   */
+  public void setDynamics(float travelSpeed, float rotateSpeed)
+  {
+    this.travelSpeed = travelSpeed;
+    this.rotateSpeed = rotateSpeed;
+  }
 
 	/**
 	 * Helper method to calculate the MoveType based on distance, angle, radius parameters.
