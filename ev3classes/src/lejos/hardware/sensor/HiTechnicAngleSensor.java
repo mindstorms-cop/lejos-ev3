@@ -196,7 +196,7 @@ public class HiTechnicAngleSensor extends I2CSensor {
     @Override
     public void fetchSample(float[] sample, int offset) {
       getData(REG_SPEED, buf, 2);
-      sample[offset] = -EndianTools.decodeShortBE(buf, 0) / 60;
+      sample[offset] = -EndianTools.decodeShortBE(buf, 0) / 60f;
     }
 
     @Override
