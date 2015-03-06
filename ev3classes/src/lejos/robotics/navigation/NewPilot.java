@@ -359,18 +359,16 @@ public class NewPilot implements LineFollowingMoveController {
   }
 
   private void steer(double steerRatio, double angle) {
-    double ratio = Math.abs((100 - Math.abs(steerRatio)) / 100);
+    double ratio = Math.abs(steerRatio / 100);
     double radius;
-    if (ratio == 1) {
+    if (ratio == 0) {
       radius=Double.POSITIVE_INFINITY;
     } 
     else 
     {
-      radius = chassis.getWidth() / (1-ratio );
-      if (steerRatio > 0) {
-        radius = -radius;
-        angle = - angle;
-      }
+      radius = ((1-ratio)/ratio + 0.5) * chassis.getWidth() ;
+      radius *= Math.signum(steerRatio);
+      angle *= Math.signum(steerRatio);
     }
     if (_moveActive) {
       // Instruct the listeners the current move will end by starting a new
