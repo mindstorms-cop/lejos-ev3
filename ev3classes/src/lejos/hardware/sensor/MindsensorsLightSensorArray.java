@@ -57,6 +57,10 @@ public class MindsensorsLightSensorArray extends I2CSensor  {
 	private final static byte COMMAND = 0x41;
 	private final static byte DATA = 0x42;
 	private final static int FACTORY_DEFAULT = 0x14;
+	
+	//TODO in addition to the calibrates values, the driver should also provide
+	// access to the RAW values at 0x6A to 0x79 (2  byte per sensor) so that
+	// calibration can be performed with the leJOS filter framework.
 
     /**
      * Constructor
@@ -154,7 +158,7 @@ public class MindsensorsLightSensorArray extends I2CSensor  {
 		getData(DATA,buf,8);
 		
 		for(int i=0;i<8;i++) {
-			sample[offset+i] = buf[i]/100;
+			sample[offset+i] = buf[i]/100f;
 		}	
 	}
 
