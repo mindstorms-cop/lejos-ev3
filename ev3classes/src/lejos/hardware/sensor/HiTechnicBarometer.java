@@ -62,7 +62,7 @@ public class HiTechnicBarometer extends I2CSensor {
   private static final int BAROMETRIC_TEMPERATURE          = 0x42;
   private static final int BAROMETRIC_PRESSURE             = 0x44;
   private static final int BAROMETRIC_PRESSURE_CALIBRATION = 0x46;
-  private final double     INHG_TO_HPA                     = 2992 / 1013.25;
+  private final float      INHG_TO_HPA                     = 2992 / 1013.25f;
   private final float      STANDARD_ATMOSPHERIC_PRESSURE   = 1013.25f;
 
   private final byte[]     buffer                          = new byte[2];
@@ -114,10 +114,13 @@ public class HiTechnicBarometer extends I2CSensor {
    */
   public void calibrate(float pascals) {
     int calibrationImperial = (int) ((pascals / 10) / INHG_TO_HPA);
-    buffer[0] = (byte) ((calibrationImperial & 0xff00) >> 8);
-    buffer[1] = (byte) (calibrationImperial & 0x00ff);
+    buffer[0] = (byte) (calibrationImperial >> 8);
+    buffer[1] = (byte) calibrationImperial;
     sendData(BAROMETRIC_PRESSURE_CALIBRATION, buffer, 2);
   }
+  
+  //FIXME can't be correct that both calibrate() and getCalibrationMetric() divide by INHG_TO_HPA
+  //FIXME getCalibrationMetric() says pascals, calibrate() says hectopascals
 
   /**
    * @return the present calibration value in pascals. Will be 0 in case no
@@ -125,8 +128,10 @@ public class HiTechnicBarometer extends I2CSensor {
    */
   public float getCalibrationMetric() {
     getData(BAROMETRIC_PRESSURE_CALIBRATION, buffer, 2);
+    //FIXME likely, buffer[1] must be masked with 0xFF
+    //or use EndianTools.decodeUShortBE
     int result = ((buffer[0] & 0xff) << 8) + buffer[1];
-    return (float) ((result / INHG_TO_HPA) * 10);
+    return (result / INHG_TO_HPA) * 10;
   }
 
   /**
@@ -156,7 +161,9 @@ public class HiTechnicBarometer extends I2CSensor {
     @Override
     public void fetchSample(float[] sample, int offset) {
       getData(BAROMETRIC_PRESSURE, buffer, 2);
-      sample[0] = (float) (((((buffer[0] & 0xff) << 8) + buffer[1]) / INHG_TO_HPA) * 10);
+      //FIXME likely, buffer[1] must be masked with 0xFF
+      //or use EndianTools.decodeUShortBE
+      sample[0] = ((((buffer[0] & 0xff) << 8) + buffer[1]) / INHG_TO_HPA) * 10;
     }
 
   }
@@ -168,7 +175,8 @@ public class HiTechnicBarometer extends I2CSensor {
    * <p>
    * <b>Size and content of the sample</b><br>
    * The sample contains one element containing the air temperature (in degree celcius).
-   */    public SensorMode getTemperatureMode() {
+   */    
+  public SensorMode getTemperatureMode() {
     return getMode(1);
   }
 
@@ -181,7 +189,9 @@ public class HiTechnicBarometer extends I2CSensor {
     @Override
     public void fetchSample(float[] sample, int offset) {
       getData(BAROMETRIC_TEMPERATURE, buffer, 2);
-      sample[offset] = (float) (((buffer[0] << 2) | (buffer[1] & 0xFF)) * 10 + 273.15);
+      //FIXME RobotC driver suite shifts buffer[0] by 8, not 2
+      //FIXME RobotC driver suite divides by 10 instead of multiplying by 10
+      sample[offset] = ((buffer[0] << 2) | (buffer[1] & 0xFF)) * 10 + 273.15f;
     }
 
     @Override
