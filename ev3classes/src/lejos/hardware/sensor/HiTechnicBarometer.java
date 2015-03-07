@@ -2,6 +2,7 @@ package lejos.hardware.sensor;
 
 import lejos.hardware.port.I2CPort;
 import lejos.hardware.port.Port;
+import lejos.utility.EndianTools;
 
 /**
  * <b>Hitechnic Barometric sensor</b><br>
@@ -59,11 +60,13 @@ import lejos.hardware.port.Port;
  */
 public class HiTechnicBarometer extends I2CSensor {
 
-  private static final int BAROMETRIC_TEMPERATURE          = 0x42;
-  private static final int BAROMETRIC_PRESSURE             = 0x44;
-  private static final int BAROMETRIC_PRESSURE_CALIBRATION = 0x46;
-  private final float      INHG_TO_HPA                     = 2992 / 1013.25f;
-  private final float      STANDARD_ATMOSPHERIC_PRESSURE   = 1013.25f;
+  private static final int REG_TEMPERATURE          = 0x42;
+  private static final int REG_PRESSURE             = 0x44;
+  private static final int REG_PRESSURE_CALIBRATION = 0x46;
+  // Wikipedia: 1 inHg at 0 °C = 3386.389 Pa
+  private static final float INHG_TO_HPA                   = 33.8638866667f;
+  // Wikipedia: Standard Atmosphere is 101325 Pa
+  private static final float STANDARD_ATMOSPHERIC_PRESSURE = 1013.25f;
 
   private final byte[]     buffer                          = new byte[2];
 
@@ -109,29 +112,25 @@ public class HiTechnicBarometer extends I2CSensor {
   /**
    * Re-calibrates the sensor.
    * 
-   * @param pascals
+   * @param hectopascals
    *          the calibration value in hectopascals
    */
-  public void calibrate(float pascals) {
-    int calibrationImperial = (int) ((pascals / 10) / INHG_TO_HPA);
-    buffer[0] = (byte) (calibrationImperial >> 8);
-    buffer[1] = (byte) calibrationImperial;
-    sendData(BAROMETRIC_PRESSURE_CALIBRATION, buffer, 2);
+  public void calibrate(float hectopascals) {
+	// compute calibration value in 1/1000 inHg
+    int calibrationImperial = (int)(0.5f + hectopascals * (1000f / INHG_TO_HPA));
+    EndianTools.encodeShortBE(calibrationImperial, buffer, 0);
+    sendData(REG_PRESSURE_CALIBRATION, buffer, 2);
   }
   
-  //FIXME can't be correct that both calibrate() and getCalibrationMetric() divide by INHG_TO_HPA
-  //FIXME getCalibrationMetric() says pascals, calibrate() says hectopascals
-
   /**
-   * @return the present calibration value in pascals. Will be 0 in case no
+   * @return the present calibration value in hectopascals. Will be 0 in case no
    *         explicit calibration has been performed.
    */
   public float getCalibrationMetric() {
-    getData(BAROMETRIC_PRESSURE_CALIBRATION, buffer, 2);
-    //FIXME likely, buffer[1] must be masked with 0xFF
-    //or use EndianTools.decodeUShortBE
-    int result = ((buffer[0] & 0xff) << 8) + buffer[1];
-    return (result / INHG_TO_HPA) * 10;
+	// get calibration value in 1/1000 inHg
+    getData(REG_PRESSURE_CALIBRATION, buffer, 2);
+    int result = EndianTools.decodeUShortBE(buffer, 0);
+    return result * (INHG_TO_HPA / 1000f);
   }
 
   /**
@@ -160,10 +159,10 @@ public class HiTechnicBarometer extends I2CSensor {
 
     @Override
     public void fetchSample(float[] sample, int offset) {
-      getData(BAROMETRIC_PRESSURE, buffer, 2);
-      //FIXME likely, buffer[1] must be masked with 0xFF
-      //or use EndianTools.decodeUShortBE
-      sample[0] = ((((buffer[0] & 0xff) << 8) + buffer[1]) / INHG_TO_HPA) * 10;
+      // get pressure in 1/1000 inHg
+      getData(REG_PRESSURE, buffer, 2);
+      int result = EndianTools.decodeUShortBE(buffer, 0);
+      sample[0] = result * (INHG_TO_HPA / 1000f);
     }
 
   }
@@ -188,10 +187,10 @@ public class HiTechnicBarometer extends I2CSensor {
 
     @Override
     public void fetchSample(float[] sample, int offset) {
-      getData(BAROMETRIC_TEMPERATURE, buffer, 2);
-      //FIXME RobotC driver suite shifts buffer[0] by 8, not 2
-      //FIXME RobotC driver suite divides by 10 instead of multiplying by 10
-      sample[offset] = ((buffer[0] << 2) | (buffer[1] & 0xFF)) * 10 + 273.15f;
+      // get temperature in 1/10 °C
+      getData(REG_TEMPERATURE, buffer, 2);
+      int result = EndianTools.decodeShortBE(buffer, 0);
+      sample[offset] = result / 10f + 273.15f;
     }
 
     @Override
