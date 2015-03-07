@@ -27,7 +27,7 @@ import lejos.utility.EndianTools;
  * <tr>
  * <td>Pressure</td>
  * <td>Measures atmospheric pressure</td>
- * <td>HectoPascal</td>
+ * <td>Pascal</td>
  * <td> {@link #getPressureMode() }</td>
  * </tr>
  * <tr>
@@ -64,9 +64,9 @@ public class HiTechnicBarometer extends I2CSensor {
   private static final int REG_PRESSURE             = 0x44;
   private static final int REG_PRESSURE_CALIBRATION = 0x46;
   // Wikipedia: 1 inHg at 0 °C = 3386.389 Pa
-  private static final float INHG_TO_HPA                   = 33.8638866667f;
+  private static final float MINHG_TO_PA                   = 3.38638866667f;
   // Wikipedia: Standard Atmosphere is 101325 Pa
-  private static final float STANDARD_ATMOSPHERIC_PRESSURE = 1013.25f;
+  private static final float STANDARD_ATMOSPHERIC_PRESSURE = 101325f;
 
   private final byte[]     buffer                          = new byte[2];
 
@@ -112,25 +112,25 @@ public class HiTechnicBarometer extends I2CSensor {
   /**
    * Re-calibrates the sensor.
    * 
-   * @param hectopascals
-   *          the calibration value in hectopascals
+   * @param pascals
+   *          the calibration value in pascals
    */
-  public void calibrate(float hectopascals) {
+  public void calibrate(float pascals) {
 	// compute calibration value in 1/1000 inHg
-    int calibrationImperial = (int)(0.5f + hectopascals * (1000f / INHG_TO_HPA));
+    int calibrationImperial = (int)(0.5f + pascals / MINHG_TO_PA);
     EndianTools.encodeShortBE(calibrationImperial, buffer, 0);
     sendData(REG_PRESSURE_CALIBRATION, buffer, 2);
   }
   
   /**
-   * @return the present calibration value in hectopascals. Will be 0 in case no
+   * @return the present calibration value in pascals. Will be 0 in case no
    *         explicit calibration has been performed.
    */
   public float getCalibrationMetric() {
 	// get calibration value in 1/1000 inHg
     getData(REG_PRESSURE_CALIBRATION, buffer, 2);
     int result = EndianTools.decodeUShortBE(buffer, 0);
-    return result * (INHG_TO_HPA / 1000f);
+    return result * MINHG_TO_PA;
   }
 
   /**
@@ -139,7 +139,7 @@ public class HiTechnicBarometer extends I2CSensor {
    * 
    * <p>
    * <b>Size and content of the sample</b><br>
-   * The sample contains one element containing the atmospheric pressure (in HectoPascal) of the air.
+   * The sample contains one element containing the atmospheric pressure (in Pascal) of the air.
    */  
   public SensorMode getPressureMode() {
     return getMode(0);
@@ -162,7 +162,7 @@ public class HiTechnicBarometer extends I2CSensor {
       // get pressure in 1/1000 inHg
       getData(REG_PRESSURE, buffer, 2);
       int result = EndianTools.decodeUShortBE(buffer, 0);
-      sample[0] = result * (INHG_TO_HPA / 1000f);
+      sample[0] = result * MINHG_TO_PA;
     }
 
   }
