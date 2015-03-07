@@ -47,7 +47,11 @@ public class Wheel {
     if (model.invert) gearing = -gearing;
     lastTacho = motor.getTachoCount();
   }
+ 
   
+  protected RegulatedMotor getMotor() { 
+    return motor;
+  }
   
   /**
    * This method blocks while the wheel is moving. It returns when the motor stops or stalls
@@ -68,6 +72,13 @@ public class Wheel {
    */
   public boolean isMoving() {
     return motor.isMoving();
+  }
+  
+  /**
+   * Stops the wheel and return immediately (while the motor is stopping)
+   */
+  public void stop() {
+    motor.stop(true);
   }
   
 
@@ -270,6 +281,8 @@ public class Wheel {
       return new Wheel(this);
     }
   }
+
+
 
 
 }
