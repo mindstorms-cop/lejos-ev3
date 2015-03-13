@@ -23,11 +23,11 @@ public class DifferentialChassis implements Chassis {
    */
   public DifferentialChassis(final Wheel[] wheels) {
     this.wheels = wheels;
-    this.master = wheels[0].motor;
+    this.master = wheels[0].getMotor();
     // TODO: Sort the wheel from left to right
     RegulatedMotor[] sync = new RegulatedMotor[wheels.length - 1];
     for (int n = 1; n < wheels.length; n++) {
-      sync[n - 1] = wheels[n].motor;
+      sync[n - 1] = wheels[n].getMotor();
     }
     master.synchronizeWith(sync);
 
@@ -36,7 +36,7 @@ public class DifferentialChassis implements Chassis {
   @Override
   public boolean isMoving() {
     for (Wheel wheel : wheels) {
-      if (wheel.motor.isMoving()) {
+      if (wheel.isMoving()) {
         return true;
       }
     }
@@ -47,7 +47,7 @@ public class DifferentialChassis implements Chassis {
   public void stop() {
     master.startSynchronization();
     for (Wheel wheel : wheels) {
-      wheel.motor.stop(true);
+      wheel.stop();
     }
     master.endSynchronization();
   }
@@ -160,7 +160,7 @@ public class DifferentialChassis implements Chassis {
   @Override
   public void waitComplete() {
     for (Wheel wheel : wheels)
-      wheel.motor.waitComplete();
+      wheel.waitComplete();
   }
 
   @Override
@@ -177,20 +177,11 @@ public class DifferentialChassis implements Chassis {
     return max;
   }
 
-  @Override
-  public void quickStop() {
-    master.startSynchronization();
-    for (Wheel wheel : wheels) {
-      wheel.motor.setAcceleration(9999);
-      wheel.motor.stop(true);
-    }
-    master.endSynchronization();
-  }
 
   @Override
   public boolean isStalled() {
     for (Wheel wheel : wheels) {
-      if (wheel.motor.isStalled())
+      if (wheel.isStalled())
         return true;
     }
     return false;

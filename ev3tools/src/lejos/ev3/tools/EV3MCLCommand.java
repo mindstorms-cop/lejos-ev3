@@ -117,7 +117,6 @@ public class EV3MCLCommand extends NavigationPanel {
 		randomButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent event) {
 				model.randomMove();
-				model.getRemoteParticles();
 			}
 		});
 		
@@ -168,6 +167,8 @@ public class EV3MCLCommand extends NavigationPanel {
 		} else if (navEvent == NavEvent.LOAD_MAP) {
 			// Generate the particles
 			model.generateParticles();			
+		} else if (navEvent == NavEvent.MOVE_STOPPED) {
+			model.getRemoteParticles();
 		}
 	}
 	

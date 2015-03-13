@@ -13,7 +13,7 @@ public class RangeFinderAdapter extends AbstractFilter implements RangeFinder{
 	@Override
 	public float getRange() {
 		fetchSample(buf,0);
-		return buf[0];
+		return buf[0] * 100;
 	}
 
 	@Override

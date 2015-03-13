@@ -15,11 +15,6 @@ public interface Chassis {
    */
   public void stop();
 
-  /**
-   * Makes the robot stop as quickly as possible. Acceleration settings are
-   * overruled.
-   */
-  public void quickStop();
 
   /**
    * Makes the robot drive an Arc and returns immediately

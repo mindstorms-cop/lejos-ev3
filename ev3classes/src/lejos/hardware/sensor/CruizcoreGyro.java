@@ -105,7 +105,7 @@ public class CruizcoreGyro extends I2CSensor {
 
     private static final byte SELECT_SCALE = 0x61;
 
-    private float             scale        = 1;
+    private float             scale;
 
     /**
      * Instantiates a new Cruizcore Gyro sensor.
@@ -132,11 +132,17 @@ public class CruizcoreGyro extends I2CSensor {
      * Sets the acc scale.
      * 
      * @param sf
-     *            the scale factor 0 for +/- 2G 1 for +/- 4G 2 for +/- 8g
+     *            the scale factor: 0 for +/- 2G, 1 for +/- 4G, 2 for +/- 8g
+     * @throws IllegalArgumentException
+     *            if the parameter is neither 0, 1, or 2.
      */
-    public void setAccScale(byte sf) {
+    public void setAccScale(int sf) {
+    	if (sf < 0 || sf > 2)
+    		throw new IllegalArgumentException();
+    	// TODO we write one byte too many (the zero).
+    	// The driver should perform a zero length write to register SELECT_SCALE + sf.
         sendData(SELECT_SCALE + sf, (byte) 0);
-        scale = (float) (9.81 / 1000f * Math.pow(2, sf + 1) / 2);
+        scale = 0.00981f * (1 << sf);
     }
 
     /**

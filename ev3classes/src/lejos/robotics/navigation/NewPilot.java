@@ -72,6 +72,7 @@ public class NewPilot implements LineFollowingMoveController {
   private Monitor                 _monitor;
   private boolean                 _moveActive = false;
   private Move                    move = null;
+  private boolean                 _replaceMove = false;
 
   /**
    * Allocates a Pilot object, and sets the physical parameters of
@@ -259,8 +260,7 @@ public class NewPilot implements LineFollowingMoveController {
       stop();
     chassis.travel(distance, travelSpeed, acceleration);
     move = new Move(Move.MoveType.TRAVEL, (float) distance, 0, (float) travelSpeed, (float) rotateSpeed, chassis.isMoving());
-    movementStart();
-    handleEndofMove(immediateReturn);
+    movementStart(immediateReturn);
   }
 
   // Moves of the Arc family
@@ -317,7 +317,7 @@ public class NewPilot implements LineFollowingMoveController {
   
   
   private void preArc(double radius) {
-    if (chassis.isMoving()) {
+    if (_moveActive) {
       stop();
     }
   }
@@ -343,8 +343,7 @@ public class NewPilot implements LineFollowingMoveController {
       move = new Move(Move.MoveType.ARC, (float) (Math.toRadians(angle) * radius), (float) angle, (float) travelSpeed, (float) rotateSpeed,
           chassis.isMoving());
     }
-    movementStart();
-    handleEndofMove(immediateReturn);
+    movementStart(immediateReturn);
   }
 
   // Moves of the steer family, steer moves are a branch of the arc moves.
@@ -370,11 +369,8 @@ public class NewPilot implements LineFollowingMoveController {
       radius *= Math.signum(steerRatio);
       angle *= Math.signum(steerRatio);
     }
-    if (_moveActive) {
-      // Instruct the listeners the current move will end by starting a new
-      // move
-      movementStop();
-    }
+    if (_moveActive) _replaceMove =true;
+    while (_moveActive) Thread.yield();
     postArc(radius, angle, true);
   }
 
@@ -384,66 +380,36 @@ public class NewPilot implements LineFollowingMoveController {
   public void stop() {
     // This method must be blocking
     chassis.stop();
-    chassis.waitComplete();
-    synchronized (_monitor) {
-      _monitor.notifyAll();
-    }
     while (_moveActive) Thread.yield();
   }
-
+  
   // State
   @Override
   public boolean isMoving() {
     return chassis.isMoving();
   }
 
-  // Handle the end of a move
 
-  /**
-   * Handles the end of a move.
-   * 
-   * @param immediateReturn
-   *          If false the method will block until the move has ended and then
-   *          deal with it . If true the method will instruct a monitor process
-   *          to detect athe end-of-move and to deal with it.
-   */
-  private void handleEndofMove(boolean immediateReturn) {
-    if (!immediateReturn) {
-      chassis.waitComplete();
-      if (chassis.isStalled())
-        stop();
-      movementStop();
-    } else {
-      // Non blocking method, let the monitor handle the end of the move
-      _moveActive = true;
-    }
-  }
 
-  // Methods dealing with the listener model
-
-  /**
-   * Advertises the start of a move to the listeners.
-   * 
-   * @param move
-   *          A move object containing the move that will be made.
-   */
-  protected void movementStart() {
+  // Methods dealing the start and end of a move
+  private void movementStart(boolean immediateReturn) {
     for (MoveListener ml : _listeners)
       ml.moveStarted(move, this);
+    _moveActive = true;
+    synchronized (_monitor) {
+      _monitor.notifyAll();
+    }
+    if (immediateReturn) return;
+    while (_moveActive) Thread.yield();
   }
 
-  /**
-   * Advertises the end of a move to the listeners. The move object being
-   * advertised contains the move that has actually been made.
-   */
   private void movementStop() {
-    _moveActive = false;
-    // Do not to call getDisplacement when there are no listeners. The benefit is that it can then be called from another part of the program
     if ( ! _listeners.isEmpty()) {
       chassis.getDisplacement(move);
       for (MoveListener ml : _listeners)
         ml.moveStopped(move, this);
     }
+    _moveActive = false;
   }
 
   @Override
@@ -471,7 +437,6 @@ public class NewPilot implements LineFollowingMoveController {
     public boolean more = true;
 
     public Monitor() {
-      // don't make VM hang for us!
       setDaemon(true);
     }
 
@@ -480,8 +445,10 @@ public class NewPilot implements LineFollowingMoveController {
         if (_moveActive) {
           if (chassis.isStalled())
             NewPilot.this.stop();
-          if (!chassis.isMoving()) {
+          if (!chassis.isMoving() || _replaceMove) {
             movementStop();
+            _moveActive = false;
+            _replaceMove = false;
           }
         }
         // wait for an event

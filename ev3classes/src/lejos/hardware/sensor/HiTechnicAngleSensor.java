@@ -196,7 +196,9 @@ public class HiTechnicAngleSensor extends I2CSensor {
     @Override
     public void fetchSample(float[] sample, int offset) {
       getData(REG_SPEED, buf, 2);
-      sample[offset] = -EndianTools.decodeShortBE(buf, 0) / 60;
+      // 1 rpm = 360°/60sec = 6°/sec
+      //FIXME shouldn't we multiply by 6 instead of dividing by 60?
+      sample[offset] = -EndianTools.decodeShortBE(buf, 0) / 60f;
     }
 
     @Override
