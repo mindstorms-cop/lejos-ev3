@@ -2,6 +2,7 @@
 import lejos.hardware.motor.Motor;
 import lejos.hardware.port.SensorPort;
 import lejos.hardware.sensor.EV3IRSensor;
+import lejos.hardware.sensor.EV3UltrasonicSensor;
 import lejos.robotics.FixedRangeScanner;
 import lejos.robotics.RangeFinder;
 import lejos.robotics.RangeFinderAdapter;
@@ -57,8 +58,8 @@ public class MCLTest {
     	DifferentialPilot robot = new DifferentialPilot(wheelDiameter,trackWidth,leftMotor,rightMotor,reverse);
     	robot.setRotateSpeed(ROTATE_SPEED);
     	robot.setTravelSpeed(TRAVEL_SPEED);
-    	EV3IRSensor ir = new EV3IRSensor(SensorPort.S1);
-    	RangeFinder rf = new RangeFinderAdapter(ir.getDistanceMode());
+    	EV3UltrasonicSensor sonic = new EV3UltrasonicSensor(SensorPort.S1);
+    	RangeFinder rf = new RangeFinderAdapter(sonic.getDistanceMode());
     	RangeFeatureDetector detector = new RangeFeatureDetector(rf, MAX_DISTANCE, DETECTOR_DELAY);
     	RangeScanner scanner;
     	if (ROTATING_RANGE_SCANNER)scanner = new RotatingRangeScanner(HEAD_MOTOR, rf, GEAR_RATIO);
