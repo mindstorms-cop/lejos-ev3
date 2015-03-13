@@ -292,6 +292,7 @@ public class EV3NavigationModel extends NavigationModel implements MoveListener,
 						case TAKE_READINGS: // Request to take range readings and send them to the PC
 							if (scanner != null) {
 								readings = scanner.getRangeValues();
+								readings.printReadings();
 								dos.writeByte(NavEvent.RANGE_READINGS.ordinal());
 								readings.dumpObject(dos);
 							}
@@ -303,8 +304,10 @@ public class EV3NavigationModel extends NavigationModel implements MoveListener,
 							break;
 						case GET_PARTICLES: // Request to send particles to the PC
 							if (particles == null) break;
+							if (debug) log("Sending particle set");
 							dos.writeByte(NavEvent.PARTICLE_SET.ordinal());
 							particles.dumpObject(dos);
+							if (debug) log("Sent particle set");
 							break;
 						case GET_ESTIMATED_POSE: // Request to send estimated pose to the PC
 							if (mcl == null) break;
@@ -428,6 +431,7 @@ public class EV3NavigationModel extends NavigationModel implements MoveListener,
 			        || distance + clearance < forwardRange)
 			      pilot.travel(distance,false);
 			    
+			    if (debug) log("Random moved started");
 			    ((RotateMoveController) pilot).rotate(angle,false);
 			    if (debug) log("Random moved done");
 			}			
@@ -511,6 +515,7 @@ public class EV3NavigationModel extends NavigationModel implements MoveListener,
 					dos.writeByte(NavEvent.SET_POSE.ordinal());
 					pp.getPose().dumpObject(dos);
 				}
+				if (debug) log("Move stopped sent");
 			}
 		} catch (IOException ioe) {
 			fatal("IOException in moveStopped");	

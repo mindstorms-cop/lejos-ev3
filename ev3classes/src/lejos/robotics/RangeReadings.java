@@ -101,7 +101,7 @@ public class RangeReadings extends ArrayList<RangeReading> implements Transmitta
   public void loadObject(DataInputStream dis) throws IOException {
 	int numReadings = dis.readInt();
 	this.clear();
-    for (int i = 0; i < getNumReadings(); i++) {
+    for (int i = 0; i < numReadings; i++) {
       add(new RangeReading(dis.readFloat(),dis.readFloat()));
     }        
   }
