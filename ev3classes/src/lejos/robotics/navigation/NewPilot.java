@@ -2,9 +2,9 @@ package lejos.robotics.navigation;
 import java.util.ArrayList;
 
 import lejos.robotics.RegulatedMotor;
-import lejos.robotics.chassis.Chassis;
-import lejos.robotics.chassis.DifferentialChassis;
-import lejos.robotics.chassis.Wheel;
+import lejos.robotics.movechassis.DifferentialMoveChassis;
+import lejos.robotics.movechassis.MoveChassis;
+import lejos.robotics.movechassis.MoveWheel;
 import lejos.robotics.navigation.Move;
 import lejos.robotics.navigation.MoveListener;
 
@@ -64,7 +64,7 @@ import lejos.robotics.navigation.MoveListener;
  **/
 public class NewPilot implements LineFollowingMoveController {
   private double                  minRadius   = 0;      
-  final private Chassis           chassis;
+  final private MoveChassis           chassis;
   private ArrayList<MoveListener> _listeners  = new ArrayList<MoveListener>();
   private double                  travelSpeed;
   private double                  acceleration;
@@ -152,17 +152,17 @@ public class NewPilot implements LineFollowingMoveController {
    */
   public NewPilot(final double leftWheelDiameter, final double rightWheelDiameter, final double trackWidth,
       final RegulatedMotor leftMotor, final RegulatedMotor rightMotor, final boolean reverse) {
-    this(new DifferentialChassis(new Wheel[] { new Wheel(leftMotor, trackWidth / 2, leftWheelDiameter, 1,reverse),
-        new Wheel(rightMotor, trackWidth / -2, rightWheelDiameter, 1, reverse) }));
+    this(new DifferentialMoveChassis(new MoveWheel[] { new MoveWheel(leftMotor, trackWidth / 2, leftWheelDiameter, 1,reverse),
+        new MoveWheel(rightMotor, trackWidth / -2, rightWheelDiameter, 1, reverse) }));
   }
 
   /**
    * Allocates a Pilot object.<br>
    * 
    * @param chassis
-   *          A Chassis object describing the physical parameters of the robot.
+   *          A MoveChassis object describing the physical parameters of the robot.
    */
-  public NewPilot(Chassis chassis) {
+  public NewPilot(MoveChassis chassis) {
     this.chassis = chassis;
     setTravelSpeed(chassis.getMaxSpeed() * 0.8);
     setAcceleration(getTravelSpeed() * 4);

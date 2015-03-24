@@ -1,5 +1,6 @@
-package lejos.robotics.chassis;
+package lejos.robotics.movechassis;
 
+import lejos.hardware.motor.BaseRegulatedMotor;
 import lejos.robotics.RegulatedMotor;
 
 /**
@@ -21,7 +22,7 @@ import lejos.robotics.RegulatedMotor;
  * </code> 
  * @author Aswin Bouwmeester
  */
-public class Wheel {
+public class MoveWheel {
 
   protected RegulatedMotor motor;
   protected double         offset;
@@ -31,7 +32,7 @@ public class Wheel {
 
 
 
-  public Wheel(RegulatedMotor motor, double offset, double diameter, double gearing, boolean reverse) {
+  public MoveWheel(RegulatedMotor motor, double offset, double diameter, double gearing, boolean reverse) {
     this.motor = motor;
     this.offset = offset;
     this.diameter = diameter;
@@ -39,7 +40,7 @@ public class Wheel {
     lastTacho = motor.getTachoCount();
   }
 
-  protected Wheel(Modeler model) {
+  protected MoveWheel(Modeler model) {
     this.motor = model.motor;
     this.offset = model.offset;
     this.diameter = model.diameter;
@@ -213,6 +214,17 @@ public class Wheel {
   }
 
   /**
+   * Returns the current speed of the wheel in robot units. Differs from getSpeed during acceleration and deceleration.
+   * 
+   * @return
+   */
+  public double getCurrentSpeed() {
+    return fromTacho(motor.getRotationSpeed());
+  }
+
+  
+  
+  /**
    * Sets the speed of the wheel
    * 
    * @param speed
@@ -277,9 +289,14 @@ public class Wheel {
      * @return
      * A Wheel object
      */
-    public Wheel build() {
-      return new Wheel(this);
+    public MoveWheel build() {
+      return new MoveWheel(this);
     }
+  }
+
+  public void setSpeed(double x, double y, double r) {
+    // TODO Auto-generated method stub
+    
   }
 
 

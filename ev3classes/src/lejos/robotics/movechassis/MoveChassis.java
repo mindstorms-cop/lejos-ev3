@@ -1,7 +1,7 @@
-package lejos.robotics.chassis;
+package lejos.robotics.movechassis;
 import lejos.robotics.navigation.Move;
 
-public interface Chassis {
+public interface MoveChassis {
 
   /**
    * Returns True if the robot is moving.

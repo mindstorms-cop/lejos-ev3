@@ -1,4 +1,4 @@
-package lejos.robotics.chassis;
+package lejos.robotics.movechassis;
 import lejos.robotics.RegulatedMotor;
 import lejos.robotics.navigation.Move;
 
@@ -11,9 +11,9 @@ import lejos.robotics.navigation.Move;
  * @author Aswin Bouwmeester
  *
  */
-public class DifferentialChassis implements Chassis {
+public class DifferentialMoveChassis implements MoveChassis {
 
-  final protected Wheel[]        wheels; // Wheel order should be from left to right
+  final protected MoveWheel[]        wheels; // Wheel order should be from left to right
   final protected RegulatedMotor master;
 
   /**
@@ -21,7 +21,7 @@ public class DifferentialChassis implements Chassis {
    * An Array of Wheel objects representing each of the motorized wheels on the robot. 
    * The wheels should be ordered in the array according to wheel location (from left to right) 
    */
-  public DifferentialChassis(final Wheel[] wheels) {
+  public DifferentialMoveChassis(final MoveWheel[] wheels) {
     this.wheels = wheels;
     this.master = wheels[0].getMotor();
     // TODO: Sort the wheel from left to right
@@ -35,7 +35,7 @@ public class DifferentialChassis implements Chassis {
 
   @Override
   public boolean isMoving() {
-    for (Wheel wheel : wheels) {
+    for (MoveWheel wheel : wheels) {
       if (wheel.isMoving()) {
         return true;
       }
@@ -46,7 +46,7 @@ public class DifferentialChassis implements Chassis {
   @Override
   public void stop() {
     master.startSynchronization();
-    for (Wheel wheel : wheels) {
+    for (MoveWheel wheel : wheels) {
       wheel.stop();
     }
     master.endSynchronization();
@@ -56,7 +56,7 @@ public class DifferentialChassis implements Chassis {
   public void arc(double radius, double angle, double speed, double acceleration) {
     double speedCorrection = speedCorrection(radius);
     master.startSynchronization();
-    for (Wheel wheel : wheels) {
+    for (MoveWheel wheel : wheels) {
       wheel.arc(radius, angle, speed * speedCorrection, acceleration * speedCorrection);
     }
     master.endSynchronization();
@@ -65,7 +65,7 @@ public class DifferentialChassis implements Chassis {
   @Override
   public void travel(double distance, double speed, double acceleration) {
     master.startSynchronization();
-    for (Wheel wheel : wheels) {
+    for (MoveWheel wheel : wheels) {
       wheel.travel(distance, speed, acceleration);
     }
     master.endSynchronization();
@@ -75,7 +75,7 @@ public class DifferentialChassis implements Chassis {
   public double getMaxSpeed() {
     double maxSpeed = Double.POSITIVE_INFINITY;
     master.startSynchronization();
-    for (Wheel wheel : wheels) {
+    for (MoveWheel wheel : wheels) {
       maxSpeed = Math.min(wheel.getMaxSpeed(), maxSpeed);
     }
     master.endSynchronization();
@@ -86,7 +86,7 @@ public class DifferentialChassis implements Chassis {
   public double getSpeed() {
     double speed = 0;
     master.startSynchronization();
-    for (Wheel wheel : wheels) {
+    for (MoveWheel wheel : wheels) {
       speed = Math.max(speed, wheel.getSpeed());
     }
     master.endSynchronization();
@@ -97,7 +97,7 @@ public class DifferentialChassis implements Chassis {
   public void setSpeed(double speed) {
     double current = getSpeed();
     master.startSynchronization();
-      for (Wheel wheel : wheels) {
+      for (MoveWheel wheel : wheels) {
         double ratio =  wheel.getSpeed() / current ;
         wheel.setSpeed(speed * ratio);
       }
@@ -108,7 +108,7 @@ public class DifferentialChassis implements Chassis {
   public void setAcceleration(double acceleration) {
     double current = getSpeed();
     master.startSynchronization();
-      for (Wheel wheel : wheels) {
+      for (MoveWheel wheel : wheels) {
         double ratio =  wheel.getSpeed() / current ;
         wheel.setSpeed(acceleration * ratio);
       }
@@ -151,7 +151,7 @@ public class DifferentialChassis implements Chassis {
   private double speedCorrection(double radius) {
     if (radius == Double.POSITIVE_INFINITY || radius == Double.NEGATIVE_INFINITY) return 1;
     double max = 1;
-    for (Wheel wheel : wheels) {
+    for (MoveWheel wheel : wheels) {
       max = Math.max(max, wheel.correct(1, radius));
     }
     return 1 / max;
@@ -159,7 +159,7 @@ public class DifferentialChassis implements Chassis {
 
   @Override
   public void waitComplete() {
-    for (Wheel wheel : wheels)
+    for (MoveWheel wheel : wheels)
       wheel.waitComplete();
   }
 
@@ -171,7 +171,7 @@ public class DifferentialChassis implements Chassis {
   @Override
   public double getMaxRotateSpeed() {
     double max = Double.POSITIVE_INFINITY;
-    for (Wheel wheel : wheels) {
+    for (MoveWheel wheel : wheels) {
       max = Math.min(360 * wheel.getSpeed() / (Math.PI * Math.abs(wheel.offset)), max);
     }
     return max;
@@ -180,7 +180,7 @@ public class DifferentialChassis implements Chassis {
 
   @Override
   public boolean isStalled() {
-    for (Wheel wheel : wheels) {
+    for (MoveWheel wheel : wheels) {
       if (wheel.isStalled())
         return true;
     }
@@ -191,5 +191,19 @@ public class DifferentialChassis implements Chassis {
   public double getMinRadius() {
     return 0;
   }
+  
+  /** Sets the speed of the chassis in terms of forward speed, lateral speed and rotational speed
+   * @param x
+   * @param y
+   * @param r
+   */
+  public void setSpeed(double x, double y, double r) {
+    master.startSynchronization();
+    for (MoveWheel wheel : wheels) {
+      wheel.setSpeed(x, y, r);
+    }
+    master.endSynchronization();
+  }
+  
 
 }

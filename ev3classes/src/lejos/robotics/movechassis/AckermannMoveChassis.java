@@ -1,4 +1,4 @@
-package lejos.robotics.chassis;
+package lejos.robotics.movechassis;
 import lejos.robotics.navigation.Move;
 
 /**
@@ -10,9 +10,9 @@ import lejos.robotics.navigation.Move;
  * @author Aswin Bouwmeester
  *
  */
-public class AckermannChassis extends DifferentialChassis {
+public class AckermannMoveChassis extends DifferentialMoveChassis {
 
-  private Steer steer;
+  private MoveSteer steer;
 
   /**
    * @param wheels
@@ -21,7 +21,7 @@ public class AckermannChassis extends DifferentialChassis {
    * @param steer 
    * A Steer object representing the steering mechanism
    */
-  public AckermannChassis(Wheel[] wheels, Steer steer) {
+  public AckermannMoveChassis(MoveWheel[] wheels, MoveSteer steer) {
     super(wheels);
     this.steer = steer;
   }

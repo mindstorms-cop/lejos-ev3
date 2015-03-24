@@ -2,12 +2,12 @@ package org.lejos.ev3.sample.pilottest;
 import lejos.hardware.Button;
 import lejos.hardware.Sound;
 import lejos.hardware.motor.Motor;
-import lejos.robotics.chassis.AckermannChassis;
-import lejos.robotics.chassis.Chassis;
-import lejos.robotics.chassis.DifferentialChassis;
-import lejos.robotics.chassis.Steer;
-import lejos.robotics.chassis.Wheel;
 import lejos.robotics.localization.OdometryPoseProvider;
+import lejos.robotics.movechassis.AckermannMoveChassis;
+import lejos.robotics.movechassis.DifferentialMoveChassis;
+import lejos.robotics.movechassis.MoveChassis;
+import lejos.robotics.movechassis.MoveSteer;
+import lejos.robotics.movechassis.MoveWheel;
 import lejos.robotics.navigation.DifferentialPilot;
 import lejos.robotics.navigation.LineFollowingMoveController;
 import lejos.robotics.navigation.Pose;
@@ -30,29 +30,29 @@ public class TestPilot {
   double diameter = 300;  
   double angle = 90;
   double distance = 300;
-  long time = 1000;
+  long time = 4000;
 
   public static void main(String[] args) {
-    TestPilot foo = new TestPilot(OLD_DIFFERENTIAL);
+    TestPilot foo = new TestPilot(NEW_DIFFERENTIAL);
     foo.pilot.setTravelSpeed(100);
     foo.pilot.setAcceleration((int) (foo.pilot.getTravelSpeed() * 1));
     Sound.beep();
     Button.waitForAnyPress();
-    if (foo.pilot.getMinRadius() != 0) 
-      foo.testSteer();
+//    if (foo.pilot.getMinRadius() != 0) 
+//      foo.testSteer();
     foo.travels();
-    foo.circle();
-    foo.arcs();
-    foo.arcDirections();
-    foo.travelArcs();
-    if (foo.pilot.getMinRadius() == 0) 
-      foo.rotates();
-    foo.dynamics();
-    foo.stop();
-    if (foo.pilot.getMinRadius() == 0) 
-      foo.localization();
-    foo.steers();
-    foo.symmetry();
+//    foo.circle();
+//    foo.arcs();
+//    foo.arcDirections();
+//    foo.travelArcs();
+//    if (foo.pilot.getMinRadius() == 0) 
+//      foo.rotates();
+//    foo.dynamics();
+//    foo.stop();
+//    if (foo.pilot.getMinRadius() == 0) 
+//      foo.localization();
+//    foo.steers1();
+//    foo.symmetry();
   }
   
   private void circle() {
@@ -120,6 +120,20 @@ public class TestPilot {
   pilot.setAcceleration((int) (pilot.getTravelSpeed() * 1));
   }
 
+  private void steers1() {
+    pilot.steer(0);         // Causes a stop with 0.9.0-beta
+    Delay.msDelay(time);
+//    pilot.steer(100);         // Causes a stop with 0.9.0-beta
+//    Delay.msDelay(time);
+//    pilot.steer(-100);         // Causes a stop with 0.9.0-beta
+//    Delay.msDelay(time);
+//    pilot.steer(199);         // Causes a stop with 0.9.0-beta
+//    Delay.msDelay(time);
+//    pilot.steer(-199);         // Causes a stop with 0.9.0-beta
+//    Delay.msDelay(time);
+    pilot.stop();
+  }
+  
   private void steers() {
     pilot.forward();
     Delay.msDelay(time);
@@ -203,25 +217,27 @@ public class TestPilot {
 
  
   private TestPilot(int type) {
-    Chassis chassis;
-    Wheel[] wheels;
-    Steer steer;
+    MoveChassis chassis;
+    MoveWheel[] wheels;
+    MoveSteer steer;
     
     switch (type) {
       case OLD_DIFFERENTIAL: {
         pilot = new DifferentialPilot(43.2, 142, Motor.D, Motor.A);
-        return;}
+        break;}
       case NEW_DIFFERENTIAL: {
-        wheels = new Wheel[]{new Wheel.Modeler(Motor.D, 43.2).offset(72).build(), new Wheel.Modeler(Motor.A, 43.2).offset(-72).build()};
-        chassis = new DifferentialChassis(wheels ); 
+        wheels = new MoveWheel[]{new MoveWheel.Modeler(Motor.D, 43.2).offset(72).build(), new MoveWheel.Modeler(Motor.A, 43.2).offset(-72).build()};
+        chassis = new DifferentialMoveChassis(wheels ); 
         pilot = new NewPilot(chassis);
+        break;
       }
       case NEW_STEERING: {
-        wheels = new Wheel[]{ new Wheel.Modeler(Motor.D, 81.6).offset(80).gearing(1).build(), 
-            new Wheel.Modeler(Motor.A, 81.6).offset(-80).gearing(1).build()};
-        steer = new Steer.Modeler(Motor.B, -132).maxAngle(30).gearing(.93).build();
-        chassis = new AckermannChassis(wheels, steer);
+        wheels = new MoveWheel[]{ new MoveWheel.Modeler(Motor.D, 81.6).offset(80).gearing(1).build(), 
+            new MoveWheel.Modeler(Motor.A, 81.6).offset(-80).gearing(1).build()};
+        steer = new MoveSteer.Modeler(Motor.B, -132).maxAngle(30).gearing(.93).build();
+        chassis = new AckermannMoveChassis(wheels, steer);
         pilot = new NewPilot(chassis);
+        break;
       }
     }
     

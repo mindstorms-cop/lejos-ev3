@@ -1,5 +1,5 @@
 
-package lejos.robotics.chassis;
+package lejos.robotics.movechassis;
 
 import lejos.robotics.RegulatedMotor;
 
@@ -25,7 +25,7 @@ import lejos.robotics.RegulatedMotor;
  * @author Aswin Bouwmeester
  *
  */
-public class Steer {
+public class MoveSteer {
   double offset =0;
   double maxAngle = 90;
   double gearing = 1;
@@ -42,7 +42,7 @@ public class Steer {
    * @param gear
    * The gearing ratio of the steering mechanism being the ratio between motor rotation and steering mechanism rotation
    */
-  public Steer (RegulatedMotor motor, double offset, double maxAngle, double gearing) {
+  public MoveSteer (RegulatedMotor motor, double offset, double maxAngle, double gearing) {
     this.motor = motor;
     this.offset= offset;
     this.maxAngle= maxAngle;
@@ -50,7 +50,7 @@ public class Steer {
     center = motor.getTachoCount();
   }
   
-  private Steer(Modeler model) {
+  private MoveSteer(Modeler model) {
     this.motor = model.motor;
     this.offset= model.offset;
     this.maxAngle= model.maxAngle;
@@ -182,8 +182,8 @@ public class Steer {
      * @return
      * A Steer object
      */
-    public Steer build() {
-      return new Steer(this);
+    public MoveSteer build() {
+      return new MoveSteer(this);
     }
 
   }
