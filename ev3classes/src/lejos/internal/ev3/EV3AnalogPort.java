@@ -26,6 +26,7 @@ public class EV3AnalogPort extends EV3IOPort implements AnalogPort
     protected static final int ANALOG_MOTOR_CUR_OFF = 26;
     protected static final int ANALOG_BAT_CUR_OFF = 28;
     protected static final int ANALOG_BAT_V_OFF = 30;
+    protected static final int ANALOG_ACTUAL_OFF = 4832;
     protected static final int ANALOG_INDCM_OFF = 5156;
     protected static final int ANALOG_INCONN_OFF = 5160;
     protected static final int ANALOG_OUTDCM_OFF = 5164;
@@ -229,12 +230,18 @@ public class EV3AnalogPort extends EV3IOPort implements AnalogPort
             }            
         }
     }
+    
+    protected short getCurrentOffset()
+    {
+        return shortVals.getShort(ANALOG_ACTUAL_OFF + port*2);
+    }
 
     // The following methods provide compatibility with NXT sensors
     
     @Override
     public boolean setType(int type)
     {
+        boolean ret = true;
         switch(type)
         {
         case TYPE_NO_SENSOR:
@@ -273,9 +280,13 @@ public class EV3AnalogPort extends EV3IOPort implements AnalogPort
             break;
 
         default:
-            return false;
+            ret = false;
         }
-        return true;
+        // wait for a new sample to avoid returning stale data
+        int curOffset = getCurrentOffset();
+        while (curOffset == getCurrentOffset())
+            Delay.msDelay(1);
+        return ret;
     }
 
     
