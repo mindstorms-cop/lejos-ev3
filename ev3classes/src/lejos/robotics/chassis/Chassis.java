@@ -1,5 +1,6 @@
 package lejos.robotics.chassis;
-import lejos.robotics.navigation.Move;
+
+import lejos.robotics.localization.PoseProvider;
 
 public interface Chassis {
 
@@ -15,96 +16,32 @@ public interface Chassis {
    */
   public void stop();
 
-
-  /**
-   * Makes the robot drive an Arc and returns immediately
-   * 
-   * @param radius
-   *          The radius of the Arc. Positive values will make it turn left.
-   * @param angle
-   *          The angle of the arc (in degrees). An infinite value will make the
-   *          robot circle endlessly. Negative values will make it turn
-   *          backwards.
-   * @param speed
-   *          Speed in robot units
-   * @param acceleration
-   *          Acceleration in robot units
-   * 
+  
+  /** Moves the chassis with specified speed
+   * @param linearSpeed
+   * @param angularSpeed
    */
-  public void arc(double radius, double angle, double speed, double acceleration);
+  public void travel(double linearSpeed, double angularSpeed);
 
-  /**
-   * Makes the robot drive in a straight line and returns immediately
-   * 
-   * @param distance
-   *          An infinite value will make the robot circle endlessly. Negative
-   *          values will make the robot drive back.
-   * @param speed
-   *          Speed in robot units
-   * @param acceleration
-   *          Acceleration in robot units
-   * 
+  /** Moves the chassis the specified distance and angle
+   * @param linear
+   * @param angular
    */
-  public void travel(double distance, double speed, double acceleration);
+  public void moveTo(double linear, double angular);
 
   /**
    * Returns the maximum speed of the robot.
    * 
    * @return Speed in robot units
    */
-  public double getMaxSpeed();
+  public double getMaxLinearSpeed();
 
   /**
    * Returns how fast the robot can rotate.
    * 
    * @return Speed in degrees / second
    */
-  public double getMaxRotateSpeed();
-
-  /**
-   * Returns the current speed setting of the robot. For robots moving in arcs
-   * this will be the speed of the outer wheel.
-   * 
-   * @return Speed in robot units
-   */
-  public double getSpeed();
-  
-  /**
-   * Sets the current speed of the robot. If a robot is not moving this method
-   * has no effect.
-   * 
-   * @param speed
-   *          Speed in robot units
-   */
-  public void setSpeed(double speed);
-
-  /**
-   * Sets the current acceleration of the robot. If a robot is not moving this method
-   * has no effect.
-   * 
-   * @param acceleration
-   *          Speed in robot units
-   */
-  public void setAcceleration(double acceleration);
-  
-  
-  /**
-   * Returns a Move object containing the displacement of the robot since this
-   * method was last called
-   * 
-   * @return A Move object containing the displacement in robot units
-   */
-  public Move getDisplacement(Move move);
-
-  /**
-   * Returns a Pose object containing the displacement of the robot since this
-   * method was last called
-   * 
-   * @param noReset
-   *          If set to true the method will not reset the displacement to zero
-   * @return A Move object containing the displacement in robot units
-   */
-  public Move getDisplacement(Move move, boolean noReset);
+  public double getMaxAngularSpeed();
 
   /**
    * Blocks while the chassis is moving, returns when all wheels have stopped
@@ -113,26 +50,34 @@ public interface Chassis {
   public void waitComplete();
 
   /**
-   * Returns the track width of the robot, the distance between the two outer
-   * most wheels
-   * 
-   * @return Track width in robot units
-   * 
-   */
-  public double getWidth();
-
-  /**
    * Returns true if at least one of the wheels is stalled
    * 
    * @return
    */
   public boolean isStalled();
-  
-  /** Returns the smallest possible radius this chassis is able turn
+
+  /**
+   * Returns the smallest possible radius this chassis is able turn
+   * 
    * @return radius in robot units
    */
-  public double getMinRadius() ;
+  public double getMinRadius();
+
+  /** Sets the speed of the chassis for the moveTo method
+   * 
+   * @param forwardSpeed
+   * @param angularSpeed
+   */
+  public void setSpeed(double forwardSpeed, double angularSpeed);
+
+  /** Sets the acceleration of the chassis for the moveTo and travel methods
+   * @param forwardAcceleration
+   * @param angularAcceleration
+   */
+  public void setAcceleration(double forwardAcceleration, double angularAcceleration);
   
+  /** Returns an Pose provider that uses odometry to keep track of the pose of the chassis
+   * @return
+   */
+  public PoseProvider getOdometer();  
 }
-
-
