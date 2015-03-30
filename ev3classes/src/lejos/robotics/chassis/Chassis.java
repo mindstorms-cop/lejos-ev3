@@ -1,6 +1,7 @@
 package lejos.robotics.chassis;
 
 import lejos.robotics.localization.PoseProvider;
+import lejos.robotics.navigation.Move;
 
 public interface Chassis {
 
@@ -28,6 +29,19 @@ public interface Chassis {
    * @param angular
    */
   public void moveTo(double linear, double angular);
+  
+  /** Moves the chassis in an arc 
+   * @param radius
+   * the radius of the arc. 
+   * A positive radius means the center of the arc is on the left side of the robot, 
+   * the center of a negative arc is on the right side of the robot. Infinite radius is not allowed. 
+   * A radius of 0 makes the robot spin in place.
+   *
+   * @param angle
+   * The number of degrees of the arc. A positive number of degrees makes the robot go forward,
+   * a negative number makes it go backward.  
+   */
+  public void arc(double radius, double angle);
 
   /**
    * Returns the maximum speed of the robot.
@@ -80,4 +94,21 @@ public interface Chassis {
    * @return
    */
   public PoseProvider getOdometer();  
+  
+  /** Method used by the MovePilot to tell the chassis that a new move has started
+   * 
+   */
+  public void moveStart();
+  
+  /** Method used by the MovePilot to update a move object that describes the move executed since the last call to startMove. <p>
+   * This method is only to be used by applications that only apply moves that meet the following conditions:<ul>
+   * <li> The move must start and end with the robot being motionless</li>
+   * <li> The speed ratio between the wheels must be constant during the move</li>
+   * </ul>
+   *  
+   * @param move
+   * The move object to update
+   */
+  public void getDisplacement(Move move);
+  
 }

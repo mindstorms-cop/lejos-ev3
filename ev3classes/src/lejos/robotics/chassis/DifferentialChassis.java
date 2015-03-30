@@ -2,6 +2,7 @@ package lejos.robotics.chassis;
 
 import lejos.robotics.RegulatedMotor;
 import lejos.robotics.localization.PoseProvider;
+import lejos.robotics.navigation.Move;
 import lejos.robotics.navigation.Pose;
 import lejos.utility.Delay;
 import lejos.utility.Matrix;
@@ -27,6 +28,7 @@ public class DifferentialChassis implements Chassis {
   final protected Matrix forwardAbs;
   final protected Matrix reverseAbs;
   private RegulatedMotor master;
+  private Matrix tachoAtMoveStart;
 
   public DifferentialChassis(final Wheel[] wheels) {
     nWheels = wheels.length;
@@ -68,87 +70,64 @@ public class DifferentialChassis implements Chassis {
     speed = toMatrix(linearSpeed, angularSpeed);
   }
 
-  private void setSpeed(Matrix robotSpeed) {
-    Matrix wheelSpeed = forwardAbs.times(robotSpeed);
-    for (int i = 0; i < nWheels; i++) {
-      motor[i].setSpeed((int) wheelSpeed.get(i, 0));
-    }
-  }
-
   @Override
   public void setAcceleration(double linearAcceleration, double angularAcceleration) {
     if (linearAcceleration <=0 || angularAcceleration <=0) throw new  IllegalArgumentException("Speed must be greater than 0");
     acceleration = toMatrix(linearAcceleration, angularAcceleration);
   }
 
-  private void setAcceleration(Matrix robotAcceleration) {
-    Matrix wheelAcceleration = forwardAbs.times(robotAcceleration);
-    for (int i = 0; i < nWheels; i++) {
-      motor[i].setAcceleration((int) wheelAcceleration.get(i, 0));
-    }
-  }
-
   @Override
   public void travel(double linearSpeed, double angularSpeed) {
     Matrix robotSpeed = toMatrix(linearSpeed, angularSpeed);
+    travel(robotSpeed);
+  }
+  
+  
+ public synchronized void travel(Matrix robotSpeed) {   
     Matrix motorSpeed = forward.times(robotSpeed);
     Matrix motorAcceleration = forwardAbs.times(acceleration);
     Matrix currentMotorSpeed = (getAttribute(2));
 
     // calculate acceleration for each of the wheels. The goal is that all
     // wheels take an even amount of time to reach final speed
-    Matrix dif = copyAbsolute(motorSpeed.minus(currentMotorSpeed)); // get the
-                                                                    // difference
-                                                                    // between
-                                                                    // current
-                                                                    // and
-                                                                    // target
-                                                                    // speed for
-                                                                    // each
-                                                                    // motor
-    dif.arrayRightDivideEquals(motorAcceleration); // Calculate how much time it
-                                                   // would take for each wheel
-                                                   // to reach target speed
-                                                   // using acceleration
-                                                   // settings
-    double longestTime = getMax(dif); // Find the longest of the acceleration
-                                      // times
-    if (longestTime == 0)
-      return; // Aha, no speed differences.
-    double maxT = 1 / longestTime; // Find the longest of the acceleration times
-    dif = dif.timesEquals(maxT); // Create a correction factor for acceleration
-                                 // accelTime / longestTime
-    Matrix transition = motorAcceleration.arrayTimes(dif); // decrease
-                                                           // acceleration using
-                                                           // the correction
-                                                           // factor
-
+    Matrix dif = copyAbsolute(motorSpeed.minus(currentMotorSpeed)); 
+    dif.arrayRightDivideEquals(motorAcceleration); 
+    double longestTime = getMax(dif); 
+    if (longestTime == 0) return; // Aha, no speed differences. Do nothing.
+    double maxT = 1 / longestTime; 
+    dif = dif.timesEquals(maxT); 
+    Matrix transition = motorAcceleration.arrayTimes(dif); 
+    
+    // Set the dynamics and execute motion
     master.startSynchronization();
     for (int i = 0; i < nWheels; i++) {
-      double s = motorSpeed.get(i, 0);
-      double a = transition.get(i, 0);
-      motor[i].setAcceleration((int) a);
-      motor[i].setSpeed((int) s);
-      if (s == 0)
-        motor[i].stop();
-      else if (s < 0)
-        motor[i].backward();
-      else if (s > 0)
-        motor[i].forward();
+      motor[i].setAcceleration((int) transition.get(i, 0));
+      motor[i].setSpeed((int) Math.abs(motorSpeed.get(i, 0)));
+      switch((int)Math.signum(motorSpeed.get(i, 0))) {
+        case -1: motor[i].backward(); break;
+        case 0: motor[i].stop(); break;
+        case 1: motor[i].forward(); break;
+      }
     }
     master.endSynchronization();
   }
 
   @Override
-  public void moveTo(double linear, double angular) {
-    Matrix wheelDelta = toMatrix(linear, angular);
-    Matrix motorDelta = forward.times(wheelDelta);
-    setSpeed(speed);
-    setAcceleration(acceleration);
+  public  void moveTo(double linear, double angular) {
+    moveTo(toMatrix(linear, angular), speed, acceleration);
+  }
+  
+  
+  private synchronized void moveTo(Matrix destination, Matrix mSpeed, Matrix mAcceleration) {    
+    Matrix motorDelta = forward.times(destination);
+    Matrix ratio = motorDelta.times(1 / this.getMax(motorDelta));
+    Matrix motorSpeed = forwardAbs.times(mSpeed).arrayTimes(ratio);
+    Matrix motorAcceleration = forwardAbs.times(mAcceleration).arrayTimes(ratio);
     master.startSynchronization();
     for (int i = 0; i < nWheels; i++) {
-      double s = motorDelta.get(i, 0);
-      motor[i].rotate((int) s);
+      motor[i].setAcceleration((int) motorAcceleration.get(i, 0));
+      motor[i].setSpeed((int) motorSpeed.get(i, 0));
+      motor[i].rotate((int) motorDelta.get(i, 0));
     }
     master.endSynchronization();
   }
@@ -210,6 +189,62 @@ public class DifferentialChassis implements Chassis {
   public PoseProvider getOdometer() {
     return new Odometer();
   }
+  
+  
+  
+  // Support for move based pilot
+  
+  public void moveStart() {
+    tachoAtMoveStart = getAttribute(0);
+  }
+  
+  public void getDisplacement(Move move) {
+    Matrix currentTacho = getAttribute(0);
+    Matrix delta = currentTacho.minus(tachoAtMoveStart);
+
+    delta = reverse.times(delta);
+    double distance = delta.get(0, 0);
+    double rotation = delta.get(1, 0);
+    if (distance == 0 && rotation == 0  )
+      move.setValues(Move.MoveType.STOP, (float) distance, (float) rotation, isMoving());
+    else if (Math.abs(rotation) < 1 )
+      move.setValues(Move.MoveType.TRAVEL, (float) distance, (float) rotation, isMoving());
+    else if (Math.abs(distance) < 1)
+      move.setValues(Move.MoveType.ROTATE, (float) distance, (float) rotation, isMoving());
+    else move.setValues(Move.MoveType.ARC, (float) distance, (float) rotation, isMoving());
+  }
+  
+  
+  
+public void arc (double radius, double angle) {
+  if (angle == 0) return;
+  double ratio =  Math.abs(Math.PI * radius / 180 );
+
+  if (Math.abs(angle) == Double.POSITIVE_INFINITY) {
+    Matrix tSpeed = speed.copy();
+    if ((ratio) > 1) tSpeed.set(1, 0, tSpeed.get(0,0) / ratio);
+    if ((ratio) < 1) tSpeed.set(0, 0, tSpeed.get(1,0) * ratio);
+    if (angle < 0) tSpeed.set(0, 0, -tSpeed.get(0,0) );
+    if (radius <0) tSpeed.set(1, 0, -tSpeed.get(1,0) );
+    travel(tSpeed);
+  }
+  else if (radius == 0) {
+    moveTo(0, angle);
+    return;
+  }
+  else {
+    Matrix displacement  = toMatrix(2 * Math.PI * Math.abs(radius) * Math.abs(angle) / 360 , angle);
+    if (angle < 0) displacement.set(0, 0, -displacement.get(0,0) );
+    if (radius <0) displacement.set(1, 0, -displacement.get(1,0) );
+    Matrix tSpeed = speed.copy();
+    if (ratio > 1) tSpeed.set(1, 0, tSpeed.get(0,0) / ratio);
+    if (ratio < 1) tSpeed.set(0, 0, tSpeed.get(1,0) * ratio);
+    Matrix tAcceleration = acceleration.copy();
+    if (ratio > 1) tAcceleration.set(1, 0, tAcceleration.get(0,0) / ratio);
+    if (ratio < 1) tAcceleration.set(0, 0, tAcceleration.get(1,0) * ratio);
+    moveTo(displacement, tSpeed, tAcceleration);
+  }
+}
 
 
     // Matrix utilities
@@ -234,7 +269,7 @@ public class DifferentialChassis implements Chassis {
    * @param attribute
    * @return
    */
-  private Matrix getAttribute(int attribute) {
+  private synchronized Matrix getAttribute(int attribute) {
     Matrix x = new Matrix(nWheels, 1);
     master.startSynchronization();
     for (int i = 0; i < nWheels; i++) {
@@ -298,10 +333,7 @@ public class DifferentialChassis implements Chassis {
     int    time = 64;
 
     private Odometer() {
-      lastTacho = new Matrix(nWheels, 1);
-      for (int i = 0; i < nWheels; i++) {
-        lastTacho.set(i, 0, motor[i].getTachoCount());
-      }
+      lastTacho = getAttribute(0);
       PoseTracker tracker = new PoseTracker();
       tracker.setDaemon(true);
       tracker.start();
@@ -320,7 +352,6 @@ public class DifferentialChassis implements Chassis {
     }
 
     private void updatePose() {
-      // TODO: Next statement will trigger a motor synchronize from a second thread (the chassis thread being the other one)
       Matrix currentTacho = getAttribute(0);
       Matrix delta = currentTacho.minus(lastTacho);
 
