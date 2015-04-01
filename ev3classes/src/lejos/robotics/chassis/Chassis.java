@@ -109,6 +109,6 @@ public interface Chassis {
    * @param move
    * The move object to update
    */
-  public void getDisplacement(Move move);
+  public Move getDisplacement(Move move);
   
 }

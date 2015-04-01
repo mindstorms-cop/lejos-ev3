@@ -248,7 +248,7 @@ private void initMatrices(boolean centralWheelForward, boolean motorReverse) {
 	}
 	
 	@Override
-	public void setAcceleration(double accel) {
+	public void setLinearAcceleration(double accel) {
 	  // TODO: take relative wheel speeds into account
 	  this.acceleration = (int) accel;
 		this.motor1.setAcceleration(acceleration);
@@ -257,7 +257,7 @@ private void initMatrices(boolean centralWheelForward, boolean motorReverse) {
 	}
 
   @Override
-  public double getAcceleration() {
+  public double getLinearAcceleration() {
     return acceleration;
   }
 
@@ -342,12 +342,12 @@ private void initMatrices(boolean centralWheelForward, boolean motorReverse) {
 		return motor1.isMoving() || motor2.isMoving() || motor3.isMoving();
 	}
 
-	public void setTravelSpeed(double speed) {
+	public void setLinearSpeed(double speed) {
 		linearSpeed = Math.abs((float)speed);
 		reverse = speed<0;
 	}
 
-	public double getTravelSpeed() {
+	public double getLinearSpeed() {
 		return linearSpeed;
 	}
 	
@@ -369,7 +369,7 @@ private void initMatrices(boolean centralWheelForward, boolean motorReverse) {
 		return speedVectorDirection;
 	}
 
-	public double getMaxTravelSpeed() {
+	public double getMaxLinearSpeed() {
 		// it is generally assumed, that the maximum accurate speed of Motor is
 		// 100 degree/second * Voltage
 		double maxRadSec = Math.toRadians(battery.getVoltage()*100f);
@@ -381,15 +381,15 @@ private void initMatrices(boolean centralWheelForward, boolean motorReverse) {
 		// max degree/second divided by degree/unit = unit/second
 	}
 
-	public void setRotateSpeed(double speed) {
+	public void setAngularSpeed(double speed) {
 		angularSpeed = (float)speed;
 	}
 	
-	public double getRotateSpeed() {
+	public double getAngularSpeed() {
 		return angularSpeed;
 	}
 
-	public double getRotateMaxSpeed() {
+	public double getMaxAngularSpeed() {
 		// it is generally assumed, that the maximum accurate speed of Motor is
 		// 100 degree/second * Voltage
 		double maxRadSec = Math.toRadians(battery.getVoltage()*100f);
@@ -537,7 +537,7 @@ private void initMatrices(boolean centralWheelForward, boolean motorReverse) {
 	 * @param turnRate the turn rate
 	 */
 	public void steer(float turnRate) {
-		float angSpeed = (float)(turnRate*getRotateMaxSpeed()/200);
+		float angSpeed = (float)(turnRate*getMaxAngularSpeed()/200);
 		float dir = reverse? speedVectorDirection : speedVectorDirection+180;
 		spinningMode = false;
 		setSpeed(linearSpeed, dir, angSpeed);
@@ -565,7 +565,7 @@ private void initMatrices(boolean centralWheelForward, boolean motorReverse) {
 	 * @param immediateReturn the immediate return
 	 */
 	public void steer(float turnRate, float angle, boolean immediateReturn) {
-		angularSpeed = (float)(turnRate*getRotateMaxSpeed()/200);
+		angularSpeed = (float)(turnRate*getMaxAngularSpeed()/200);
 //		LCD.drawString("spd "+angularSpeed+" deg/s ", 0, 0);	
 		float radius = (float) (linearSpeed/Math.toRadians(angularSpeed));
 		arc(radius,angle,immediateReturn);
@@ -679,7 +679,7 @@ private void initMatrices(boolean centralWheelForward, boolean motorReverse) {
 	 */
 	@Deprecated
 	public void setSpeed(int speed) {
-		setTravelSpeed(speed);
+		setLinearSpeed(speed);
 	}
 
 	private class Odometer extends Thread {
@@ -822,5 +822,19 @@ private void initMatrices(boolean centralWheelForward, boolean motorReverse) {
   @Override
   public void rotateLeft() {
     rotate(Double.POSITIVE_INFINITY, true);
+  }
+
+  @Override
+  public void setAngularAcceleration(double acceleration) {
+    // TODO Pilot does not take angular acceleration into account. 
+    // The method serves as a placeholder to satisfy the interface.
+
+    
+  }
+
+  @Override
+  public double getAngularAcceleration() {
+    // TODO see setAngularAcceleration
+    return 0;
   }
 }

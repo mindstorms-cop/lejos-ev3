@@ -56,9 +56,9 @@ public class PilotTester
         // Wait for user to press ENTER
     	System.out.println("Waiting for press");
 		Button.waitForAnyPress();
-        robot.setAcceleration(4000);
-		robot.setTravelSpeed(20); // cm/sec
-		robot.setRotateSpeed(180); // deg/sec
+        robot.setLinearAcceleration(4000);
+		robot.setLinearSpeed(20); // cm/sec
+		robot.setAngularSpeed(180); // deg/sec
 		System.out.println("Going forwards");
 		robot.forward();
 		Delay.msDelay(1000);

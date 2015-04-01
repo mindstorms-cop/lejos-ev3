@@ -62,6 +62,9 @@ public class DifferentialChassis implements Chassis {
     double a = this.getMaxAngularSpeed();
     setSpeed(s/2, a/2);
     setAcceleration(s/2, a/2);
+    
+    // store position of tacho's
+    tachoAtMoveStart = getAttribute(0);
   }
 
   @Override
@@ -72,7 +75,7 @@ public class DifferentialChassis implements Chassis {
 
   @Override
   public void setAcceleration(double linearAcceleration, double angularAcceleration) {
-    if (linearAcceleration <=0 || angularAcceleration <=0) throw new  IllegalArgumentException("Speed must be greater than 0");
+    if (linearAcceleration <=0 || angularAcceleration <=0) throw new  IllegalArgumentException("Acceleration must be greater than 0");
     acceleration = toMatrix(linearAcceleration, angularAcceleration);
   }
 
@@ -114,6 +117,7 @@ public class DifferentialChassis implements Chassis {
 
   @Override
   public  void moveTo(double linear, double angular) {
+    if (Math.abs(linear) == Double.POSITIVE_INFINITY || Math.abs(angular) == Double.POSITIVE_INFINITY) throw new  IllegalArgumentException("Distance and angle must be finite");
     moveTo(toMatrix(linear, angular), speed, acceleration);
   }
   
@@ -121,6 +125,7 @@ public class DifferentialChassis implements Chassis {
   private synchronized void moveTo(Matrix destination, Matrix mSpeed, Matrix mAcceleration) {    
     Matrix motorDelta = forward.times(destination);
     Matrix ratio = motorDelta.times(1 / this.getMax(motorDelta));
+    // TODO remove speed bug (motor speed becomes sum of linear and angular speed, even when driving straight)
     Matrix motorSpeed = forwardAbs.times(mSpeed).arrayTimes(ratio);
     Matrix motorAcceleration = forwardAbs.times(mAcceleration).arrayTimes(ratio);
     master.startSynchronization();
@@ -198,7 +203,7 @@ public class DifferentialChassis implements Chassis {
     tachoAtMoveStart = getAttribute(0);
   }
   
-  public void getDisplacement(Move move) {
+  public Move getDisplacement(Move move) {
     Matrix currentTacho = getAttribute(0);
     Matrix delta = currentTacho.minus(tachoAtMoveStart);
 
@@ -212,6 +217,7 @@ public class DifferentialChassis implements Chassis {
     else if (Math.abs(distance) < 1)
       move.setValues(Move.MoveType.ROTATE, (float) distance, (float) rotation, isMoving());
     else move.setValues(Move.MoveType.ARC, (float) distance, (float) rotation, isMoving());
+    return move;
   }
   
   
