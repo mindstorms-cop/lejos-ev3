@@ -33,17 +33,21 @@ public class TestPilot {
 
   public static void main(String[] args) {
     TestPilot foo = new TestPilot(NEW_DIFFERENTIAL);
-    foo.pilot.setLinearSpeed(foo.pilot.getMaxLinearSpeed()/2);
-    foo.pilot.setLinearAcceleration(foo.pilot.getMaxLinearSpeed()/4);
-    foo.pilot.setAngularSpeed(foo.pilot.getMaxAngularSpeed()/2);
-    foo.pilot.setAngularAcceleration(foo.pilot.getMaxAngularSpeed()/4);
+    foo.setDefaults();
     Sound.beep();
     Button.waitForAnyPress();
     //foo.travel();
-    //foo.arc();
-    foo.dynamics();
+    foo.arc();
+    //foo.dynamics();
     Button.waitForAnyPress();
   }
+  
+private void setDefaults() {
+  pilot.setLinearSpeed(pilot.getMaxLinearSpeed()/2);
+  pilot.setLinearAcceleration(pilot.getMaxLinearSpeed()/4);
+  pilot.setAngularSpeed(pilot.getMaxAngularSpeed()/2);
+  pilot.setAngularAcceleration(pilot.getMaxAngularSpeed()/4);
+}
   
 private void endMove() {
   System.out.println(poseProvider.getPose()); 
@@ -92,6 +96,10 @@ private void travel() {
 }
 
 private void arc() {
+  pilot.arc(0, 360);
+  endMove();
+  pilot.arc(0, -360);
+  endMove();
   pilot.arc(radius, angle);
   endMove();
   pilot.arc(radius, -angle);
@@ -108,18 +116,19 @@ private void arc() {
   endMove();
 }
 
+
 private void dynamics() {
   double lMax = pilot.getMaxLinearSpeed();
-
-//  pilot.setLinearSpeed(lMax);
-//  pilot.setLinearAcceleration(lMax/16);
-//  pilot.travel(distance);
-//  pilot.travel(-distance);
-//  endMove();
-  pilot.setLinearSpeed(lMax/16);
-  pilot.setLinearAcceleration(lMax);
-  pilot.travel(distance);
-  pilot.travel(-distance);
-  endMove();
+  
+  for (double s =1 ; s<=4 ; s *= 2) {
+    pilot.setLinearSpeed(lMax / s);
+    for (double a =0.5 ; a<=4 ; a *= 2) {
+      pilot.setLinearAcceleration(lMax / a);
+      pilot.travel(distance);
+      pilot.travel(-distance);
+      endMove();
+    }    
+  }
+  setDefaults();
 }
 }

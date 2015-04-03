@@ -271,7 +271,7 @@ public class NewPilot implements ArcRotateMoveController {
       stop();
     move = new Move(Move.MoveType.TRAVEL, (float) distance, 0, (float) linearSpeed, (float) angularSpeed, chassis.isMoving());
     chassis.moveStart();
-    chassis.moveTo(distance, 0);
+    chassis.moveTo(distance);
     movementStart(immediateReturn);
   }
 

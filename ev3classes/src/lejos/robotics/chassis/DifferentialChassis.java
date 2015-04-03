@@ -1,5 +1,6 @@
 package lejos.robotics.chassis;
 
+import lejos.hardware.lcd.LCD;
 import lejos.robotics.RegulatedMotor;
 import lejos.robotics.localization.PoseProvider;
 import lejos.robotics.navigation.Move;
@@ -30,6 +31,9 @@ public class DifferentialChassis implements Chassis {
   private RegulatedMotor master;
   private Matrix tachoAtMoveStart;
 
+  
+  // Constructors
+  
   public DifferentialChassis(final Wheel[] wheels) {
     nWheels = wheels.length;
     if (nWheels < 2 ) throw new  IllegalArgumentException("Differential robots must have at least two motorized wheels");
@@ -67,6 +71,8 @@ public class DifferentialChassis implements Chassis {
     tachoAtMoveStart = getAttribute(0);
   }
 
+  
+  // Gettters and setters
   @Override
   public void setSpeed(double linearSpeed, double angularSpeed) {
     if (linearSpeed <=0 || angularSpeed <=0) throw new  IllegalArgumentException("Speed must be greater than 0");
@@ -78,6 +84,62 @@ public class DifferentialChassis implements Chassis {
     if (linearAcceleration <=0 || angularAcceleration <=0) throw new  IllegalArgumentException("Acceleration must be greater than 0");
     acceleration = toMatrix(linearAcceleration, angularAcceleration);
   }
+  
+  
+  // Dynamics
+  @Override
+  public double getMaxLinearSpeed() {
+    Matrix motorSpeed = getAttribute(1);
+    Matrix wheelSpeed = copyAbsolute(reverse).times(motorSpeed);
+    return wheelSpeed.get(0, 0);
+  }
+
+  @Override
+  public double getMaxAngularSpeed() {
+    Matrix motorSpeed = getAttribute(1);
+    Matrix wheelSpeed = copyAbsolute(reverse).times(motorSpeed);
+    return wheelSpeed.get(1, 0);
+  }
+  
+  @Override
+  public boolean isMoving() {
+    for (RegulatedMotor wheel : motor) {
+      if (wheel.isMoving()) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+
+  @Override
+  public void waitComplete() {
+    for (RegulatedMotor wheel : motor)
+      wheel.waitComplete();
+  }
+
+  @Override
+  public boolean isStalled() {
+    for (RegulatedMotor wheel : motor) {
+      if (wheel.isStalled())
+        return true;
+    }
+    return false;
+  }
+
+  @Override
+  public double getMinRadius() {
+    return 0;
+  }
+
+  
+
+// Velocity based methods  
+
+  @Override
+  public void stop() {
+    travel(0, 0);
+  }
 
   @Override
   public void travel(double linearSpeed, double angularSpeed) {
@@ -86,7 +148,7 @@ public class DifferentialChassis implements Chassis {
   }
   
   
- public synchronized void travel(Matrix robotSpeed) {   
+ private synchronized void travel(Matrix robotSpeed) {   
     Matrix motorSpeed = forward.times(robotSpeed);
     Matrix motorAcceleration = forwardAbs.times(acceleration);
     Matrix currentMotorSpeed = (getAttribute(2));
@@ -115,76 +177,10 @@ public class DifferentialChassis implements Chassis {
     master.endSynchronization();
   }
 
-  @Override
-  public  void moveTo(double linear, double angular) {
-    if (Math.abs(linear) == Double.POSITIVE_INFINITY || Math.abs(angular) == Double.POSITIVE_INFINITY) throw new  IllegalArgumentException("Distance and angle must be finite");
-    moveTo(toMatrix(linear, angular), speed, acceleration);
-  }
   
   
-  private synchronized void moveTo(Matrix destination, Matrix mSpeed, Matrix mAcceleration) {    
-    Matrix motorDelta = forward.times(destination);
-    Matrix ratio = motorDelta.times(1 / this.getMax(motorDelta));
-    // TODO remove speed bug (motor speed becomes sum of linear and angular speed, even when driving straight)
-    Matrix motorSpeed = forwardAbs.times(mSpeed).arrayTimes(ratio);
-    Matrix motorAcceleration = forwardAbs.times(mAcceleration).arrayTimes(ratio);
-    master.startSynchronization();
-    for (int i = 0; i < nWheels; i++) {
-      motor[i].setAcceleration((int) motorAcceleration.get(i, 0));
-      motor[i].setSpeed((int) motorSpeed.get(i, 0));
-      motor[i].rotate((int) motorDelta.get(i, 0));
-    }
-    master.endSynchronization();
-  }
-
-  @Override
-  public boolean isMoving() {
-    for (RegulatedMotor wheel : motor) {
-      if (wheel.isMoving()) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  @Override
-  public void stop() {
-    travel(0, 0);
-  }
-
-  @Override
-  public double getMaxLinearSpeed() {
-    Matrix motorSpeed = getAttribute(1);
-    Matrix wheelSpeed = copyAbsolute(reverse).times(motorSpeed);
-    return wheelSpeed.get(0, 0);
-  }
-
-  @Override
-  public double getMaxAngularSpeed() {
-    Matrix motorSpeed = getAttribute(1);
-    Matrix wheelSpeed = copyAbsolute(reverse).times(motorSpeed);
-    return wheelSpeed.get(1, 0);
-  }
-
-  @Override
-  public void waitComplete() {
-    for (RegulatedMotor wheel : motor)
-      wheel.waitComplete();
-  }
-
-  @Override
-  public boolean isStalled() {
-    for (RegulatedMotor wheel : motor) {
-      if (wheel.isStalled())
-        return true;
-    }
-    return false;
-  }
-
-  @Override
-  public double getMinRadius() {
-    return 0;
-  }
+  
+  
 
   public static Modeler modelWheel(RegulatedMotor motor, double diameter) {
     return new Modeler(motor, diameter);
@@ -196,6 +192,71 @@ public class DifferentialChassis implements Chassis {
   }
   
   
+  
+
+  
+  private synchronized void setMotors(Matrix motorDelta, Matrix motorSpeed, Matrix motorAcceleration) {
+    master.startSynchronization();
+    for (int i = 0; i < nWheels; i++) {
+      motor[i].setAcceleration((int) motorAcceleration.get(i, 0));
+      motor[i].setSpeed((int) motorSpeed.get(i, 0));
+      motor[i].rotate((int) motorDelta.get(i, 0));
+    }
+    master.endSynchronization();
+  }
+
+  
+  @Override
+  public  void moveTo(double linear) {
+    if (Math.abs(linear) == Double.POSITIVE_INFINITY ) throw new  IllegalArgumentException("Distance must be finite");
+    Matrix motorDelta = forward.times(toMatrix(linear, 0));
+    Matrix motorSpeed = forwardAbs.times(toMatrix(speed.get(0,0), 0 ));
+    Matrix motorAcceleration = forwardAbs.times(toMatrix(acceleration.get(0,0), 0 ));
+    setMotors( motorDelta, motorSpeed, motorAcceleration);
+  }
+
+  @Override
+  public  void rotateTo(double angular) {
+    if (Math.abs(angular) == Double.POSITIVE_INFINITY ) throw new  IllegalArgumentException("Angle must be finite");
+    Matrix motorDelta = forward.times(toMatrix(0, angular));
+    Matrix motorSpeed = forwardAbs.times(toMatrix(0, speed.get(1,0) ));
+    Matrix motorAcceleration = forwardAbs.times(toMatrix(0, acceleration.get(0,0) ));
+    setMotors( motorDelta, motorSpeed, motorAcceleration);
+  }
+  
+  public void arc (double radius, double angle) {
+    if (angle == 0) return;
+    double ratio =  Math.abs(Math.PI * radius / 180 );
+  
+    if (Math.abs(angle) == Double.POSITIVE_INFINITY) {
+      Matrix tSpeed = speed.copy();
+      if ((ratio) > 1) tSpeed.set(1, 0, tSpeed.get(0,0) / ratio);
+      if ((ratio) < 1) tSpeed.set(0, 0, tSpeed.get(1,0) * ratio);
+      if (angle < 0) tSpeed.set(0, 0, -tSpeed.get(0,0) );
+      if (radius <0) tSpeed.set(1, 0, -tSpeed.get(1,0) );
+      travel(tSpeed);
+    }
+    else if (radius == 0) {
+      rotateTo(angle);
+      return;
+    }
+    else {
+      Matrix displacement  = toMatrix(2 * Math.PI * Math.abs(radius) * Math.abs(angle) / 360 , angle);
+      if (angle < 0) displacement.set(0, 0, -displacement.get(0,0) );
+      if (radius <0) displacement.set(1, 0, -displacement.get(1,0) );
+      Matrix tSpeed = speed.copy();
+      if (ratio > 1) tSpeed.set(1, 0, tSpeed.get(0,0) / ratio);
+      if (ratio < 1) tSpeed.set(0, 0, tSpeed.get(1,0) * ratio);
+      Matrix tAcceleration = acceleration.copy();
+      if (ratio > 1) tAcceleration.set(1, 0, tAcceleration.get(0,0) / ratio);
+      if (ratio < 1) tAcceleration.set(0, 0, tAcceleration.get(1,0) * ratio);
+      Matrix motorDelta = forward.times(displacement);
+      Matrix mRatio = motorDelta.times(1 / this.getMax(motorDelta));
+      Matrix motorSpeed = forwardAbs.times(tSpeed).arrayTimes(mRatio);
+      Matrix motorAcceleration = forwardAbs.times(tAcceleration).arrayTimes(mRatio);
+      setMotors( motorDelta, motorSpeed, motorAcceleration);
+    }
+  }
   
   // Support for move based pilot
   
@@ -219,38 +280,6 @@ public class DifferentialChassis implements Chassis {
     else move.setValues(Move.MoveType.ARC, (float) distance, (float) rotation, isMoving());
     return move;
   }
-  
-  
-  
-public void arc (double radius, double angle) {
-  if (angle == 0) return;
-  double ratio =  Math.abs(Math.PI * radius / 180 );
-
-  if (Math.abs(angle) == Double.POSITIVE_INFINITY) {
-    Matrix tSpeed = speed.copy();
-    if ((ratio) > 1) tSpeed.set(1, 0, tSpeed.get(0,0) / ratio);
-    if ((ratio) < 1) tSpeed.set(0, 0, tSpeed.get(1,0) * ratio);
-    if (angle < 0) tSpeed.set(0, 0, -tSpeed.get(0,0) );
-    if (radius <0) tSpeed.set(1, 0, -tSpeed.get(1,0) );
-    travel(tSpeed);
-  }
-  else if (radius == 0) {
-    moveTo(0, angle);
-    return;
-  }
-  else {
-    Matrix displacement  = toMatrix(2 * Math.PI * Math.abs(radius) * Math.abs(angle) / 360 , angle);
-    if (angle < 0) displacement.set(0, 0, -displacement.get(0,0) );
-    if (radius <0) displacement.set(1, 0, -displacement.get(1,0) );
-    Matrix tSpeed = speed.copy();
-    if (ratio > 1) tSpeed.set(1, 0, tSpeed.get(0,0) / ratio);
-    if (ratio < 1) tSpeed.set(0, 0, tSpeed.get(1,0) * ratio);
-    Matrix tAcceleration = acceleration.copy();
-    if (ratio > 1) tAcceleration.set(1, 0, tAcceleration.get(0,0) / ratio);
-    if (ratio < 1) tAcceleration.set(0, 0, tAcceleration.get(1,0) * ratio);
-    moveTo(displacement, tSpeed, tAcceleration);
-  }
-}
 
 
     // Matrix utilities
@@ -327,8 +356,7 @@ public void arc (double radius, double angle) {
     return a;
   }
 
-  /**
-   * The odometer keeps track of the robot pose based on odometry
+  /** The odometer keeps track of the robot pose based on odometry 
    * @author Aswin Bouwmeester
    *
    */
@@ -378,35 +406,28 @@ public void arc (double radius, double angle) {
       if (max < 10) time=time * 2;
       time = Math.max(Math.min(time, 64), 4);
       lastTacho = currentTacho;
-
-      
-      //      LCD.clear();
-//      LCD.drawString("dist: " + dist, 0, 0);
-//      LCD.drawString("angl: " + delta.get(1, 0), 0, 1);
-//      LCD.drawString("max : " + max, 0, 2);
-//      LCD.drawString("time: " + time, 0, 3);
-//
-//      LCD.drawString("xPose:    " + xPose, 0, 5);
-//      LCD.drawString("yPose:    " + yPose, 0, 6);
-//      LCD.drawString("aPose:    " + aPose, 0, 7);
-//      LCD.refresh();
-
     }
 
     private class PoseTracker extends Thread {
-
       public void run() {
-        // this.setPriority(MAX_PRIORITY);
         while (true) {
           updatePose();
           Delay.msDelay(time);
         }
       }
-
     }
-
   }
   
+  /** The Modeler class helps to model a wheel. Wheel attributes can be modeled using methods.
+   * <ul>
+   * <li>offset() specifes the location of the wheel along the y-axis</li>
+   * <li>gearing() specifes the gear ratio of the gear train between motor and wheel</li>
+   * <li>invert() inverts the direction of the motor. Equivalent to a negative gearing</li>
+   * </ul>
+   * <p>
+   * @author Aswin Bouwmeester
+   *
+   */
   public static class Modeler implements Wheel {
     protected RegulatedMotor motor;
     protected double         diameter;

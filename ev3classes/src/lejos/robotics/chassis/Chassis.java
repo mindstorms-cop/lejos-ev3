@@ -24,11 +24,10 @@ public interface Chassis {
    */
   public void travel(double linearSpeed, double angularSpeed);
 
-  /** Moves the chassis the specified distance and angle
+  /** Moves the chassis the specified distance 
    * @param linear
-   * @param angular
    */
-  public void moveTo(double linear, double angular);
+  public void moveTo(double linear);
   
   /** Moves the chassis in an arc 
    * @param radius
@@ -110,5 +109,10 @@ public interface Chassis {
    * The move object to update
    */
   public Move getDisplacement(Move move);
+
+  /** Rotates the chassis for the specified number of degrees
+   * @param angular
+   */
+  void rotateTo(double angular);
   
 }
