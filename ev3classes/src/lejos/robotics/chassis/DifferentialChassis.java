@@ -1,6 +1,5 @@
 package lejos.robotics.chassis;
 
-import lejos.hardware.lcd.LCD;
 import lejos.robotics.RegulatedMotor;
 import lejos.robotics.localization.PoseProvider;
 import lejos.robotics.navigation.Move;
@@ -9,8 +8,21 @@ import lejos.utility.Delay;
 import lejos.utility.Matrix;
 
 /**
- * Represents the chassis of a differential robot. <br>
- * The Chassis is a control system for driving a mobile robot.
+ * Represents the chassis of a differential robot. The Chassis provides a control system for driving a mobile robot. 
+ * 
+ * <p><b>How to create a DifferentialChassis object</b><br>
+ * The constructor of the DifferentialChassis class accepts an array of Wheel objects. 
+ * Each of the wheel objects describes one of the motorized wheels on the chassis. 
+ * A Description of a wheel consists of its diameter, its position, its motor and the gear train between wheel and motor.
+ * Wheel objects can be created using the modeler class, which is an inner class of the chassis and can be obtained using the {@link #modelWheel() modelWheel} method.
+ * <pre>
+ * Wheel wheel1 = DifferentialChassis.modelWheel(Motor.A, 81.6).offset(-70);
+ * Wheel wheel2 = DifferentialChassis.modelWheel(Motor.D, 81.6).offset(70);
+ * Chassis chassis = new DifferentialChassis(new Wheel[] { wheel1, wheel2 });
+ * </pre>
+ * </p>
+ * 
+ * <p>See also the {@link Chassis} interface.</p>
  * 
  * @author Aswin Bouwmeester
  *
@@ -34,6 +46,12 @@ public class DifferentialChassis implements Chassis {
   
   // Constructors
   
+  /** Constructor for the DifferentialChassis <p>
+   * See the description of the {@link DifferentialChassis} for details on constructing a chassis object. <p>
+   * The constructor sets speed and acceleration to default values. For speed the default is half the maximum speed. For acceleration the default is half the maximum speed / second.
+   * @param wheels
+   * An array of Wheel objects describing each of the motorized wheels on the chassis.
+   */
   public DifferentialChassis(final Wheel[] wheels) {
     nWheels = wheels.length;
     if (nWheels < 2 ) throw new  IllegalArgumentException("Differential robots must have at least two motorized wheels");
@@ -75,7 +93,7 @@ public class DifferentialChassis implements Chassis {
   // Gettters and setters
   @Override
   public void setSpeed(double linearSpeed, double angularSpeed) {
-    if (linearSpeed <=0 || angularSpeed <=0) throw new  IllegalArgumentException("Speed must be greater than 0");
+    //if (linearSpeed <=0 || angularSpeed <=0) throw new  IllegalArgumentException("Speed must be greater than 0");
     speed = toMatrix(linearSpeed, angularSpeed);
   }
 
@@ -182,6 +200,13 @@ public class DifferentialChassis implements Chassis {
   
   
 
+  /** Provides a modeler object to model one of the motorized wheels on the chassis
+   * @param motor
+   * The regulated motor that drives the wheel
+   * @param diameter
+   * The diameter of the wheel in a unit of choice.
+   * @return
+   */
   public static Modeler modelWheel(RegulatedMotor motor, double diameter) {
     return new Modeler(motor, diameter);
   }
@@ -224,6 +249,7 @@ public class DifferentialChassis implements Chassis {
     setMotors( motorDelta, motorSpeed, motorAcceleration);
   }
   
+  @Override
   public void arc (double radius, double angle) {
     if (angle == 0) return;
     double ratio =  Math.abs(Math.PI * radius / 180 );
@@ -264,6 +290,7 @@ public class DifferentialChassis implements Chassis {
     tachoAtMoveStart = getAttribute(0);
   }
   
+  @Override
   public Move getDisplacement(Move move) {
     Matrix currentTacho = getAttribute(0);
     Matrix delta = currentTacho.minus(tachoAtMoveStart);
@@ -356,7 +383,7 @@ public class DifferentialChassis implements Chassis {
     return a;
   }
 
-  /** The odometer keeps track of the robot pose based on odometry 
+  /** The odometer keeps track of the robot pose based on odometry using the encoders of the regulated motors of the wheels.
    * @author Aswin Bouwmeester
    *
    */
