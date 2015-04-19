@@ -3,7 +3,7 @@ import lejos.hardware.Button;
 import lejos.hardware.Sound;
 import lejos.hardware.motor.Motor;
 import lejos.robotics.chassis.Chassis;
-import lejos.robotics.chassis.DifferentialChassis;
+import lejos.robotics.chassis.WheeledChassis;
 import lejos.robotics.chassis.Wheel;
 import lejos.robotics.localization.OdometryPoseProvider;
 import lejos.robotics.localization.PoseProvider;
@@ -36,9 +36,9 @@ public class TestPilot {
     foo.setDefaults();
     Sound.beep();
     Button.waitForAnyPress();
-    //foo.travel();
+    foo.travel();
     foo.arc();
-    //foo.dynamics();
+    foo.dynamics();
     Button.waitForAnyPress();
   }
   
@@ -65,9 +65,9 @@ private TestPilot(int type) {
         break;}
       case NEW_DIFFERENTIAL: {
         Chassis chassis;
-        Wheel wheel1 = DifferentialChassis.modelWheel(Motor.A,43.2 * 0.989).offset(-72 / 1.033);
-        Wheel wheel2 = DifferentialChassis.modelWheel(Motor.D,43.2 * 0.989).offset(72 / 1.033);
-        chassis = new DifferentialChassis(new Wheel[]{wheel1, wheel2}); 
+        Wheel wheel1 = WheeledChassis.modelWheel(Motor.A, 94.2).offset(57).invert(true);
+        Wheel wheel2 = WheeledChassis.modelWheel(Motor.D, 94.2).offset(-57).invert(true);
+        chassis = new WheeledChassis(new Wheel[]{wheel1, wheel2}, WheeledChassis.TYPE_DIFFERENTIAL);
         pilot = new NewPilot(chassis);
         poseProvider = chassis.getOdometer();
         break;

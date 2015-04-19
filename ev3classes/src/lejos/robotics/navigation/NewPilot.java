@@ -1,11 +1,10 @@
 package lejos.robotics.navigation;
 import java.util.ArrayList;
 
-import lejos.hardware.motor.Motor;
 import lejos.robotics.RegulatedMotor;
 import lejos.robotics.chassis.Chassis;
-import lejos.robotics.chassis.DifferentialChassis;
 import lejos.robotics.chassis.Wheel;
+import lejos.robotics.chassis.WheeledChassis;
 import lejos.robotics.navigation.Move;
 import lejos.robotics.navigation.MoveListener;
 
@@ -154,9 +153,9 @@ public class NewPilot implements ArcRotateMoveController {
   @Deprecated 
   public NewPilot(final double leftWheelDiameter, final double rightWheelDiameter, final double trackWidth,
       final RegulatedMotor leftMotor, final RegulatedMotor rightMotor, final boolean reverse) {
-    this(new DifferentialChassis(new Wheel[] { 
-        DifferentialChassis.modelWheel(leftMotor, leftWheelDiameter).offset(trackWidth / 2).invert(reverse),
-        DifferentialChassis.modelWheel(rightMotor, rightWheelDiameter).offset(trackWidth / 2).invert(reverse) }));
+    this(new WheeledChassis(new Wheel[] { 
+        WheeledChassis.modelWheel(leftMotor, leftWheelDiameter).offset(trackWidth / 2).invert(reverse),
+        WheeledChassis.modelWheel(rightMotor, rightWheelDiameter).offset(trackWidth / 2).invert(reverse) }, WheeledChassis.TYPE_DIFFERENTIAL));
   }
 
   /**

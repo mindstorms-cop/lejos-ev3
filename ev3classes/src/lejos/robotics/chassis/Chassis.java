@@ -70,6 +70,26 @@ public interface Chassis {
    * angular component of the robot speed expressed in degrees/second.
    */
   public void travel(double linearSpeed, double angularSpeed);
+  
+  /** Moves a holonomic chassis with specified speed
+   * @param linearSpeed
+   * linear component of the robot speed, expressed in the same unit as the wheel diameter.
+   * @param direction
+   * The direction of the linear speed
+   * @param angularSpeed
+   * angular component of the robot speed expressed in degrees/second.
+   */
+  public void travel(double linearSpeed, double direction, double angularSpeed);
+  
+  /** Moves a holonomic robot with the specified speed
+   * @param xSpeed
+   * speed along the robots x-axis
+   * @param ySpeed
+   * speed along the robots y-axis
+   * @param angularSpeed
+   * angular component of the robot speed expressed in degrees/second.
+   */
+  public void travelCartesian(double xSpeed, double ySpeed, double angularSpeed );
 
   /** Moves the chassis the specified distance 
    * @param linear
