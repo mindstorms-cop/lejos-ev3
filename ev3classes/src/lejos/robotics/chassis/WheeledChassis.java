@@ -115,6 +115,7 @@ public class WheeledChassis implements Chassis {
 
   }
   
+  
   @Override
   public void setSpeed(double linearSpeed, double angularSpeed) {
     if (linearSpeed <=0 || angularSpeed <=0) throw new  IllegalArgumentException("Speed must be greater than 0");
@@ -178,24 +179,28 @@ public class WheeledChassis implements Chassis {
   }
 
   public synchronized void travel(double linearSpeed, double direction, double angularSpeed) {
+    if (dummyWheels ==1 && (direction % 180 != 0) ) throw new RuntimeException("Invalid direction for differential a robot."); 
+    // create matrices with speed and acceleration components using direction;
     Matrix motorSpeed = forward.times(toCartesianMatrix(linearSpeed, Math.toRadians(direction), angularSpeed));
-    Matrix motorAcceleration = forwardAbs.times(toCartesianMatrix(linearAcceleration, Math.toRadians(direction), angularAcceleration));
+    Matrix motorAcceleration = forwardAbs.times(copyAbsolute(toCartesianMatrix(linearAcceleration, Math.toRadians(direction), angularAcceleration)));
     Matrix currentMotorSpeed = (getAttribute(2));
 
-    // calculate acceleration for each of the wheels. The goal is that all
-    // wheels take an even amount of time to reach final speed
-    Matrix dif = copyAbsolute(motorSpeed.minus(currentMotorSpeed)); 
-    dif.arrayRightDivideEquals(motorAcceleration); 
-    double longestTime = getMax(dif); 
-    if (longestTime == 0) return; // Aha, no speed differences. Do nothing.
-    double maxT = 1 / longestTime; 
-    dif = dif.timesEquals(maxT); 
-    Matrix transition = motorAcceleration.arrayTimes(dif); 
+    // calculate acceleration for each of the wheels. 
+    // The goal is that all wheels take an even amount of time to reach final speed
     
+    // Calculate difference between final speed and current speed
+    Matrix dif = motorSpeed.minus(currentMotorSpeed); 
+    // Calculate how much time each wheel needs to reach final speed;
+    Matrix time = dif.arrayRightDivide(motorAcceleration); 
+    // Find the longest time
+    double longestTime = getMax(time); 
+    if (longestTime == 0) return; // Aha, no speed differences. Do nothing.
+    // Devide speed difference by the longest time to get acceleration for each wheel
+    dif = dif.timesEquals(1 / longestTime); 
     // Set the dynamics and execute motion
     master.startSynchronization();
     for (int i = 0; i < nWheels; i++) {
-      motor[i].setAcceleration((int) transition.get(i, 0));
+      motor[i].setAcceleration((int) dif.get(i, 0));
       motor[i].setSpeed((int) Math.abs(motorSpeed.get(i, 0)));
       switch((int)Math.signum(motorSpeed.get(i, 0))) {
         case -1: motor[i].backward(); break;
@@ -228,9 +233,11 @@ public class WheeledChassis implements Chassis {
   @Override
   public void arc (double radius, double angle) {
     if (angle == 0) return;
+    // ratio between linear and angular speed that corresponds with the radius
     double ratio =  Math.abs(Math.PI * radius / 180 );
   
     if (Double.isInfinite(angle)) {
+      // Decrease one of both speed components so that they have the calculated ratio and call travel method
       if (ratio>1) 
         travel(Math.signum(angle) * linearSpeed, 0, Math.signum(radius) * linearSpeed/ratio);
       else
@@ -241,10 +248,12 @@ public class WheeledChassis implements Chassis {
       return;
     }
     else {
+      // Matrix holding linear and angular distance matching the specified arc
       Matrix displacement  = toMatrix(Math.signum(angle) * 2 * Math.PI * Math.abs(radius) * Math.abs(angle) / 360 , 0, Math.signum(radius) * angle);
       
       Matrix tSpeed;
       Matrix tAcceleration;
+      // Decrease one of both speed and acceleration components so that they have the calculated ratio
       if (ratio > 1) {
         tSpeed=toMatrix(linearSpeed, 0, linearSpeed / ratio);
         tAcceleration=toMatrix(linearAcceleration, 0, linearAcceleration / ratio);
@@ -253,13 +262,15 @@ public class WheeledChassis implements Chassis {
         tSpeed=toMatrix(angularSpeed * ratio, 0, angularSpeed );
         tAcceleration=toMatrix(angularAcceleration * ratio, 0, angularAcceleration );
       }
-
+      // calculate the displacement of the motors from robot displacement
       Matrix motorDelta = forward.times(displacement);
+      // calculate the ratio between motor displacements when the largest displacement is set to 1;
       Matrix mRatio = motorDelta.times(1 / this.getMax(motorDelta));
+      // Calculate the speed of the fasted moving robot and from this 
+      // calculated the speed of the other motors using the motor displacement ratio
       Matrix motorSpeed = mRatio.times(getMax(forwardAbs.times(tSpeed)));
+      // repeat for acceleration
       Matrix motorAcceleration = mRatio.times(getMax(forwardAbs.times(tAcceleration)));
-      //Matrix motorSpeed = forwardAbs.times(tSpeed).arrayTimes(mRatio);
-      //Matrix motorAcceleration = forwardAbs.times(tAcceleration).arrayTimes(mRatio);
       setMotors( motorDelta, motorSpeed, motorAcceleration);
     }
   }
@@ -296,7 +307,7 @@ public class WheeledChassis implements Chassis {
     return wheelSpeed.get(2, 0);
   }
 
-  // Support for move based pilot
+  // Support for move reconstruction for move based pilots
   
   public void moveStart() {
     tachoAtMoveStart = getAttribute(0);
@@ -320,12 +331,7 @@ public class WheeledChassis implements Chassis {
     return move;
   }
   
-  protected double getAngle(Matrix xya) {
-    return Math.atan2(xya.get(1,0), xya.get(0,0));
-  }
-
-
-  
+ 
   /** Provides a modeler object to model a Holonomic motorized wheel on the chassis
    * @param motor
    * The regulated motor that drives the wheel
@@ -339,8 +345,8 @@ public class WheeledChassis implements Chassis {
   
   /** The Modeler class helps to model a wheel. Wheel attributes can be modeled using methods.
    * <ul>
-   * <li>offset() specifies the location of the wheel along the y-axis</li>
-   * <li>gearing() specifies the gear ratio of the gear train between motor and wheel</li>
+   * <li>polarPosition() specifies the location of the wheel</li>
+   * <li>gearRatio() specifies the gear ratio of the gear train between motor and wheel</li>
    * <li>invert() inverts the direction of the motor. Equivalent to a negative gearing</li>
    * </ul>
    * <p>
@@ -450,7 +456,7 @@ public class WheeledChassis implements Chassis {
   /** The Modeler class helps to model a wheel. Wheel attributes can be modeled using methods.
    * <ul>
    * <li>offset() specifes the location of the wheel along the y-axis</li>
-   * <li>gearing() specifes the gear ratio of the gear train between motor and wheel</li>
+   * <li>gearRatio() specifes the gear ratio of the gear train between motor and wheel</li>
    * <li>invert() inverts the direction of the motor. Equivalent to a negative gearing</li>
    * </ul>
    * <p>
@@ -554,25 +560,25 @@ public class WheeledChassis implements Chassis {
 
     @Override
     public Pose getPose() {
-      return new Pose((float) xPose, (float) yPose, (float)Math.toDegrees( aPose));
+      return new Pose((float) xPose, (float) yPose, (float) aPose);
     }
 
     @Override
     public synchronized void setPose(Pose pose) {
       xPose = pose.getX();
       yPose = pose.getY();
-      aPose = Math.toRadians(pose.getHeading());
+      aPose = pose.getHeading();
     }
 
-    private void updatePose() {
+    private synchronized void updatePose() {
       Matrix currentTacho = getAttribute(0);
       Matrix delta = currentTacho.minus(lastTacho);
 
       int max = (int) getMax(delta);
 
       delta = reverse.times(delta);
-      double sin = Math.sin(aPose);
-      double cos = Math.cos(aPose);
+      double sin = Math.sin(Math.toRadians(aPose));
+      double cos = Math.cos(Math.toRadians(aPose));
       double x = delta.get(0, 0);
       double y = delta.get(1, 0);
       
