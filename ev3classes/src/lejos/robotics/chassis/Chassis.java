@@ -2,6 +2,7 @@ package lejos.robotics.chassis;
 
 import lejos.robotics.localization.PoseProvider;
 import lejos.robotics.navigation.Move;
+import lejos.utility.Matrix;
 
 
 /**
@@ -11,9 +12,9 @@ import lejos.robotics.navigation.Move;
  * The primary goal of the chassis is to make a robot move. 
  * This can be done in two different ways. <br>
  * One way is by specifying the speed at which a chassis should move, this is called velocity mode. 
- * The primary methods for this mode are {@link #travel(double, double) travel} and {@link #stop() stop} .<br>
+ * The primary methods for this mode are {@link #setVelocity(double, double) travel} and {@link #stop() stop} .<br>
  * The second way is by specifying  the kind of move the chassis should make, this is called move mode. 
- * The primary methods for this mode are {@link #arc(double, double) arc}, {@link #rotateTo(double) rotateTo} and {@link #moveTo(double) move}.
+ * The primary methods for this mode are {@link #arc(double, double) arc}, {@link #rotate(double) rotateTo} and {@link #travel(double) move}.
  * The move mode methods use speed and acceleration parameters that have to be specified beforehand using {@link #setSpeed(double, double) setSpeed} 
  * and {@link #setAcceleration(double, double) setAcceleration}. <br>
  * Depending on the application one of these modes will suit better, but the modes can be used together.</p>
@@ -32,7 +33,7 @@ import lejos.robotics.navigation.Move;
  * The chassis makes sure the forward speed will be such that the angular speed will not exceed the specified setting. <p>
  * 
  * <p><b>Speed transitions</b><br>
- * To prevent jerky movements of the robot the velocity based methods {@link #travel(double, double) travel} and {@link #stop() stop} 
+ * To prevent jerky movements of the robot the velocity based methods {@link #setVelocity(double, double) travel} and {@link #stop() stop} 
  * ensure smooth speed transitions using the acceleration settings that are specified using the 
  * {@link #setAcceleration(double, double) setAcceleration} method. 
  * This means that each of the wheels of the chassis takes exactly the same time to reach final speed, 
@@ -43,12 +44,66 @@ import lejos.robotics.navigation.Move;
  * 
  * <p><b>Odometry</b><br>
  * The chassis can provide a {@link lejos.robotics.localization.PoseProvider PoseProvider} that keeps track of the robots pose using the encoders of the wheels.
- * The object is provided by the {@link #getOdometer() getOdometer} method.</p>
+ * The object is provided by the {@link #getPoseProvider() getOdometer} method.</p>
  * 
  * @author Aswin Bouwmeester
  *
  */
 public interface Chassis {
+  
+  /** Gets the setting for linear speed as is used in moveTo, Arc, and Rotate methods
+   * @return
+   * Linear speed in robot units/second
+   */
+  public double getLinearSpeed();
+  
+  /** Sets the linear speed as is used in moveTo, Arc, and Rotate methods
+   * @param linearSpeed
+   * Linear speed in robot units/second
+   */
+  public void setLinearSpeed(double linearSpeed);
+  
+  /** Gets the setting for angular speed as is used in moveTo, Arc, and Rotate methods
+   * @return
+   * Angular speed in degrees/second.
+   */
+  public double getAngularSpeed();
+  
+  /** Sets the angular speed as is used in moveTo, Arc, and Rotate methods
+   * @param angularSpeed
+   * Angular speed in degrees/second.
+   */
+  public void setAngularSpeed(double angularSpeed);
+  
+  /** Gets the setting for linear acceleration as is used in moveTo, Arc, Rotate and travel methods
+   * @return
+   * Linear acceleration in robot units/second^2
+   */
+  public double getLinearAcceleration();
+  
+  /** Sets the linear acceleration as is used in moveTo, Arc, Rotate and travel methods
+   * @param linearAcceleration
+   * Linear acceleration in robot units/second^2
+   */
+  public void setLinearAcceleration(double linearAcceleration);
+  
+  /** Gets the setting for angular acceleration as is used in moveTo, Arc, Rotate and travel methods
+   * @return
+   * Angular acceleration in degrees/second^2.
+   */
+  public double getAngularAcceleration();
+  
+  /** Sets the angular acceleration as is used in moveTo, Arc, Rotate and travel methods
+   * @param angularAcceleration
+   * Angular Acceleration in degrees/second^2.
+   */
+  public void setAngularAcceleration(double angularAcceleration);
+  
+  /** Returns a matrix containing the current speed of the robot.
+   * @return
+   * A matrix (3x1) containing the current speed of the robot. First row contains linear speed, second row contains direction of linear speed, third row contains angular speed.
+   */
+  public Matrix getCurrentSpeed();
 
   /**
    * Returns True if the robot is moving.
@@ -69,7 +124,7 @@ public interface Chassis {
    * @param angularSpeed
    * angular component of the robot speed expressed in degrees/second.
    */
-  public void travel(double linearSpeed, double angularSpeed);
+  public void setVelocity(double linearSpeed, double angularSpeed);
   
   /** Moves a holonomic chassis with specified speed
    * @param linearSpeed
@@ -79,7 +134,7 @@ public interface Chassis {
    * @param angularSpeed
    * angular component of the robot speed expressed in degrees/second.
    */
-  public void travel(double linearSpeed, double direction, double angularSpeed);
+  public void setVelocity(double linearSpeed, double direction, double angularSpeed);
   
   /** Moves a holonomic robot with the specified speed
    * @param xSpeed
@@ -95,7 +150,7 @@ public interface Chassis {
    * @param linear
    * linear component of the robot speed, expressed in the same unit as the wheel diameter.
    */
-  public void moveTo(double linear);
+  public void travel(double linear);
   
   /** Moves the chassis in an arc 
    * @param radius
@@ -164,7 +219,7 @@ public interface Chassis {
   /** Returns an Pose provider that uses odometry to keep track of the pose of the chassis
    * @return
    */
-  public PoseProvider getOdometer();  
+  public PoseProvider getPoseProvider();  
   
   /** Method used by the MovePilot to tell the chassis that a new move has started. This method is used in conjuction with the getDisplacement method.
    * 
@@ -185,6 +240,24 @@ public interface Chassis {
   /** Rotates the chassis for the specified number of degrees
    * @param angular
    */
-  void rotateTo(double angular);
+  void rotate(double angular);
+
+  /** Returns the linear component of the current speed of the robot
+   * @return
+   * linear speed in robot units/second
+   */
+  double getLinearVelocity();
+
+  /** Returns the current direction of the linear speed component of the robot
+   * @return
+   * direction in degrees 
+   */
+  double getLinearDirection();
+
+  /** Returns the angular component of the current speed of the robot
+   * @return
+   * Angular speed in degrees/second
+   */
+  double getAngularVelocity();
   
 }

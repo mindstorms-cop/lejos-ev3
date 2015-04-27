@@ -1,7 +1,9 @@
 package org.lejos.ev3.sample.pilottest;
+import lejos.hardware.BrickFinder;
 import lejos.hardware.Button;
 import lejos.hardware.Sound;
 import lejos.hardware.motor.Motor;
+import lejos.hardware.motor.NXTRegulatedMotor;
 import lejos.robotics.chassis.Chassis;
 import lejos.robotics.chassis.WheeledChassis;
 import lejos.robotics.chassis.Wheel;
@@ -11,7 +13,7 @@ import lejos.robotics.navigation.ArcRotateMoveController;
 import lejos.robotics.navigation.DifferentialPilot;
 import lejos.robotics.navigation.Pose;
 import lejos.utility.Delay;
-import lejos.robotics.navigation.NewPilot;
+import lejos.robotics.navigation.MovePilot;
 
 
 /**
@@ -22,6 +24,7 @@ import lejos.robotics.navigation.NewPilot;
 public class TestPilot {
   static final int OLD_DIFFERENTIAL = 0;
   static final int NEW_DIFFERENTIAL = 1;
+  static final int NEW_HOLONOMIC = 2;
   
   ArcRotateMoveController  pilot;
   PoseProvider poseProvider;
@@ -32,7 +35,7 @@ public class TestPilot {
   private boolean wait = false;
 
   public static void main(String[] args) {
-    TestPilot foo = new TestPilot(NEW_DIFFERENTIAL);
+    TestPilot foo = new TestPilot(NEW_HOLONOMIC);
     foo.setDefaults();
     Sound.beep();
     Button.waitForAnyPress();
@@ -68,15 +71,27 @@ private TestPilot(int type) {
         Wheel wheel1 = WheeledChassis.modelWheel(Motor.A, 94.2).offset(57).invert(true);
         Wheel wheel2 = WheeledChassis.modelWheel(Motor.D, 94.2).offset(-57).invert(true);
         chassis = new WheeledChassis(new Wheel[]{wheel1, wheel2}, WheeledChassis.TYPE_DIFFERENTIAL);
-        pilot = new NewPilot(chassis);
-        poseProvider = chassis.getOdometer();
+        pilot = new MovePilot(chassis);
+        poseProvider = chassis.getPoseProvider();
+        radius = Math.max(radius, pilot.getMinRadius());
+        poseProvider = new OdometryPoseProvider(pilot);
         break;
+      }
+        case NEW_HOLONOMIC: {
+          Chassis chassis;
+          Wheel wheel1 = WheeledChassis.modelHolonomicWheel(Motor.A, 48).polarPosition(0, 135).gearRatio(2);
+          Wheel wheel2 = WheeledChassis.modelHolonomicWheel(Motor.B, 48).polarPosition(120, 135).gearRatio(2);
+          Wheel wheel3 = WheeledChassis.modelHolonomicWheel(Motor.C, 48).polarPosition(240, 135).gearRatio(2);
+          chassis = new WheeledChassis(new Wheel[]{wheel1, wheel2, wheel3}, WheeledChassis.TYPE_HOLONOMIC);
+          pilot = new MovePilot(chassis);
+          poseProvider = chassis.getPoseProvider();
+          radius = Math.max(radius, pilot.getMinRadius());
+          poseProvider = new OdometryPoseProvider(pilot);
+          break;
+        }
       }
     }
     
-    radius = Math.max(radius, pilot.getMinRadius());
-    poseProvider = new OdometryPoseProvider(pilot);
-  }
 
 
 private void travel() {

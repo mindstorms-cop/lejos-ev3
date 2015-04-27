@@ -37,8 +37,10 @@ import lejos.utility.Matrix;
  * The odometry is computed by this class directly. 
  * For the class to work properly, take care to design the robot symmetrically, so that the three wheel axes meet in the center of the robot.</p>
  * @author Daniele Benedettelli
+ *  @deprecated use {@link MovePilot} instead. 
  * 
  */
+@Deprecated
 public class OmniPilot implements ArcRotateMoveController, RegulatedMotorListener {
     
     private Pose pose = new Pose(); // TODO: Technically this variable should be removed. Navigator handles Pose.

@@ -54,12 +54,9 @@ import lejos.robotics.navigation.MoveListener;
  * </pre></code>
  * </p>
  * 
- * Note: A DifferentialPilot robot can simulate a SteeringPilot robot by calling
- * DifferentialPilot.setMinRadius() and setting the value to something greater
- * than zero (perhaps 15 cm).
  * 
  **/
-public class NewPilot implements ArcRotateMoveController {
+public class MovePilot implements ArcRotateMoveController {
   private double                  minRadius   = 0;      
   final private Chassis           chassis;
   private ArrayList<MoveListener> _listeners  = new ArrayList<MoveListener>();
@@ -89,7 +86,7 @@ public class NewPilot implements ArcRotateMoveController {
    *          The right Motor (e.g., Motor.A).
    */
   @Deprecated
-  public NewPilot(final double wheelDiameter, final double trackWidth, final RegulatedMotor leftMotor,
+  public MovePilot(final double wheelDiameter, final double trackWidth, final RegulatedMotor leftMotor,
       final RegulatedMotor rightMotor) {
     this(wheelDiameter, trackWidth, leftMotor, rightMotor, false);
   }
@@ -113,7 +110,7 @@ public class NewPilot implements ArcRotateMoveController {
    *          backward.
    */
   @Deprecated
-  public NewPilot(final double wheelDiameter, final double trackWidth, final RegulatedMotor leftMotor,
+  public MovePilot(final double wheelDiameter, final double trackWidth, final RegulatedMotor leftMotor,
       final RegulatedMotor rightMotor, final boolean reverse) {
     this(wheelDiameter, wheelDiameter, trackWidth, leftMotor, rightMotor, reverse);
   }
@@ -151,7 +148,7 @@ public class NewPilot implements ArcRotateMoveController {
    *          backward.
    */
   @Deprecated 
-  public NewPilot(final double leftWheelDiameter, final double rightWheelDiameter, final double trackWidth,
+  public MovePilot(final double leftWheelDiameter, final double rightWheelDiameter, final double trackWidth,
       final RegulatedMotor leftMotor, final RegulatedMotor rightMotor, final boolean reverse) {
     this(new WheeledChassis(new Wheel[] { 
         WheeledChassis.modelWheel(leftMotor, leftWheelDiameter).offset(trackWidth / 2).invert(reverse),
@@ -164,7 +161,7 @@ public class NewPilot implements ArcRotateMoveController {
    * @param chassis
    *          A Chassis object describing the physical parameters of the robot.
    */
-  public NewPilot(Chassis chassis) {
+  public MovePilot(Chassis chassis) {
     this.chassis = chassis;
     linearSpeed = chassis.getMaxLinearSpeed() * 0.8;
     angularSpeed = chassis.getMaxAngularSpeed() * 0.8;
@@ -270,7 +267,7 @@ public class NewPilot implements ArcRotateMoveController {
       stop();
     move = new Move(Move.MoveType.TRAVEL, (float) distance, 0, (float) linearSpeed, (float) angularSpeed, chassis.isMoving());
     chassis.moveStart();
-    chassis.moveTo(distance);
+    chassis.travel(distance);
     movementStart(immediateReturn);
   }
 
@@ -409,7 +406,7 @@ public class NewPilot implements ArcRotateMoveController {
       while (more) {
         if (_moveActive) {
           if (chassis.isStalled())
-            NewPilot.this.stop();
+            MovePilot.this.stop();
           if (!chassis.isMoving() || _replaceMove) {
             movementStop();
             _moveActive = false;

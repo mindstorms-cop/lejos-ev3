@@ -21,7 +21,7 @@ public class RcControlChassis {
   Wheel wheel1 = WheeledChassis.modelWheel(Motor.A,43.2).offset(-72);
   Wheel wheel2 = WheeledChassis.modelWheel(Motor.D,43.2).offset(72);
   Chassis chassis = new WheeledChassis(new Wheel[]{wheel1, wheel2}, WheeledChassis.TYPE_DIFFERENTIAL); 
-  PoseProvider odometer = chassis.getOdometer();
+  PoseProvider odometer = chassis.getPoseProvider();
   double maxLinear = chassis.getMaxLinearSpeed();
   double maxAngular = chassis.getMaxAngularSpeed();
   double linear = 0;
@@ -64,7 +64,7 @@ public class RcControlChassis {
         break;
     }
     if (changed) {
-    chassis.travel(maxLinear * linear/ 100, maxAngular * angular / 100); 
+    chassis.setVelocity(maxLinear * linear/ 100, maxAngular * angular / 100); 
     }
     Pose pose = odometer.getPose();
     LCD.clear();
