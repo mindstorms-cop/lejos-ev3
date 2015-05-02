@@ -262,7 +262,6 @@ public class MovePilot implements ArcRotateMoveController {
 
   @Override
   public void travel(double distance, boolean immediateReturn) {
-    if (Math.abs(distance) == Double.POSITIVE_INFINITY) throw new  IllegalArgumentException("Distance must be finite");
     if (chassis.isMoving())
       stop();
     move = new Move(Move.MoveType.TRAVEL, (float) distance, 0, (float) linearSpeed, (float) angularSpeed, chassis.isMoving());
