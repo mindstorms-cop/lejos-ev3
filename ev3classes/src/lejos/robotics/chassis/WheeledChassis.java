@@ -23,7 +23,7 @@ import lejos.utility.Matrix;
  * <pre>
  * Wheel wheel1 = WheeledChassis.modelWheel(Motor.A, 81.6).offset(-70);
  * Wheel wheel2 = WheeledChassis.modelWheel(Motor.D, 81.6).offset(70);
- * Chassis chassis = new DifferentialChassis(new Wheel[] { wheel1, wheel2 }, WheeledChassis.TYPE_DIFFERENTIAL);
+ * Chassis chassis = new WheeledChassis(new Wheel[] { wheel1, wheel2 }, WheeledChassis.TYPE_DIFFERENTIAL);
  * </pre>
  * </p>
  * <p>
@@ -43,6 +43,10 @@ import lejos.utility.Matrix;
  *
  */
 public class WheeledChassis implements Chassis {
+  protected static final int TACHOCOUNT=0;
+  protected static final int MAXSPEED=1;
+  protected static final int ROTATIONSPEED=2;
+  
   public static final int TYPE_DIFFERENTIAL = 2;
   public static final int TYPE_HOLONOMIC = 3;
   final int              nWheels;
@@ -51,8 +55,8 @@ public class WheeledChassis implements Chassis {
    * This dummy wheel makes it possible to use linear algebra on three elements (x, y, angle) 
    * for the differential chassis. The y value is always zero for a differential chassis.
    */
-  final int dummyWheels;
-  final RegulatedMotor[] motor;
+  protected final int dummyWheels;
+  protected final RegulatedMotor[] motor;
   protected double linearSpeed, angularSpeed, linearAcceleration, angularAcceleration;
 
   final protected Matrix forward;
@@ -62,6 +66,7 @@ public class WheeledChassis implements Chassis {
   
   final protected Matrix forwardAbs;
   final protected Matrix reverseAbs;
+  protected Odometer odometer;
 
 
   
@@ -111,11 +116,69 @@ public class WheeledChassis implements Chassis {
     setAcceleration(s/2, a/2);
     
     // store position of tacho's
-    tachoAtMoveStart = getAttribute(0);
+    tachoAtMoveStart = getAttribute(TACHOCOUNT);
 
   }
   
   
+  @Override
+  public double getLinearSpeed() {
+    return linearSpeed;
+  }
+
+
+  @Override
+  public void setLinearSpeed(double linearSpeed) {
+    this.linearSpeed = linearSpeed;
+  }
+
+
+  @Override
+  public double getAngularSpeed() {
+    return angularSpeed;
+  }
+
+
+  @Override
+  public void setAngularSpeed(double angularSpeed) {
+    this.angularSpeed = angularSpeed;
+  }
+
+
+  @Override
+  public double getLinearAcceleration() {
+    return linearAcceleration;
+  }
+
+
+  @Override
+  public void setLinearAcceleration(double linearAcceleration) {
+    this.linearAcceleration = linearAcceleration;
+  }
+
+
+  @Override
+  public double getAngularAcceleration() {
+    return angularAcceleration;
+  }
+
+
+  @Override
+  public void setAngularAcceleration(double angularAcceleration) {
+    this.angularAcceleration = angularAcceleration;
+  }
+
+
+  public Matrix getForward() {
+    return forward.copy();
+  }
+
+
+  public Matrix getReverse() {
+    return reverse.copy();
+  }
+
+
   @Override
   public void setSpeed(double linearSpeed, double angularSpeed) {
     if (linearSpeed <=0 || angularSpeed <=0) throw new  IllegalArgumentException("Speed must be greater than 0");
@@ -166,24 +229,24 @@ public class WheeledChassis implements Chassis {
   
   @Override
   public void stop() {
-    travel(0, 0, 0);
+    setVelocity(0, 0, 0);
   }
 
   @Override
-  public void travel(double linearSpeed, double angularSpeed) {
-    travel(linearSpeed, 0, angularSpeed);
+  public void setVelocity(double linearSpeed, double angularSpeed) {
+    setVelocity(linearSpeed, 0, angularSpeed);
   }
   
   public void travelCartesian(double xSpeed, double ySpeed, double angularSpeed) {
-    travel(Math.sqrt(xSpeed * xSpeed + ySpeed * ySpeed), Math.atan2(ySpeed, xSpeed), angularSpeed);
+    setVelocity(Math.sqrt(xSpeed * xSpeed + ySpeed * ySpeed), Math.atan2(ySpeed, xSpeed), angularSpeed);
   }
 
-  public synchronized void travel(double linearSpeed, double direction, double angularSpeed) {
+  public synchronized void setVelocity(double linearSpeed, double direction, double angularSpeed) {
     if (dummyWheels ==1 && (direction % 180 != 0) ) throw new RuntimeException("Invalid direction for differential a robot."); 
     // create matrices with speed and acceleration components using direction;
     Matrix motorSpeed = forward.times(toCartesianMatrix(linearSpeed, Math.toRadians(direction), angularSpeed));
     Matrix motorAcceleration = forwardAbs.times(copyAbsolute(toCartesianMatrix(linearAcceleration, Math.toRadians(direction), angularAcceleration)));
-    Matrix currentMotorSpeed = (getAttribute(2));
+    Matrix currentMotorSpeed = (getAttribute(ROTATIONSPEED));
 
     // calculate acceleration for each of the wheels. 
     // The goal is that all wheels take an even amount of time to reach final speed
@@ -212,21 +275,29 @@ public class WheeledChassis implements Chassis {
   }
   
   @Override
-  public  void moveTo(double linear) {
-    if (Double.isInfinite(linear) ) throw new  IllegalArgumentException("Distance must be finite");
-    Matrix motorDelta = forward.times(toMatrix(linear, 0, 0));
-    Matrix motorSpeed = forwardAbs.times(toMatrix(linearSpeed, 0, 0 ));
-    Matrix motorAcceleration = forwardAbs.times(toMatrix(linearAcceleration, 0, 0 ));
-    setMotors( motorDelta, motorSpeed, motorAcceleration);
+  public  void travel(double linear) {
+    if (Double.isInfinite(linear) ) {
+      setVelocity(Math.signum(linear) * linearSpeed,0);
+    }
+    else {
+      Matrix motorDelta = forward.times(toMatrix(linear, 0, 0));
+      Matrix motorSpeed = forwardAbs.times(toMatrix(linearSpeed, 0, 0 ));
+      Matrix motorAcceleration = forwardAbs.times(toMatrix(linearAcceleration, 0, 0 ));
+      setMotors( motorDelta, motorSpeed, motorAcceleration);
+    }
   }
 
   @Override
-  public  void rotateTo(double angular) {
-    if (Double.isInfinite(angular) ) throw new  IllegalArgumentException("Angle must be finite");
-    Matrix motorDelta = forward.times(toMatrix(0, 0, angular));
-    Matrix motorSpeed = forwardAbs.times(toMatrix(0, 0, angularSpeed ));
-    Matrix motorAcceleration = forwardAbs.times(toMatrix(0, 0,  angularAcceleration ));
-    setMotors( motorDelta, motorSpeed, motorAcceleration);
+  public  void rotate(double angular) {
+    if (Double.isInfinite(angular) ) {
+      setVelocity(0, Math.signum(angular) * angularSpeed);
+    }
+    else {
+      Matrix motorDelta = forward.times(toMatrix(0, 0, angular));
+      Matrix motorSpeed = forwardAbs.times(toMatrix(0, 0, angularSpeed ));
+      Matrix motorAcceleration = forwardAbs.times(toMatrix(0, 0,  angularAcceleration ));
+      setMotors( motorDelta, motorSpeed, motorAcceleration);
+    }
   }
 
 
@@ -239,13 +310,19 @@ public class WheeledChassis implements Chassis {
     if (Double.isInfinite(angle)) {
       // Decrease one of both speed components so that they have the calculated ratio and call travel method
       if (ratio>1) 
-        travel(Math.signum(angle) * linearSpeed, 0, Math.signum(radius) * linearSpeed/ratio);
+        setVelocity(Math.signum(angle) * linearSpeed, 0, Math.signum(radius) * linearSpeed/ratio);
       else
-        travel(Math.signum(angle) * angularSpeed * ratio, 0, Math.signum(radius) * angularSpeed);
+        setVelocity(Math.signum(angle) * angularSpeed * ratio, 0, Math.signum(radius) * angularSpeed);
     }
     else if (radius == 0) {
-      rotateTo(angle);
+      rotate(angle);
       return;
+    }
+    else if (Double.isInfinite(radius)) {
+      if (angle < 0) 
+        travel(Double.POSITIVE_INFINITY);
+      else 
+        travel(Double.NEGATIVE_INFINITY);
     }
     else {
       // Matrix holding linear and angular distance matching the specified arc
@@ -294,7 +371,7 @@ public class WheeledChassis implements Chassis {
   // Dynamics
   @Override
   public double getMaxLinearSpeed() {
-    Matrix motorSpeed = getAttribute(1);
+    Matrix motorSpeed = getAttribute(MAXSPEED);
     
     Matrix wheelSpeed = reverseAbs.times(motorSpeed);
     return Math.sqrt(wheelSpeed.get(0, 0) * wheelSpeed.get(0, 0) + wheelSpeed.get(1, 0) * wheelSpeed.get(1, 0));
@@ -302,20 +379,44 @@ public class WheeledChassis implements Chassis {
 
   @Override
   public double getMaxAngularSpeed() {
-    Matrix motorSpeed = getAttribute(1);
+    Matrix motorSpeed = getAttribute(MAXSPEED);
     Matrix wheelSpeed = reverseAbs.times(motorSpeed);
     return wheelSpeed.get(2, 0);
   }
+  
+  @Override
+  public Matrix getCurrentSpeed() {
+    Matrix motorSpeed = getAttribute(ROTATIONSPEED);
+    Matrix wheelSpeed = reverse.times(motorSpeed);
+    return toPolar(wheelSpeed.get(0, 0),  wheelSpeed.get(1, 0),  wheelSpeed.get(2, 0));
+  }
+  
+  @Override
+  public double getLinearVelocity() {
+    return getCurrentSpeed().get(0,0);
+  }
+
+  @Override
+  public double getLinearDirection() {
+    return getCurrentSpeed().get(1,0);
+  }
+  
+  @Override
+  public double getAngularVelocity() {
+    return getCurrentSpeed().get(2,0);
+  }
+
+
 
   // Support for move reconstruction for move based pilots
   
   public void moveStart() {
-    tachoAtMoveStart = getAttribute(0);
+    tachoAtMoveStart = getAttribute(TACHOCOUNT);
   }
   
   @Override
   public Move getDisplacement(Move move) {
-    Matrix currentTacho = getAttribute(0);
+    Matrix currentTacho = getAttribute(TACHOCOUNT);
     Matrix delta = currentTacho.minus(tachoAtMoveStart);
 
     delta = reverse.times(delta);
@@ -426,6 +527,8 @@ public class WheeledChassis implements Chassis {
     }
 
     public Matrix getFactors() {
+      // TODO: correct angular component when the wheel axis doesn't go through the origin of the robot
+
       Matrix factors = new Matrix(1, 3);
       factors.set(0, 0, Math.cos(Math.toRadians(pose.getHeading())) * (360 ) / (diameter * Math.PI * gearRatio));
       factors.set(0, 1, Math.sin(Math.toRadians(pose.getHeading())) * (360 ) / (diameter * Math.PI * gearRatio));
@@ -466,7 +569,7 @@ public class WheeledChassis implements Chassis {
   public static class Modeler implements Wheel {
     protected RegulatedMotor motor;
     protected double         diameter;
-    protected double         gearing = 1;
+    protected double         gearRatio = 1;
     protected double         offset  = 0;
     protected double         angle   = 0;
 
@@ -504,8 +607,8 @@ public class WheeledChassis implements Chassis {
      *          The ratio between wheel speed and motor speed
      * @return
      */
-    public Modeler gearing(double val) {
-      this.gearing = val;
+    public Modeler gearRatio(double val) {
+      this.gearRatio = val;
       return this;
     }
 
@@ -516,15 +619,15 @@ public class WheeledChassis implements Chassis {
      * @return
      */
     public Modeler invert(boolean val) {
-      gearing = -gearing;
+      gearRatio = -gearRatio;
       return this;
     }
 
     public Matrix getFactors() {
       Matrix factors = new Matrix(1, 3);
-      factors.set(0, 0, (360 * gearing) / (diameter * Math.PI));
+      factors.set(0, 0, (360 * gearRatio) / (diameter * Math.PI));
       factors.set(0, 1, 0);
-      factors.set(0, 2, -((2.0 * offset * gearing) / diameter));
+      factors.set(0, 2, -((2.0 * offset * gearRatio) / diameter));
       return factors;
     }
 
@@ -537,8 +640,9 @@ public class WheeledChassis implements Chassis {
   
   
   @Override
-  public PoseProvider getOdometer() {
-    return new Odometer();
+  public PoseProvider getPoseProvider() {
+    if (odometer == null) odometer = new Odometer();
+    return  odometer;
   }
   
   /** The odometer keeps track of the robot pose based on odometry using the encoders of the regulated motors of the wheels.
@@ -552,7 +656,7 @@ public class WheeledChassis implements Chassis {
     int    time = 64;
 
     private Odometer() {
-      lastTacho = getAttribute(0);
+      lastTacho = getAttribute(TACHOCOUNT);
       PoseTracker tracker = new PoseTracker();
       tracker.setDaemon(true);
       tracker.start();
@@ -571,7 +675,7 @@ public class WheeledChassis implements Chassis {
     }
 
     private synchronized void updatePose() {
-      Matrix currentTacho = getAttribute(0);
+      Matrix currentTacho = getAttribute(TACHOCOUNT);
       Matrix delta = currentTacho.minus(lastTacho);
 
       int max = (int) getMax(delta);
@@ -633,6 +737,14 @@ protected Matrix toCartesianMatrix ( double radius, double direction, double ang
   return m;  
 }
 
+protected Matrix toPolar(double x, double y, double angular) {
+  Matrix m = new Matrix(3, 1);
+  m.set(0, 0, Math.sqrt(x * x + y * y));
+  m.set(1, 0, Math.toDegrees(Math.atan2(y,x)));
+  m.set(2, 0, angular);
+  return m;  
+}
+
 /**
  * Helper method to get some dynamic attributes from each motor
  * 
@@ -644,13 +756,13 @@ protected synchronized Matrix getAttribute(int attribute) {
   master.startSynchronization();
   for (int i = 0; i < nWheels; i++) {
     switch (attribute) {
-    case 0:
+    case TACHOCOUNT:
       x.set(i, 0, motor[i].getTachoCount());
       break;
-    case 1:
+    case MAXSPEED:
       x.set(i, 0, motor[i].getMaxSpeed());
       break;
-    case 2:
+    case ROTATIONSPEED:
       x.set(i, 0, motor[i].getRotationSpeed());
       break;
     }

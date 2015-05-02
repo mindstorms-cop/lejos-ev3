@@ -55,12 +55,14 @@ import java.util.ArrayList;
  * pilot.stop();
  * </pre></code>
  * </p>
- * 
+ * <p>
  * Note: A DifferentialPilot robot can simulate a SteeringPilot robot by calling
  * DifferentialPilot.setMinRadius() and setting the value to something greater
  * than zero (perhaps 15 cm).
- * 
+ * </p>
+ * @deprecated use {@link MovePilot} instead. 
  **/
+@Deprecated 
 public class DifferentialPilot implements  LineFollowingMoveController {
 	/**
 	 * Allocates a DifferentialPilot object, and sets the physical parameters of
