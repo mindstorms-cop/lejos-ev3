@@ -276,20 +276,28 @@ public class WheeledChassis implements Chassis {
   
   @Override
   public  void travel(double linear) {
-    if (Double.isInfinite(linear) ) throw new  IllegalArgumentException("Distance must be finite");
-    Matrix motorDelta = forward.times(toMatrix(linear, 0, 0));
-    Matrix motorSpeed = forwardAbs.times(toMatrix(linearSpeed, 0, 0 ));
-    Matrix motorAcceleration = forwardAbs.times(toMatrix(linearAcceleration, 0, 0 ));
-    setMotors( motorDelta, motorSpeed, motorAcceleration);
+    if (Double.isInfinite(linear) ) {
+      setVelocity(Math.signum(linear) * linearSpeed,0);
+    }
+    else {
+      Matrix motorDelta = forward.times(toMatrix(linear, 0, 0));
+      Matrix motorSpeed = forwardAbs.times(toMatrix(linearSpeed, 0, 0 ));
+      Matrix motorAcceleration = forwardAbs.times(toMatrix(linearAcceleration, 0, 0 ));
+      setMotors( motorDelta, motorSpeed, motorAcceleration);
+    }
   }
 
   @Override
   public  void rotate(double angular) {
-    if (Double.isInfinite(angular) ) throw new  IllegalArgumentException("Angle must be finite");
-    Matrix motorDelta = forward.times(toMatrix(0, 0, angular));
-    Matrix motorSpeed = forwardAbs.times(toMatrix(0, 0, angularSpeed ));
-    Matrix motorAcceleration = forwardAbs.times(toMatrix(0, 0,  angularAcceleration ));
-    setMotors( motorDelta, motorSpeed, motorAcceleration);
+    if (Double.isInfinite(angular) ) {
+      setVelocity(0, Math.signum(angular) * angularSpeed);
+    }
+    else {
+      Matrix motorDelta = forward.times(toMatrix(0, 0, angular));
+      Matrix motorSpeed = forwardAbs.times(toMatrix(0, 0, angularSpeed ));
+      Matrix motorAcceleration = forwardAbs.times(toMatrix(0, 0,  angularAcceleration ));
+      setMotors( motorDelta, motorSpeed, motorAcceleration);
+    }
   }
 
 
@@ -309,6 +317,12 @@ public class WheeledChassis implements Chassis {
     else if (radius == 0) {
       rotate(angle);
       return;
+    }
+    else if (Double.isInfinite(radius)) {
+      if (angle < 0) 
+        travel(Double.POSITIVE_INFINITY);
+      else 
+        travel(Double.NEGATIVE_INFINITY);
     }
     else {
       // Matrix holding linear and angular distance matching the specified arc
