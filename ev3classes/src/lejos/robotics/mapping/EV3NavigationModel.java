@@ -390,12 +390,12 @@ public class EV3NavigationModel extends NavigationModel implements MoveListener,
 							break;
 						case TRAVEL_SPEED:
 							float travelSpeed = dis.readFloat();
-							if (pilot != null) pilot.setTravelSpeed(travelSpeed);
+							if (pilot != null) pilot.setLinearSpeed(travelSpeed);
 							break;
 						case ROTATE_SPEED:
 							float rotateSpeed = dis.readFloat();
 							if (pilot != null && pilot instanceof RotateMoveController) {
-								((RotateMoveController)pilot).setRotateSpeed(rotateSpeed);
+								((RotateMoveController)pilot).setAngularSpeed(rotateSpeed);
 							}
 							break;
 						case RANDOM_MOVE_PARAMS:

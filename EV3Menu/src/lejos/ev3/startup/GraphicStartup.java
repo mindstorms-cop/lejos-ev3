@@ -1470,22 +1470,22 @@ public class GraphicStartup implements Menu {
 			                			pilot.travel(request.doubleValue, request.flag);
 			                			if (!request.flag) os.writeObject(reply);
 			                			break;
-			                		case PILOT_SET_TRAVEL_SPEED:
-			                			pilot.setTravelSpeed(request.doubleValue);
+			                		case PILOT_SET_LINEAR_SPEED:
+			                			pilot.setLinearSpeed(request.doubleValue);
 			                			break;
-			                		case PILOT_GET_TRAVEL_SPEED:
-			                			reply.doubleReply = pilot.getTravelSpeed();
+			                		case PILOT_GET_LINEAR_SPEED:
+			                			reply.doubleReply = pilot.getLinearSpeed();
 			                			os.writeObject(reply);
 			                			break;
-                          case PILOT_SET_ACCELERATION:
-                            pilot.setAcceleration(request.doubleValue);
+                          case PILOT_SET_LINEAR_ACCELERATION:
+                            pilot.setLinearAcceleration(request.doubleValue);
                             break;
-                          case PILOT_GET_ACCELERATION:
-                            reply.doubleReply = pilot.getAcceleration();
+                          case PILOT_GET_LINEAR_ACCELERATION:
+                            reply.doubleReply = pilot.getLinearAcceleration();
                             os.writeObject(reply);
                             break;
-			                		case PILOT_GET_MAX_TRAVEL_SPEED:
-			                			reply.doubleReply = pilot.getTravelSpeed();
+			                		case PILOT_GET_MAX_LINEAR_SPEED:
+			                			reply.doubleReply = pilot.getLinearSpeed();
 			                			os.writeObject(reply);
 			                			break;
 			                		case PILOT_GET_MOVEMENT:
@@ -1498,15 +1498,15 @@ public class GraphicStartup implements Menu {
 			                			pilot.rotate(request.doubleValue, request.flag);
 			                			if (!request.flag) os.writeObject(reply);
 			                			break;
-			                		case PILOT_GET_ROTATE_SPEED:
-			                			reply.doubleReply = pilot.getRotateSpeed();
+			                		case PILOT_GET_ANGULAR_SPEED:
+			                			reply.doubleReply = pilot.getAngularSpeed();
 			                			os.writeObject(reply);
 			                			break;
-			                		case PILOT_SET_ROTATE_SPEED:
-			                			pilot.setRotateSpeed(request.doubleValue);
+			                		case PILOT_SET_ANGULAR_SPEED:
+			                			pilot.setAngularSpeed(request.doubleValue);
 			                			break;
-			                		case PILOT_GET_MAX_ROTATE_SPEED:
-			                			reply.doubleReply = pilot.getRotateMaxSpeed();
+			                		case PILOT_GET_MAX_ANGULAR_SPEED:
+			                			reply.doubleReply = pilot.getMaxAngularSpeed();
 			                			os.writeObject(reply);
 			                			break;
 			                		case PILOT_STEER:

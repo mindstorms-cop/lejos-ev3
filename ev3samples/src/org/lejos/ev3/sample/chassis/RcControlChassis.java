@@ -1,4 +1,4 @@
-package org.lejos.ev3.sample.pilottest;
+package org.lejos.ev3.sample.chassis;
 
 import lejos.hardware.Button;
 import lejos.hardware.lcd.LCD;
@@ -6,8 +6,8 @@ import lejos.hardware.motor.Motor;
 import lejos.hardware.port.SensorPort;
 import lejos.hardware.sensor.EV3IRSensor;
 import lejos.robotics.chassis.Chassis;
-import lejos.robotics.chassis.DifferentialChassis;
 import lejos.robotics.chassis.Wheel;
+import lejos.robotics.chassis.WheeledChassis;
 import lejos.robotics.localization.PoseProvider;
 import lejos.robotics.navigation.Pose;
 import lejos.utility.Delay;
@@ -15,13 +15,13 @@ import lejos.utility.Delay;
 public class RcControlChassis {
   public static void main(String[] args) {
   
-  EV3IRSensor ir = new EV3IRSensor(SensorPort.S2);
+  EV3IRSensor ir = new EV3IRSensor(SensorPort.S1);
     
     
-  Wheel wheel1 = DifferentialChassis.modelWheel(Motor.A,43.2).offset(-72);
-  Wheel wheel2 = DifferentialChassis.modelWheel(Motor.D,43.2).offset(72);
-  Chassis chassis = new DifferentialChassis(new Wheel[]{wheel1, wheel2}); 
-  PoseProvider odometer = chassis.getOdometer();
+  Wheel wheel1 = WheeledChassis.modelWheel(Motor.A,43.2).offset(-72);
+  Wheel wheel2 = WheeledChassis.modelWheel(Motor.D,43.2).offset(72);
+  Chassis chassis = new WheeledChassis(new Wheel[]{wheel1, wheel2}, WheeledChassis.TYPE_DIFFERENTIAL); 
+  PoseProvider odometer = chassis.getPoseProvider();
   double maxLinear = chassis.getMaxLinearSpeed();
   double maxAngular = chassis.getMaxAngularSpeed();
   double linear = 0;
@@ -64,7 +64,7 @@ public class RcControlChassis {
         break;
     }
     if (changed) {
-    chassis.travel(maxLinear * linear/ 100, maxAngular * angular / 100); 
+    chassis.setVelocity(maxLinear * linear/ 100, maxAngular * angular / 100); 
     }
     Pose pose = odometer.getPose();
     LCD.clear();

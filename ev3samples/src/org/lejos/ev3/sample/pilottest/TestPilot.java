@@ -1,18 +1,19 @@
 package org.lejos.ev3.sample.pilottest;
+import lejos.hardware.BrickFinder;
 import lejos.hardware.Button;
 import lejos.hardware.Sound;
 import lejos.hardware.motor.Motor;
+import lejos.hardware.motor.NXTRegulatedMotor;
+import lejos.robotics.chassis.Chassis;
+import lejos.robotics.chassis.WheeledChassis;
+import lejos.robotics.chassis.Wheel;
 import lejos.robotics.localization.OdometryPoseProvider;
-import lejos.robotics.movechassis.AckermannMoveChassis;
-import lejos.robotics.movechassis.DifferentialMoveChassis;
-import lejos.robotics.movechassis.MoveChassis;
-import lejos.robotics.movechassis.MoveSteer;
-import lejos.robotics.movechassis.MoveWheel;
+import lejos.robotics.localization.PoseProvider;
+import lejos.robotics.navigation.ArcRotateMoveController;
 import lejos.robotics.navigation.DifferentialPilot;
-import lejos.robotics.navigation.LineFollowingMoveController;
 import lejos.robotics.navigation.Pose;
 import lejos.utility.Delay;
-import lejos.robotics.navigation.NewPilot;
+import lejos.robotics.navigation.MovePilot;
 
 
 /**
@@ -23,232 +24,126 @@ import lejos.robotics.navigation.NewPilot;
 public class TestPilot {
   static final int OLD_DIFFERENTIAL = 0;
   static final int NEW_DIFFERENTIAL = 1;
-  static final int NEW_STEERING = 2;
+  static final int NEW_HOLONOMIC = 2;
   
-  LineFollowingMoveController  pilot;
-  OdometryPoseProvider poseProvider;
-  double diameter = 300;  
+  ArcRotateMoveController  pilot;
+  PoseProvider poseProvider;
+  double radius = 300;  
   double angle = 90;
-  double distance = 300;
-  long time = 4000;
+  double distance = 1000;
+  int time = 4000;
+  private boolean wait = false;
 
   public static void main(String[] args) {
-    TestPilot foo = new TestPilot(NEW_DIFFERENTIAL);
-    foo.pilot.setTravelSpeed(100);
-    foo.pilot.setAcceleration((int) (foo.pilot.getTravelSpeed() * 1));
+    TestPilot foo = new TestPilot(NEW_HOLONOMIC);
+    foo.setDefaults();
     Sound.beep();
     Button.waitForAnyPress();
-//    if (foo.pilot.getMinRadius() != 0) 
-//      foo.testSteer();
-    foo.travels();
-//    foo.circle();
-//    foo.arcs();
-//    foo.arcDirections();
-//    foo.travelArcs();
-//    if (foo.pilot.getMinRadius() == 0) 
-//      foo.rotates();
-//    foo.dynamics();
-//    foo.stop();
-//    if (foo.pilot.getMinRadius() == 0) 
-//      foo.localization();
-//    foo.steers1();
-//    foo.symmetry();
+    foo.travel();
+    foo.arc();
+    foo.dynamics();
+    Button.waitForAnyPress();
   }
   
-  private void circle() {
-    pilot.arc(diameter, 360);
-    pilot.travel(0);
-  }
-
-  private void symmetry() {
-    // both counterclockwise turn and clockwise turn should last equally long
-    long start = System.currentTimeMillis();
-    pilot.arc(diameter, angle * 10);
-    System.out.format("CCW: %d%n", System.currentTimeMillis() -start);
-    
-    start = System.currentTimeMillis();
-    pilot.arc(diameter, -angle * 10);  // Behaves strange with 0.9.0-beta, has radius=0;
-    System.out.format(" CW: %d%n", System.currentTimeMillis() -start);
-  }
-
-  private void localization() {
-    // Set to zero
-    poseProvider.setPose(new Pose());
-    getPose();
-    pilot.travel(distance);
-    getPose();
-    pilot.rotate(90);
-    getPose();
-    pilot.travel(distance);
-    getPose();
-    pilot.rotate(90);
-    getPose();
-    pilot.arc(distance, 90);  // Strange behavior sometimes with both versions of the pilot, starts as an arc ends as a line
-    getPose();
-    pilot.rotate(90);
-    getPose(); 
-  }
-
-  private void stop() {
-    pilot.forward();
-    Delay.msDelay(time);
-    pilot.stop();
-    pilot.backward();
-    Delay.msDelay(time);
-    pilot.stop();
-  }
-
-  private void dynamics() {
-  // Test all the methods dealing with dynamics  
-  pilot.setTravelSpeed(pilot.getMaxTravelSpeed() * .8);
-  pilot.setAcceleration((int) (pilot.getTravelSpeed() * 4));
-  pilot.travel(distance);
-  pilot.setTravelSpeed(pilot.getMaxTravelSpeed() * .5);
-  pilot.setAcceleration((int) (pilot.getTravelSpeed() * 1));
-  pilot.travel(-distance);
-  pilot.setTravelSpeed(pilot.getMaxTravelSpeed() * .8);
-  pilot.setAcceleration((int) (pilot.getTravelSpeed() * 4));
+private void setDefaults() {
+  pilot.setLinearSpeed(pilot.getMaxLinearSpeed()/2);
+  pilot.setLinearAcceleration(pilot.getMaxLinearSpeed()/4);
+  pilot.setAngularSpeed(pilot.getMaxAngularSpeed()/2);
+  pilot.setAngularAcceleration(pilot.getMaxAngularSpeed()/4);
+}
   
-  if (pilot.getMinRadius()==0) {
-    pilot.setRotateSpeed(pilot.getRotateMaxSpeed() *.8);
-    pilot.rotate(360);
-    pilot.setRotateSpeed(pilot.getRotateMaxSpeed() *.2);
-    pilot.rotate(-360);
-    pilot.setRotateSpeed(pilot.getRotateMaxSpeed() *.8);
-  }
-  pilot.setTravelSpeed(100);
-  pilot.setAcceleration((int) (pilot.getTravelSpeed() * 1));
-  }
+private void endMove() {
+  System.out.println(poseProvider.getPose()); 
+  poseProvider.setPose(new Pose(0,0,0)); 
+  if (wait ) Button.waitForAnyPress(time);
 
-  private void steers1() {
-    pilot.steer(0);         // Causes a stop with 0.9.0-beta
-    Delay.msDelay(time);
-//    pilot.steer(100);         // Causes a stop with 0.9.0-beta
-//    Delay.msDelay(time);
-//    pilot.steer(-100);         // Causes a stop with 0.9.0-beta
-//    Delay.msDelay(time);
-//    pilot.steer(199);         // Causes a stop with 0.9.0-beta
-//    Delay.msDelay(time);
-//    pilot.steer(-199);         // Causes a stop with 0.9.0-beta
-//    Delay.msDelay(time);
-    pilot.stop();
-  }
-  
-  private void steers() {
-    pilot.forward();
-    Delay.msDelay(time);
-    pilot.steer(0);         // Causes a stop with 0.9.0-beta
-    Delay.msDelay(time);
-    pilot.steer(20);        // Causes a stop with 0.9.0-beta
-    Delay.msDelay(time);
-    pilot.steer(-20);       // Causes a stop with 0.9.0-beta
-    Delay.msDelay(time);
-    pilot.stop();
-    
-    pilot.steerBackward(-20);
-    Delay.msDelay(time);
-    pilot.steerBackward(20);
-    Delay.msDelay(time);
-    pilot.steerBackward(0);
-    Delay.msDelay(time);
-  }
+}
 
-  private void arcs() {
-    // 0.9.0-beta doesn't calculate acceleration or speed properly
-   
-    pilot.arc(diameter, angle);
-    pilot.arc(diameter, -angle);   // Sometimes behaves strange with 0.9.0-beta, has radius=0;
-    pilot.arc(-diameter, angle);
-    pilot.arc(-diameter, -angle);  // Sometimes behaves strange with 0.9.0-beta, has radius=0;
-  }
-  
-  
-
-  
-  private void testSteer() {
-    pilot.travelArc(pilot.getMinRadius(), 0);
-    Delay.msDelay(time);
-    pilot.travelArc(-pilot.getMinRadius(), 0);
-    Delay.msDelay(time);
-    pilot.travel(0);
-  }
-    
-  private void arcDirections() {
-    pilot.arcForward(diameter); 
-    Delay.msDelay(time);
-    pilot.arcBackward(diameter); 
-    Delay.msDelay(time);
-    pilot.arcForward(-diameter); 
-    Delay.msDelay(time);
-    pilot.arcBackward(-diameter); 
-    Delay.msDelay(time);
-    pilot.stop();
-  }
-
-  
-  private void travelArcs() {
-    pilot.travelArc(diameter , distance);
-    pilot.travelArc(diameter, -distance);
-    pilot.travelArc(-diameter, distance); // Behaves strange with 0.9.0-beta,
-    pilot.travelArc(-diameter, -distance);
-  }
-  
-  private void rotates() {
-    pilot.rotate(360);
-    pilot.rotate(-360);
-    pilot.rotate(360, true);
-    while (pilot.isMoving());
-    pilot.rotate(-360, true);
-    while (pilot.isMoving());
-  }
-
-  private void travels() {
-    pilot.forward();
-    Delay.msDelay(time);
-    pilot.backward();
-    Delay.msDelay(time);
-    pilot.travel(distance, true);
-    while (pilot.isMoving());
-    pilot.travel(-distance, true);
-    while (pilot.isMoving());
-    pilot.travel(distance);
-    pilot.travel(-distance);
-  }
-
- 
-  private TestPilot(int type) {
-    MoveChassis chassis;
-    MoveWheel[] wheels;
-    MoveSteer steer;
+private TestPilot(int type) {
     
     switch (type) {
       case OLD_DIFFERENTIAL: {
         pilot = new DifferentialPilot(43.2, 142, Motor.D, Motor.A);
+        poseProvider = new OdometryPoseProvider(pilot);
         break;}
       case NEW_DIFFERENTIAL: {
-        wheels = new MoveWheel[]{new MoveWheel.Modeler(Motor.D, 43.2).offset(72).build(), new MoveWheel.Modeler(Motor.A, 43.2).offset(-72).build()};
-        chassis = new DifferentialMoveChassis(wheels ); 
-        pilot = new NewPilot(chassis);
+        Chassis chassis;
+        Wheel wheel1 = WheeledChassis.modelWheel(Motor.A, 94.2).offset(57).invert(true);
+        Wheel wheel2 = WheeledChassis.modelWheel(Motor.D, 94.2).offset(-57).invert(true);
+        chassis = new WheeledChassis(new Wheel[]{wheel1, wheel2}, WheeledChassis.TYPE_DIFFERENTIAL);
+        pilot = new MovePilot(chassis);
+        poseProvider = chassis.getPoseProvider();
+        radius = Math.max(radius, pilot.getMinRadius());
+        poseProvider = new OdometryPoseProvider(pilot);
         break;
       }
-      case NEW_STEERING: {
-        wheels = new MoveWheel[]{ new MoveWheel.Modeler(Motor.D, 81.6).offset(80).gearing(1).build(), 
-            new MoveWheel.Modeler(Motor.A, 81.6).offset(-80).gearing(1).build()};
-        steer = new MoveSteer.Modeler(Motor.B, -132).maxAngle(30).gearing(.93).build();
-        chassis = new AckermannMoveChassis(wheels, steer);
-        pilot = new NewPilot(chassis);
-        break;
+        case NEW_HOLONOMIC: {
+          Chassis chassis;
+          Wheel wheel1 = WheeledChassis.modelHolonomicWheel(Motor.A, 48).polarPosition(0, 135).gearRatio(2);
+          Wheel wheel2 = WheeledChassis.modelHolonomicWheel(Motor.B, 48).polarPosition(120, 135).gearRatio(2);
+          Wheel wheel3 = WheeledChassis.modelHolonomicWheel(Motor.C, 48).polarPosition(240, 135).gearRatio(2);
+          chassis = new WheeledChassis(new Wheel[]{wheel1, wheel2, wheel3}, WheeledChassis.TYPE_HOLONOMIC);
+          pilot = new MovePilot(chassis);
+          poseProvider = chassis.getPoseProvider();
+          radius = Math.max(radius, pilot.getMinRadius());
+          poseProvider = new OdometryPoseProvider(pilot);
+          break;
+        }
       }
     }
     
-    diameter = Math.max(diameter, pilot.getMinRadius());
-    poseProvider = new OdometryPoseProvider(pilot);
-  }
-  
-  
-  void getPose() {
-    Pose pose = poseProvider.getPose();
-    System.out.println(pose);
-  }
 
+
+private void travel() {
+  pilot.travel(distance);
+  endMove();
+  pilot.travel(-distance);
+  endMove();
+  pilot.travel(distance, true);
+  while(pilot.isMoving()) Delay.msDelay(10);
+  endMove();
+  pilot.travel(-distance, true);
+  while(pilot.isMoving()) Delay.msDelay(10);
+  endMove();
+  pilot.travel(0, true);
+  while(pilot.isMoving());
+  endMove();
+}
+
+private void arc() {
+  pilot.arc(0, 360);
+  endMove();
+  pilot.arc(0, -360);
+  endMove();
+  pilot.arc(radius, angle);
+  endMove();
+  pilot.arc(radius, -angle);
+  endMove();
+  pilot.arc(-radius, angle);
+  endMove();
+  pilot.arc(-radius, -angle);
+  endMove();
+  pilot.arc(radius, angle, true);
+  while(pilot.isMoving()) Delay.msDelay(10);
+  endMove();
+  pilot.arc(radius, -angle, true);
+  while(pilot.isMoving()) Delay.msDelay(10);
+  endMove();
+}
+
+
+private void dynamics() {
+  double lMax = pilot.getMaxLinearSpeed();
+  
+  for (double s =1 ; s<=4 ; s *= 2) {
+    pilot.setLinearSpeed(lMax / s);
+    for (double a =0.5 ; a<=4 ; a *= 2) {
+      pilot.setLinearAcceleration(lMax / a);
+      pilot.travel(distance);
+      pilot.travel(-distance);
+      endMove();
+    }    
+  }
+  setDefaults();
+}
 }
