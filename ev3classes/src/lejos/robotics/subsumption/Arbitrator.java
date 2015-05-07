@@ -137,10 +137,10 @@ public class Arbitrator
               break;
             }
           }
-//          int active = _active; // is local copy really necessary?  only if the action() has completed since line 134 finiahed try without
+          int active = _active; // local copy in case _active is set to NONE by the primary thread
           if (_active != NONE && _highestPriority > _active)
           {
-            _behavior[_active].suppress();
+            _behavior[active].suppress();
           }
         }// end synchronize block - main thread can run now
         Thread.yield();
