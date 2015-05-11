@@ -152,7 +152,7 @@ public class MovePilot implements ArcRotateMoveController {
       final RegulatedMotor leftMotor, final RegulatedMotor rightMotor, final boolean reverse) {
     this(new WheeledChassis(new Wheel[] { 
         WheeledChassis.modelWheel(leftMotor, leftWheelDiameter).offset(trackWidth / 2).invert(reverse),
-        WheeledChassis.modelWheel(rightMotor, rightWheelDiameter).offset(trackWidth / 2).invert(reverse) }, WheeledChassis.TYPE_DIFFERENTIAL));
+        WheeledChassis.modelWheel(rightMotor, rightWheelDiameter).offset(-trackWidth / 2).invert(reverse) }, WheeledChassis.TYPE_DIFFERENTIAL));
   }
 
   /**
