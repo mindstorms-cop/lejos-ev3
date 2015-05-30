@@ -1940,14 +1940,14 @@ public class GraphicStartup implements Menu {
                     System.out.println("Menu resumed");
                 	break;
                 case 6:
+                    EV3IOPort.closeAll();
+                    selection = 0;
+                    break;
+                case 7:
                     Settings.setProperty(defaultProgramProperty, "");
                     Settings.setProperty(defaultProgramAutoRunProperty, "");
                     selection = 0;
                     break;
-                case 7:
-                	EV3IOPort.closeAll();
-                	selection = 0;
-                	break;
             }
         } while (selection >= 0);
     }
