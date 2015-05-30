@@ -46,7 +46,7 @@ public class EV3I2CPort extends EV3IOPort implements I2CPort
     protected boolean initSensor()
     {
         cmd[0] = (byte)port;
-        i2c.ioctl(IIC_CONNECT, cmd);        
+        i2c.ioctl(IIC_CONNECT, cmd); 
         return true;
     }
     
@@ -127,6 +127,8 @@ public class EV3I2CPort extends EV3IOPort implements I2CPort
         int result = (int) cmd[1];
         if (result == STATUS_FAIL)
             throw new I2CException("I2C I/O error");
+        if (result == STATUS_BUSY)
+            throw new I2CException("I2C Bus busy");            
         if (result == STATUS_OK)
         {
             //System.out.println("iic time " + (System.currentTimeMillis() - st));
