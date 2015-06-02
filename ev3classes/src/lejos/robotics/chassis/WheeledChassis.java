@@ -460,6 +460,7 @@ public class WheeledChassis implements Chassis {
     protected double         gearRatio = 1;
     protected double         offset  = 0;
     protected Pose           pose = new Pose(0,0,0);
+    protected boolean        invert = false;
 
     /**
      * Creates a modeler object to model a robot wheel
@@ -522,7 +523,7 @@ public class WheeledChassis implements Chassis {
      * @return
      */
     public HolonomicModeler invert(boolean val) {
-      gearRatio = -gearRatio;
+      invert = val; 
       return this;
     }
 
@@ -530,9 +531,9 @@ public class WheeledChassis implements Chassis {
       // TODO: correct angular component when the wheel axis doesn't go through the origin of the robot
 
       Matrix factors = new Matrix(1, 3);
-      factors.set(0, 0, Math.cos(Math.toRadians(pose.getHeading())) * (360 ) / (diameter * Math.PI * gearRatio));
-      factors.set(0, 1, Math.sin(Math.toRadians(pose.getHeading())) * (360 ) / (diameter * Math.PI * gearRatio));
-      factors.set(0, 2, (( 2 * pose.getLocation().length() ) / (diameter * gearRatio)));
+      factors.set(0, 0, Math.cos(Math.toRadians(pose.getHeading())) * (360 ) / (diameter * Math.PI * gearRatio * (invert ? -1 : 1)));
+      factors.set(0, 1, Math.sin(Math.toRadians(pose.getHeading())) * (360 ) / (diameter * Math.PI * gearRatio * (invert ? -1 : 1)));
+      factors.set(0, 2, (( 2 * pose.getLocation().length() ) / (diameter * gearRatio * (invert ? -1 : 1))));
       return factors;
     }
 
@@ -572,6 +573,7 @@ public class WheeledChassis implements Chassis {
     protected double         gearRatio = 1;
     protected double         offset  = 0;
     protected double         angle   = 0;
+    protected boolean        invert = false;
 
     /**
      * Creates a modeler object to model a robot wheel
@@ -619,15 +621,15 @@ public class WheeledChassis implements Chassis {
      * @return
      */
     public Modeler invert(boolean val) {
-      gearRatio = -gearRatio;
+      invert = val;
       return this;
     }
 
     public Matrix getFactors() {
       Matrix factors = new Matrix(1, 3);
-      factors.set(0, 0, (360 * gearRatio) / (diameter * Math.PI));
+      factors.set(0, 0, (360 * gearRatio * (invert ? -1 : 1)) / (diameter * Math.PI));
       factors.set(0, 1, 0);
-      factors.set(0, 2, -((2.0 * offset * gearRatio) / diameter));
+      factors.set(0, 2, -((2.0 * offset * gearRatio * (invert ? -1 : 1)) / diameter));
       return factors;
     }
 
