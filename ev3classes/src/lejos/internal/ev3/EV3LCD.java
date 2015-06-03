@@ -159,7 +159,7 @@ public class EV3LCD implements CommonLCD
         if (x < 0 || x >= SCREEN_WIDTH || y < 0 || y >= SCREEN_HEIGHT) return 0; 
         int bit = (x & 0x7);
         //int index = (y)*SCREEN_WIDTH + x;
-        int index = (y)*SCREEN_MEM_WIDTH + x;
+        int index = (y)*SCREEN_MEM_WIDTH + x/8;
         return ((displayBuf[index] >> bit) & 1);
     }
 
