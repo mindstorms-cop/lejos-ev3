@@ -56,8 +56,8 @@ public class MCLTest {
     	boolean reverse = Boolean.parseBoolean(pp.getProperty(PilotProps.KEY_REVERSE,"true"));
     	
     	DifferentialPilot robot = new DifferentialPilot(wheelDiameter,trackWidth,leftMotor,rightMotor,reverse);
-    	robot.setRotateSpeed(ROTATE_SPEED);
-    	robot.setTravelSpeed(TRAVEL_SPEED);
+    	robot.setAngularSpeed(ROTATE_SPEED);
+    	robot.setLinearSpeed(TRAVEL_SPEED);
     	EV3UltrasonicSensor sonic = new EV3UltrasonicSensor(SensorPort.S1);
     	RangeFinder rf = new RangeFinderAdapter(sonic.getDistanceMode());
     	RangeFeatureDetector detector = new RangeFeatureDetector(rf, MAX_DISTANCE, DETECTOR_DELAY);
