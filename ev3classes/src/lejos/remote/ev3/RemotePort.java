@@ -50,7 +50,7 @@ public class RemotePort implements Port
         switch(typ)
         {
         case SENSOR_PORT:
-            if (portclass == UARTPort.class)
+            if (portclass == RemoteUARTPort.class || portclass == UARTPort.class)
                 p = new RemoteUARTPort(rmiEV3);
             if (portclass == RemoteAnalogPort.class || portclass == AnalogPort.class)
                 p = new RemoteAnalogPort(rmiEV3);

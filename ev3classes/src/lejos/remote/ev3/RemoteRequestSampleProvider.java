@@ -38,8 +38,6 @@ public class RemoteRequestSampleProvider implements SampleProvider {
 		sendRequest(req, true);
 	}
 	
-	
-
 	@Override
 	public int sampleSize() {
 		EV3Request req = new EV3Request();
