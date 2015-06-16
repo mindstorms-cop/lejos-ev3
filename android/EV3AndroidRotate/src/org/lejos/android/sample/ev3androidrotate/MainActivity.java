@@ -103,8 +103,8 @@ public class MainActivity extends Activity implements OnTouchListener,
 					ev3 = new RemoteRequestEV3(cmd[1]);
 					pilot = (RemoteRequestPilot) ev3.createPilot(3.5f, 20f,
 							"A", "B");
-					speed.setMax((int) pilot.getMaxTravelSpeed());
-					rotationSpeed.setMax((int) pilot.getRotateMaxSpeed());
+					speed.setMax((int) pilot.getMaxLinearSpeed());
+					rotationSpeed.setMax((int) pilot.getMaxAngularSpeed());
 				} catch (IOException e) {
 					return 1l;
 				}
@@ -112,18 +112,18 @@ public class MainActivity extends Activity implements OnTouchListener,
 				if (ev3 == null)
 					return 2l;
 				int newAngle = Integer.parseInt(cmd[1]);
-				pilot.setRotateSpeed(rotationSpeed.getProgress());
+				pilot.setAngularSpeed(rotationSpeed.getProgress());
 				pilot.rotate(angle - newAngle);
 				angle = newAngle;
 			} else if (cmd[0].equals("forward")) {
 				if (ev3 == null)
 					return 2l;
-				pilot.setTravelSpeed(speed.getProgress());
+				pilot.setLinearSpeed(speed.getProgress());
 				pilot.forward();
 			} else if (cmd[0].equals("backward")) {
 				if (ev3 == null)
 					return 2l;
-				pilot.setTravelSpeed(speed.getProgress());
+				pilot.setLinearSpeed(speed.getProgress());
 				pilot.backward();
 			} else if (cmd[0].equals("stop")) {
 				if (ev3 == null)
