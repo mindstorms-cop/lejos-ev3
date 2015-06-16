@@ -1,3 +1,4 @@
+import java.io.File;
 import java.io.IOException;
 
 import lejos.hardware.Audio;
@@ -17,7 +18,7 @@ public class RemoteRequest {
 	
 	public static void main(String[] args) throws IOException {
 	
-		RemoteRequestEV3 ev3 = new RemoteRequestEV3("192.168.0.9");
+		RemoteRequestEV3 ev3 = new RemoteRequestEV3("192.168.0.51");
 		
 		System.out.println("Voltage: " + ev3.getPower().getVoltage());
 		System.out.println("Voltage (mv): " + ev3.getPower().getVoltageMilliVolt());
@@ -25,6 +26,8 @@ public class RemoteRequest {
 		System.out.println("Motor current: " + ev3.getPower().getMotorCurrent());
 		
 		Audio sound = ev3.getAudio();
+		
+		sound.playSample(new File("/home/lejos/programs/Trumpet.wav"));
 		
 		for(int i=0;i<5;i++) {
 			sound.systemSound(i);
