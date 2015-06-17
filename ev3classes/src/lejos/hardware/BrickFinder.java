@@ -160,7 +160,7 @@ public class BrickFinder {
 			// See if we are running on an EV3
 			defaultBrick =  LocalEV3.get();
 			return defaultBrick;
-		} catch (UnsupportedOperationException e) {
+		} catch (Throwable e) {
 			try {
 				BrickInfo[] bricks = discover();
 				if (bricks.length > 0) {
