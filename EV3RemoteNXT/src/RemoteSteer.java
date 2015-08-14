@@ -46,13 +46,13 @@ public class RemoteSteer {
       int ax = (x < 0 ? -x : x);
       
       if (speed > 0) {
-        robot.setTravelSpeed(speed);
+        robot.setLinearSpeed(speed);
         System.out.println("forward");
         if (ax < 5) robot.forward();
         else robot.steer(-x);
       } else {
         speed = - speed;
-        robot.setTravelSpeed(speed);
+        robot.setLinearSpeed(speed);
         System.out.println("Backward");
         robot.backward();
       }

@@ -73,7 +73,7 @@ public class MainActivity extends Activity implements SensorEventListener {
 				pilot = (RemoteRequestPilot) ev3.createPilot(3.5f, 20f, "A", "B");
 				
 				for(;;) {
-					pilot.setTravelSpeed(Math.abs(y - ZERO_Y) * SPEED_FACTOR);
+					pilot.setLinearSpeed(Math.abs(y - ZERO_Y) * SPEED_FACTOR);
 					if (y > ZERO_Y + LEEWAY) {
 						pilot.backward();
 					}

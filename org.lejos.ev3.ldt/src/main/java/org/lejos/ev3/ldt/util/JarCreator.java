@@ -14,14 +14,16 @@ public class JarCreator {
 	private String inputDirectory;
 	private String outputFile;
 	private  String mainClass;
-	private boolean debug = false;
+	private boolean debug = true;
+	private String libDir;
 	
-	private static final String classPath = "/home/root/lejos/lib/ev3classes.jar /home/root/lejos/lib/dbusjava.jar /home/root/lejos/libjna/usr/share/java/jna.jar";
+	private String classPath = "/home/root/lejos/lib/ev3classes.jar /home/root/lejos/lib/dbusjava.jar /home/root/lejos/libjna/usr/share/java/jna.jar";
 	
-	public JarCreator(String inputDirectory, String outputFile, String mainClass) {
+	public JarCreator(String inputDirectory, String outputFile, String mainClass, String libDir) {
 		this.inputDirectory = inputDirectory.replace("\\", "/");
 		this.outputFile = outputFile;
 		this.mainClass = mainClass;
+		this.libDir = libDir;
 		if (debug) LeJOSEV3Util.message("Input Directory is " + this.inputDirectory);
 	}
 
@@ -30,6 +32,15 @@ public class JarCreator {
 	  Attributes attributes = manifest.getMainAttributes();
 	  attributes.put(Attributes.Name.MANIFEST_VERSION, "1.0");
 	  attributes.put(Attributes.Name.MAIN_CLASS, mainClass);
+	  
+	  if (libDir != null) {
+		  for (File f : new File(libDir).listFiles()) {
+			  classPath += " /home/lejos/lib/" + f.getName();
+		  }
+	  }
+	  
+	  if (debug) LeJOSEV3Util.message("Classpath is " + classPath);
+	  
 	  attributes.put(Attributes.Name.CLASS_PATH, classPath);
 	  JarOutputStream target = new JarOutputStream(new FileOutputStream(outputFile), manifest);
 	  add(new File(inputDirectory), target);

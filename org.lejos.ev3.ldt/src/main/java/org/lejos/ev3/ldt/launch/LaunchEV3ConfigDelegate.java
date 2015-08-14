@@ -105,6 +105,8 @@ public class LaunchEV3ConfigDelegate extends AbstractJavaLaunchConfigurationDele
 			IFile binary = project2.getFile(simpleName+".jar");
 			String binaryPath = binary.getLocation().toOSString();
 			String binDirectory = project2.getFolder(project.getOutputLocation().lastSegment()).getLocation().toOSString();
+			IFile lib = project2.getFile("lib");
+			String libPath = (lib == null ? null : lib.getLocation().toOSString());
 			
 			monitor.worked(1);			
 			monitor.subTask("Creating jar file and uploading " + binaryPath + " to the brick...");
@@ -112,8 +114,9 @@ public class LaunchEV3ConfigDelegate extends AbstractJavaLaunchConfigurationDele
 			if (debug) LeJOSEV3Util.message("Binary path is " + binaryPath);
 			if (debug) LeJOSEV3Util.message("Main type name is " + mainTypeName);
 			if (debug) LeJOSEV3Util.message("Bin directory is " + binDirectory);
+			if (debug) LeJOSEV3Util.message("Lib directory is " + libPath);
 			
-			JarCreator jc = new JarCreator(binDirectory, binaryPath, mainTypeName);
+			JarCreator jc = new JarCreator(binDirectory, binaryPath, mainTypeName, libPath);
 			jc.run();
 			
 			LeJOSEV3Util.message("Jar file has been created successfully");
@@ -178,8 +181,19 @@ public class LaunchEV3ConfigDelegate extends AbstractJavaLaunchConfigurationDele
 			    in.close();
 			    
 				LeJOSEV3Util.message("Uploading to " + brickName + " ...");
-				
+							
 			    menu.uploadFile("/home/lejos/programs/" + binary.getProjectRelativePath().toPortableString(), data);
+			    
+				if (libPath != null) {
+				  for (File j : new File(libPath).listFiles()) {
+					  LeJOSEV3Util.message("Uploading " + j.getName() + " to " + brickName + " ...");
+					  in = new FileInputStream(j);
+					  data = new byte[(int) j.length()];
+					  in.read(data);
+					  in.close();
+					  menu.uploadFile("/home/lejos/lib/" + j.getName(), data);
+				  }
+				}
 			    
 			    LeJOSEV3Util.message("Program has been uploaded");
 			    

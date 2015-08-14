@@ -1014,6 +1014,10 @@ public class GraphicStartup implements Menu {
 			                		case SYSTEM_SOUND:
 			                			Sound.systemSound(false, request.intValue);
 			                			break;
+			                		case PLAY_SAMPLE:
+			                			reply.reply = Sound.playSample(request.file);
+			                			os.writeObject(reply);
+			                			break;
 			                		case GET_NAME:
 										reply.value = menu.getName();
 										os.writeObject(reply);

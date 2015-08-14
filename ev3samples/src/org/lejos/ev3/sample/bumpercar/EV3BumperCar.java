@@ -97,7 +97,7 @@ public class EV3BumperCar
     LCD.drawString("Bumper Car",0,1);
     Button.LEDPattern(6);
     Button.waitForAnyPress();
-    arbitrator.start();
+    arbitrator.go();
   }
 }
 
