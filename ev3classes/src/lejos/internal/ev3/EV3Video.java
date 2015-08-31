@@ -18,12 +18,29 @@ public class EV3Video implements Video {
       * frame size may be adjusted to conform to the capabilities of the device.
       * @param w the desired frame width
       * @param h the desired frame height
+      * @param format desired pixel format
+      * @param field desired field layout
+      * @throws java.io.IOException
+      */
+     public void open(int w, int h, int format, int field, int fps) throws java.io.IOException {  
+         width = w;  
+         height = h;
+         this.format = format;
+         this.field = field;
+         this.fps = fps;
+         bufferSize = setup();  
+     }  
+
+     /**
+      * Open the device and make it available for use, specify the desired frame size. Note that the actual
+      * frame size may be adjusted to conform to the capabilities of the device. The format of the pixel
+      * will be YUYV and the fields will be interlaced.
+      * @param w the desired frame width
+      * @param h the desired frame height
       * @throws java.io.IOException
       */
      public void open(int w, int h) throws java.io.IOException {  
-         width = w;  
-         height = h;  
-         setup();  
+         open(w, h, PIX_FMT_YUYV, FIELD_INTERLACED, 0);
      }  
 
      /**
@@ -31,8 +48,8 @@ public class EV3Video implements Video {
       * @param frame array to store the frame
       * @throws java.io.IOException
       */
-     public void grabFrame(byte[] frame) throws java.io.IOException {  
-         grab(frame);  
+     public int grabFrame(byte[] frame) throws java.io.IOException {  
+         return grab(frame);  
      }  
    
      /**
@@ -46,19 +63,22 @@ public class EV3Video implements Video {
      // Three native method stubs, all private:  
    
      // Called by start() before any frames are grabbed.  
-     private native void setup() throws java.io.IOException;  
+     private native int setup() throws java.io.IOException;  
    
      // Called by grabFrame(), which creates a new buffer each time.  
-     private native void grab(byte[] img) throws java.io.IOException;  
+     private native int grab(byte[] img) throws java.io.IOException;  
    
      // Called by end() to clean things up.  
      private native void dispose() throws java.io.IOException;  
    
      // Specified by the user, and retained for later reference.  
-     private int width, height;  
+     private int width, height;
+     private int format, field;
+     private int bufferSize;
+     private int fps;
    
      // Utility methods  
-     private int getBufferSize() {return width * height * 2;}  
+     private int getBufferSize() {return bufferSize;}  
 
      /**
       * Create a byte array suitable for holding a single video frame
