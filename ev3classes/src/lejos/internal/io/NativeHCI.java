@@ -22,7 +22,7 @@ public class NativeHCI {
 	public static final int PISCAN = 0x18;
 	public static final int NOSCAN = 0;
 	
-	public static class DeviceInfo extends Structure implements Structure.ByReference  {  
+    public static class DeviceInfo extends Structure implements Structure.ByReference  {  
         public short dev_id;
         public byte[] name = new byte[8];
         public byte[] bdaddr = new byte[6];
@@ -56,8 +56,28 @@ public class NativeHCI {
             "sco_pkts",
             "stat"});
         }
-	}
-	
+    }
+    
+    public static class LocalVersion extends Structure implements Structure.ByReference  {  
+        public short manufacturer;
+        public byte hci_ver;
+        public short hci_rev;
+        public byte lmp_ver;
+        public short lmp_subver;
+        @Override
+        protected List getFieldOrder()
+        {
+            // TODO Auto-generated method stub
+            return Arrays.asList(new String[] {
+            "manufacturer",
+            "hci_ver",
+            "hci_rev",
+            "lmp_ver",
+            "lmp_subver"});
+        }
+        
+    }
+    
     static class LibBlue {
         native public int hci_get_route(Pointer addr) throws LastErrorException;
         
@@ -70,6 +90,8 @@ public class NativeHCI {
         native public  int hci_read_remote_name(int dd, byte[] bdaddr, int len, Buffer name, int to) throws LastErrorException;
         
         native public int hci_devinfo(int dev_id, DeviceInfo di) throws LastErrorException;
+
+        native public int hci_read_local_version(int dev_id, LocalVersion lv, int to) throws LastErrorException;
         
         static {
             try {
@@ -111,6 +133,7 @@ public class NativeHCI {
 	private ArrayList<RemoteBTDevice> remoteDevices = new ArrayList<RemoteBTDevice>();
 	
 	private DeviceInfo deviceInfo = new DeviceInfo();
+	private LocalVersion localVersion = new LocalVersion();
 	
 	public NativeHCI() {
 		deviceId =  blue.hci_get_route(null);
@@ -149,7 +172,14 @@ public class NativeHCI {
 	}
 	
 	public DeviceInfo hciGetDeviceInfo() {
+        blue.hci_devinfo(deviceId, deviceInfo);
 		return deviceInfo;
+	}
+
+	public LocalVersion hciGetLocalVersion() {
+        blue.hci_read_local_version(socket, localVersion, 1000);
+        return localVersion;
+	    
 	}
 	
 	public boolean hcigetVisible() {

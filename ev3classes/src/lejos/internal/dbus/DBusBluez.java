@@ -182,4 +182,9 @@ public class DBusBluez {
         return 0;
     }
     
+    public void disconnect()
+    {
+        dbusConn.disconnect();
+    }
+    
 }

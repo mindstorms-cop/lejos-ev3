@@ -116,7 +116,7 @@ public class LocalBTDevice {
 
 	/**
 	 * Return a structure providing information about the local device 
-	 * @return
+	 * @return local device information
 	 */
 	public NativeHCI.DeviceInfo getDeviceInfo() {
         try {
@@ -124,6 +124,19 @@ public class LocalBTDevice {
         } catch (LastErrorException e) {
             throw(new BluetoothException(e.getMessage(), e));
         }
+	}
+
+	/**
+	 * return a structure providing local version information
+	 * @return local version information
+	 */
+	public NativeHCI.LocalVersion getLocalVersion() {
+        try {
+            return hci.hciGetLocalVersion();
+        } catch (LastErrorException e) {
+            throw(new BluetoothException(e.getMessage(), e));
+        }
+	    
 	}
 
 	/**
@@ -151,5 +164,10 @@ public class LocalBTDevice {
             System.err.println("Failed to remove device: " + e);
             throw(new BluetoothException(e.getMessage(), e));
         }
+	}
+	
+	public void disconnect()
+	{
+	    db.disconnect();
 	}
 }
