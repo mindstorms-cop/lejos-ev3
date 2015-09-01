@@ -65,6 +65,7 @@ import lejos.hardware.sensor.BaseSensor;
 import lejos.internal.ev3.EV3IOPort;
 import lejos.internal.io.Settings;
 import lejos.internal.io.SystemSettings;
+import lejos.internal.io.NativeHCI.LocalVersion;
 import lejos.remote.ev3.EV3Reply;
 import lejos.remote.ev3.EV3Request;
 import lejos.remote.ev3.Menu;
@@ -110,6 +111,7 @@ public class GraphicStartup implements Menu {
     private static final String ICNone = "\u00c0\u00ff\u00ff\u0003\u00e0\u00ff\u00ff\u0007\u0070\u0000\u0000\u000e\u0038\u0000\u0000\u001c\u007c\u0000\u0000\u0038\u00fe\u0000\u0000\u0070\u00f7\u0001\u0000\u00e0\u00e3\u0003\u0080\u00c3\u00e3\u0007\u0080\u00c7\u00f3\u000f\u0080\u00cf\u00f3\u001f\u0030\u00cf\u007b\u003e\u0078\u00de\u007b\u007f\u00f8\u00de\u007b\u00ff\u00f3\u00de\u003b\u00ff\u00f7\u00dc\u003b\u00e7\u00e7\u00dc\u003b\u00e7\u00e7\u00dc\u003b\u00ef\u00ff\u00dc\u007b\u00cf\u00ff\u00de\u007b\u001f\u00fe\u00de\u00fb\u001e\u007c\u00df\u00f3\u000c\u00f8\u00cf\u00f3\u0001\u00f0\u00cf\u00e3\u0003\u00e0\u00c7\u00c3\u0001\u00c0\u00c7\u0007\u0000\u0080\u00cf\u000e\u0000\u0000\u00ff\u001c\u0000\u0000\u007e\u0038\u0000\u0000\u003c\u0070\u0000\u0000\u001c\u00e0\u00ff\u00ff\u000f\u00c0\u00ff\u00ff\u0007";
     private static final String ICBTClient = ICBlue;
     private static final String ICSound = "\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u00c0\u0000\u0003\u0000\u00c0\u0000\u0003\u0000\u00f0\u0030\u000c\u0000\u00f0\u0030\u000c\u0000\u00cc\u00c0\u0030\u0000\u00cc\u00c0\u0030\u0000\u00c3\u000c\u0033\u0000\u00c3\u000c\u0033\u00fc\u00c3\u0030\u0033\u00fc\u00c3\u0030\u0033\u000c\u00c3\u0030\u0033\u000c\u00c3\u0030\u0033\u000c\u00c3\u0030\u0033\u000c\u00c3\u0030\u0033\u003c\u00c3\u0030\u0033\u003c\u00c3\u0030\u0033\u00cc\u00cf\u0030\u0033\u00cc\u00cf\u0030\u0033\u00fc\u00f3\u0030\u0033\u00fc\u00f3\u0030\u0033\u0000\u00cf\u000c\u0033\u0000\u00cf\u000c\u0033\u0000\u00fc\u00c0\u0030\u0000\u00fc\u00c0\u0030\u0000\u00f0\u0030\u000c\u0000\u00f0\u0030\u000c\u0000\u00c0\u0000\u0003\u0000\u00c0\u0000\u0003\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000";
+    private static final String ICInfo = "\u0000\u00f0\u000f\u0000\u0000\u007e\u007e\u0000\u0080\u0007\u00e0\u0001\u00c0\u0001\u0080\u0003\u0060\u0000\u0000\u0006\u0030\u0000\u0000\u000c\u0018\u0000\u0000\u0018\u000c\u0000\u0001\u0030\u000c\u0080\u0003\u0030\u0006\u0080\u0003\u0060\u0006\u0080\u0001\u0060\u0002\u0000\u0000\u0040\u0003\u00e0\u0003\u00c0\u0003\u00f0\u0003\u00c0\u0003\u0080\u0003\u00c0\u0001\u0080\u0003\u0080\u0001\u0080\u0003\u0080\u0003\u0080\u0003\u00c0\u0003\u0080\u0003\u00c0\u0003\u0080\u0003\u00c0\u0002\u0080\u0003\u0040\u0006\u0080\u0003\u0060\u0006\u0080\u0003\u0060\u000c\u0080\u0003\u0030\u000c\u00f0\u000f\u0030\u0018\u0000\u0000\u0018\u0030\u0000\u0000\u000c\u0060\u0000\u0000\u0006\u00c0\u0001\u0080\u0003\u0080\u0007\u00e0\u0001\u0000\u007e\u007e\u0000\u0000\u00f0\u000f\u0000";
 
     private static final String ICEV3 = "\u00c0\u00ff\u00ff\u0003\u00c0\u00ff\u00ff\u0003\u00f0\u00ff\u00ff\u000f\u00f0\u00ff\u00ff\u000f\u0030\u0000\u0000\u000c\u0030\u0000\u0000\u000c\u0030\u00ff\u00ff\u000c\u0030\u00ff\u00ff\u000c\u0030\u0003\u00c0\u000c\u0030\u0003\u00c0\u000c\u0030\u000f\u00c0\u000c\u0030\u000f\u00c0\u000c\u0030\u0033\u00c0\u000c\u0030\u0033\u00c0\u000c\u0030\u00cf\u00cc\u000c\u0030\u00cf\u00cc\u000c\u0030\u00ff\u00ff\u000c\u0030\u00ff\u00ff\u000c\u0030\u0000\u0000\u000c\u0030\u0000\u0000\u000c\u0030\u00cf\u00f3\u000c\u0030\u00cf\u00f3\u000c\u0030\u00cc\u0033\u000c\u0030\u00cc\u0033\u000c\u00f0\u00c0\u0003\u000c\u00f0\u00c0\u0003\u000c\u0030\u0033\u0000\u000c\u0030\u0033\u0000\u000c\u00f0\u00ff\u00ff\u000f\u00f0\u00ff\u00ff\u000f\u00c0\u00ff\u00ff\u0003\u00c0\u00ff\u00ff\u0003";
     private static final String ICDebug = "\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u00e0\u0001\u0080\u0007\u00e0\u00e1\u00c7\u0007\u0000\u00f3\u00ee\u0000\u0000\u00ff\u007f\u0000\u0000\u00de\u003f\u0000\u0000\u00fa\u0077\u0000\u0000\u007f\u00ff\u0000\u0000\u00ff\u00ff\u0000\u0008\u00ef\u00fd\u0010\u001c\u00ff\u00df\u0038\u003c\u007e\u007f\u001c\u0078\u00fc\u003f\u001e\u00f0\u00f8\u001f\u000f\u00e0\u00e1\u0087\u0007\u00e0\u0003\u00c0\u0007\u00f0\u000f\u00f0\u000f\u00fc\u00ff\u00ff\u007f\u00ff\u00ff\u00ff\u00ff\u00ff\u00fd\u00bf\u00ff\u00fe\u00f8\u001f\u007f\u00f2\u00f8\u001f\u002f\u00e0\u00fd\u00bf\u0007\u00e0\u007f\u00ff\u0007\u00f0\u003f\u00fe\u000f\u00f8\u003f\u00fe\u001f\u00fc\u007f\u00ff\u003f\u003c\u00ff\u00ff\u003c\u0018\u00fe\u007f\u0018\u0000\u007c\u003e\u0000\u0000\u0060\u0006\u0000";
@@ -1567,9 +1569,9 @@ public class GraphicStartup implements Menu {
             lcd.drawString(visible ? "on" : "off", 11, 2);
             menu.setItems(new String[]
                     {
-                        "Search/Pair", "Devices", "Visibility", "Change PIN"
+                        "Search/Pair", "Devices", "Visibility", "Change PIN", "Information"
                     },
-                    new String[]{ICSearch,ICEV3,ICVisibility,ICPIN});
+                    new String[]{ICSearch,ICEV3,ICVisibility,ICPIN, ICInfo});
             selection = getSelection(menu,selection);
             switch (selection)
             {
@@ -1594,6 +1596,8 @@ public class GraphicStartup implements Menu {
                 case 3:
                     bluetoothChangePIN();
                     break;
+                case 4:
+                    bluetoothInformation();
             }
         } while (selection >= 0);
     }
@@ -1840,6 +1844,25 @@ public class GraphicStartup implements Menu {
             }
         } while (selected >= 0);
     }
+
+    private static final String[] bluetoothVersions = {"1.0b", "1.1", "1.2", "2.0", "2.1", "3.0", "4.0"};
+    /**
+     * Display Bluetooth information
+     */
+    private void bluetoothInformation()
+    {
+        newScreen("Information");
+        LocalBTDevice lbt = Bluetooth.getLocalDevice();
+        LocalVersion ver = lbt.getLocalVersion();
+        String v = ver.hci_ver >= bluetoothVersions.length ? "" : bluetoothVersions[ver.hci_ver];
+        lcd.drawString("HCI " + v + " " + Integer.toHexString(ver.hci_ver) + "/" + Integer.toHexString(ver.hci_rev), 0, 2);
+        v = ver.lmp_ver >= bluetoothVersions.length ? "n/a" : bluetoothVersions[ver.lmp_ver];
+        lcd.drawString("LMP " + v + " " + Integer.toHexString(ver.lmp_ver) + "/" + Integer.toHexString(ver.lmp_subver), 0, 3);
+        lcd.drawString("ID: " + lbt.getFriendlyName(), 0, 5);
+        lcd.drawString(lbt.getBluetoothAddress(), 0, 6);
+        getButtonPress();
+    }
+    
     
     /**
      * Run the default program (if set).
