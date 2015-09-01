@@ -153,10 +153,17 @@ public abstract class AbstractConnection
    protected class _workerthread extends Thread
    {
       private boolean _run = true;
+      
+      public _workerthread()
+      {
+          setDaemon(true);
+      }
+      
       public void halt()
       {
          _run = false;
-         setDaemon(true);
+         // can't be called once thread is running, so moved to new constructor
+         //setDaemon(true);
       }
       public void run()
       {

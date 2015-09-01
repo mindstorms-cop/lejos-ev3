@@ -22,9 +22,11 @@ import java.util.ResourceBundle;
 
 public class Gettext
 {
-   private static ResourceBundle myResources =
-      ResourceBundle.getBundle("dbusjava_localized");
+    // leJOS does not include localization so simply return the original string.
+   //private static ResourceBundle myResources =
+      //ResourceBundle.getBundle("dbusjava_localized");
    public static String _(String s) {
-      return myResources.getString(s);
+      //return myResources.getString(s);
+       return s;
    }
 }
