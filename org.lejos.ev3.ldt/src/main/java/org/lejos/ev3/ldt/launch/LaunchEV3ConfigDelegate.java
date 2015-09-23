@@ -3,6 +3,8 @@ package org.lejos.ev3.ldt.launch;
 import java.io.File;
 import java.io.FileInputStream;
 import java.lang.reflect.InvocationTargetException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.rmi.Naming;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -187,8 +189,7 @@ public class LaunchEV3ConfigDelegate extends AbstractJavaLaunchConfigurationDele
 				LeJOSEV3Util.message("Using the EV3 menu for upload and to execute program");
 				
 				if (!namedBrick) {			
-					// TODO : case where a specific brick is specified
-					BrickInfo[] bricks = Discover.discover();
+					BrickInfo[] bricks = Discover.discover(null);
 					
 					if (bricks.length ==  0) {
 						LeJOSEV3Util.error("No EV3 Found");
@@ -196,6 +197,24 @@ public class LaunchEV3ConfigDelegate extends AbstractJavaLaunchConfigurationDele
 					} else {	
 						brickName = bricks[0].getIPAddress();
 					}
+				} else {
+					InetAddress address = null;
+					try {
+						address = InetAddress.getByName(brickName);
+					} catch (UnknownHostException e) {}
+					LeJOSEV3Util.message("IP address is " + address);
+					
+					if (address == null) {
+						BrickInfo[] bricks = Discover.discover(brickName);
+						
+						if (bricks.length ==  0) {
+							LeJOSEV3Util.error("Brick " + brickName + " not found");
+							return;
+						} else {	
+							brickName = bricks[0].getIPAddress();
+						}
+						
+					} else brickName = address.getHostAddress();
 				}
 					
 				RMIMenu menu = (RMIMenu)Naming.lookup("//" + brickName + "/RemoteMenu");
@@ -218,8 +237,7 @@ public class LaunchEV3ConfigDelegate extends AbstractJavaLaunchConfigurationDele
 					in.close();
 					menu.uploadFile("/home/lejos/lib/" + j.getName(), data);
 				}
-
-			    
+				
 			    LeJOSEV3Util.message("Program has been uploaded");
 			    
 			    if (run) {
