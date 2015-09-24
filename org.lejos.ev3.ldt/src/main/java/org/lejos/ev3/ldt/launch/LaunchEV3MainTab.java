@@ -76,6 +76,14 @@ public class LaunchEV3MainTab extends JavaLaunchTab {
 			textBackground = text.getBackground();
 		}
 		
+		String getText() {
+			return this.text.getText();
+		}
+		
+		void setText(String s) {
+			this.text.setText(s);
+		}
+		
 		void setEnabled(boolean b) {
 			this.label.setEnabled(b);
 			this.text.setEditable(b);
@@ -442,6 +450,17 @@ public class LaunchEV3MainTab extends JavaLaunchTab {
 		config.setAttribute(IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME, projectText.getText().trim());
 		config.setAttribute(IJavaLaunchConfigurationConstants.ATTR_MAIN_TYPE_NAME, mainClassText.getText().trim());
 		
+		config.setAttribute(LaunchConstants.KEY_TARGET_USE_DEFAULTS, targetUseDefaults.getSelection());
+		
+		config.setAttribute(LaunchConstants.KEY_TARGET_BRICK_NAME, targetBrickName.getText());
+		config.setAttribute(LaunchConstants.KEY_TARGET_CONNECT_BY_NAME, targetConnectByName.getSelection());
+		
+		config.setAttribute(LaunchConstants.KEY_NORMAL_USE_DEFAULTS, normalUseDefaults.getSelection());
+		config.setAttribute(LaunchConstants.KEY_NORMAL_RUN_AFTER_UPLOAD, normalRun.getSelection());
+		
+		config.setAttribute(LaunchConstants.KEY_DEBUG_USE_DEFAULTS, debugUseDefaults.getSelection());
+		config.setAttribute(LaunchConstants.KEY_DEBUG_RUN_AFTER_UPLOAD, debugRun.getSelection());
+		
 		this.updateMappedResource(config);
 	}
 	
@@ -494,6 +513,12 @@ public class LaunchEV3MainTab extends JavaLaunchTab {
 		super.initializeFrom(config);
 		projectText.setText(extractConfigValue(config, IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME, ""));
 		mainClassText.setText(extractConfigValue(config, IJavaLaunchConfigurationConstants.ATTR_MAIN_TYPE_NAME, ""));
+		targetUseDefaults.setSelection(extractConfigBool(config, LaunchConstants.KEY_TARGET_USE_DEFAULTS, true));
+		normalRun.setSelection(extractConfigBool(config, LaunchConstants.KEY_NORMAL_RUN_AFTER_UPLOAD, true));
+		debugUseDefaults.setSelection(extractConfigBool(config, LaunchConstants.KEY_DEBUG_USE_DEFAULTS, true));
+		debugRun.setSelection(extractConfigBool(config, LaunchConstants.KEY_DEBUG_RUN_AFTER_UPLOAD, true));
+		targetBrickName.setText(extractConfigValue(config, LaunchConstants.KEY_TARGET_BRICK_NAME, ""));
+		targetConnectByName.setSelection(extractConfigBool(config, LaunchConstants.KEY_TARGET_CONNECT_BY_NAME, false));
 		
 		updateEnabledDisabled();
 	}
