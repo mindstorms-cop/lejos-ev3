@@ -131,6 +131,7 @@ public class GraphicStartup implements Menu {
     private static final String ICNo = "\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u00f0\u0000\u0000\u000f\u00f0\u0000\u0000\u000f\u00fc\u0003\u00c0\u003f\u00fc\u0003\u00c0\u003f\u00fc\u000f\u00f0\u003f\u00fc\u000f\u00f0\u003f\u00f0\u003f\u00fc\u000f\u00f0\u003f\u00fc\u000f\u00c0\u00ff\u00ff\u0003\u00c0\u00ff\u00ff\u0003\u0000\u00ff\u00ff\u0000\u0000\u00ff\u00ff\u0000\u0000\u00fc\u003f\u0000\u0000\u00fc\u003f\u0000\u0000\u00fc\u003f\u0000\u0000\u00fc\u003f\u0000\u0000\u00ff\u00ff\u0000\u0000\u00ff\u00ff\u0000\u00c0\u00ff\u00ff\u0003\u00c0\u00ff\u00ff\u0003\u00f0\u003f\u00fc\u000f\u00f0\u003f\u00fc\u000f\u00fc\u000f\u00f0\u003f\u00fc\u000f\u00f0\u003f\u00fc\u0003\u00c0\u003f\u00fc\u0003\u00c0\u003f\u00f0\u0000\u0000\u000f\u00f0\u0000\u0000\u000f\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000";
     
     private static final String PROGRAMS_DIRECTORY = "/home/lejos/programs";
+    private static final String LIB_DIRECTORY = "/home/lejos/lib";
     private static final String SAMPLES_DIRECTORY = "/home/root/lejos/samples";
     private static final String TOOLS_DIRECTORY = "/home/root/lejos/tools";
     private static final String MENU_DIRECTORY = "/home/root/lejos/bin/utils";
@@ -1926,7 +1927,13 @@ public class GraphicStartup implements Menu {
                     	File dir = new File(PROGRAMS_DIRECTORY);
                         for (String fn : dir.list()) {
                             File aFile = new File(dir,fn);
-                            System.out.println("Deleting " + aFile.getPath());
+                            System.out.println("Deleting file " + aFile.getPath());
+                            aFile.delete();
+                        }
+                    	dir = new File(LIB_DIRECTORY);
+                        for (String fn : dir.list()) {
+                            File aFile = new File(dir,fn);
+                            System.out.println("Deleting lib " + aFile.getPath());
                             aFile.delete();
                         }
                     }
@@ -2321,7 +2328,7 @@ public class GraphicStartup implements Menu {
      */
     private static void startProgram(String command, File jar) {
         try {
-            System.out.println("Start sus " + GraphicStartup.suspend + " program null " + (program == null));
+            //System.out.println("Start sus " + GraphicStartup.suspend + " program null " + (program == null));
         	if (program != null) return;
         	String[] args = command.split(" ");
         	File directory = jar.getParentFile();
@@ -2350,7 +2357,7 @@ public class GraphicStartup implements Menu {
     
     public void stopProgram() {           
         try {  
-            System.out.println("Stop sus " + GraphicStartup.suspend + " program null " + (program == null));
+            //System.out.println("Stop sus " + GraphicStartup.suspend + " program null " + (program == null));
         	if (program == null) return;
         	
         	program.destroy();
