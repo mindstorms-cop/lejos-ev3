@@ -1498,11 +1498,13 @@ public class GraphicStartup implements Menu {
 			                		case PILOT_GET_MOVEMENT:
 			                			break;
 			                		case PILOT_ROTATE:
-			                			pilot.rotate(request.doubleValue);
+			                			pilot.rotate(request.doubleValue);		                			
 			                			os.writeObject(reply);
 			                			break;
 			                		case PILOT_ROTATE_IMMEDIATE:
-			                			pilot.rotate(request.doubleValue, request.flag);
+			                			if (request.doubleValue == Double.POSITIVE_INFINITY) pilot.rotateRight();
+			                			else if (request.doubleValue == Double.NEGATIVE_INFINITY) pilot.rotateLeft();
+			                			else pilot.rotate(request.doubleValue, request.flag);
 			                			if (!request.flag) os.writeObject(reply);
 			                			break;
 			                		case PILOT_GET_ANGULAR_SPEED:
