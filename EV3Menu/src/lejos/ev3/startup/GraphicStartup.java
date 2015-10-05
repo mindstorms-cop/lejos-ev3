@@ -1255,12 +1255,12 @@ public class GraphicStartup implements Menu {
 			                			reply.reply = ((UARTPort) ioPorts[request.intValue]).getShort();
 			                			os.writeObject(reply);
 			                			break;
-			                		case UART_GET_SHORTS:
-			                			if (ioPorts[request.intValue] == null) throw new PortException("Port not open");
-			                			reply.shorts = new short[request.intValue2];
-			                			((UARTPort) ioPorts[request.intValue]).getShorts(reply.shorts, 0, request.intValue2);
-			                			os.writeObject(reply);
-			                			break;
+                                   case UART_GET_SHORTS:
+                                        if (ioPorts[request.intValue] == null) throw new PortException("Port not open");
+                                        reply.shorts = new short[request.intValue2];
+                                        ((UARTPort) ioPorts[request.intValue]).getShorts(reply.shorts, 0, request.intValue2);
+                                        os.writeObject(reply);
+                                        break;
 			                		case UART_INITIALISE_SENSOR:
 			                			if (ioPorts[request.intValue] == null) throw new PortException("Port not open");
 			                			reply.result = ((UARTPort) ioPorts[request.intValue]).initialiseSensor(request.intValue2);
@@ -1275,7 +1275,26 @@ public class GraphicStartup implements Menu {
 			                			reply.result = ((UARTPort) ioPorts[request.intValue]).setMode(request.intValue2);
 			                			os.writeObject(reply);
 			                			break;
-			                		case CREATE_REGULATED_MOTOR:
+                                    case UART_WRITE:
+                                        if (ioPorts[request.intValue] == null) throw new PortException("Port not open");
+                                        reply.reply = ((UARTPort) ioPorts[request.intValue]).write(request.byteData, request.intValue2, request.intValue3);
+                                        os.writeObject(reply);
+                                        break;
+                                    case UART_RAW_WRITE:
+                                        if (ioPorts[request.intValue] == null) throw new PortException("Port not open");
+                                        reply.reply = ((UARTPort) ioPorts[request.intValue]).rawWrite(request.byteData, request.intValue2, request.intValue3);
+                                        os.writeObject(reply);
+                                        break;
+                                    case UART_RAW_READ:
+                                        if (ioPorts[request.intValue] == null) throw new PortException("Port not open");
+                                        reply.reply = ((UARTPort) ioPorts[request.intValue]).rawRead(request.byteData, request.intValue2, request.intValue3);
+                                        os.writeObject(reply);
+                                        break;
+                                    case UART_SET_BIT_RATE:
+                                        if (ioPorts[request.intValue] == null) throw new PortException("Port not open");
+                                        ((UARTPort) ioPorts[request.intValue]).setBitRate(request.intValue2);
+                                        break;
+ 			                		case CREATE_REGULATED_MOTOR:
 			                			System.out.println("Creating motor on port " + request.str);
 			                			Port p = LocalEV3.get().getPort(request.str); // port name
 			                			RegulatedMotor motor = null;
