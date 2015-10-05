@@ -160,7 +160,8 @@ public class EV3Request implements Serializable {
 		CREATE_SAMPLE_PROVIDER_PUBLISH,
 		UART_RAW_READ,
 		UART_RAW_WRITE,
-		UART_SET_BIT_RATE
+		UART_SET_BIT_RATE,
+		UART_WRITE
 	}
 	
 	public Request request;

@@ -88,4 +88,11 @@ public class RMIRemoteUARTPort extends UnicastRemoteObject implements RMIUARTPor
     {
         port.setBitRate(bitRate);
     }
+
+    @Override
+    public int write(byte[] buffer, int offset, int len)
+    {
+        return port.write(buffer, offset, len);
+
+    }
 }
