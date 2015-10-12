@@ -298,7 +298,7 @@ public class GraphicStartup implements Menu {
             System.out.println("Save PAN config");
             try {
                 PrintWriter out = new PrintWriter(PAN_CONFIG);
-                out.print(modeIDS[curMode] + " " + BTAPName + " " + BTAPAddress);
+                out.print(modeIDS[curMode] + " " + BTAPName.replace(" ", "\\ ") + " " + BTAPAddress);
                 for(String ip : IPAddresses)
                     out.print(" " + ip);
                 out.print(" " + BTService + " " + persist);
@@ -323,7 +323,8 @@ public class GraphicStartup implements Menu {
             String[] vals = null;
             try {
                 BufferedReader in = new BufferedReader(new FileReader(PAN_CONFIG));
-                String line = in.readLine();
+                // nasty cludge preserve escaped spaces (convert them to no-break space
+                String line = in.readLine().replace("\\ ", "\u00a0");
                 vals = line.split("\\s+");
                 in.close();
             } catch (IOException e) {
@@ -338,7 +339,8 @@ public class GraphicStartup implements Menu {
                     curMode = i;
                     break;
                 }
-            BTAPName = getConfigString(vals, 1, anyAP);
+            // be sure to convert no-break space back - ahem.
+            BTAPName = getConfigString(vals, 1, anyAP).replace("\u00a0", " ");
             BTAPAddress = getConfigString(vals, 2, anyAP);
             for(int i = 0; i < IPAddresses.length; i++)
                 IPAddresses[i] = getConfigString(vals, i + 3, autoIP);
@@ -1752,7 +1754,8 @@ public class GraphicStartup implements Menu {
         try {
 			devList = (ArrayList<RemoteBTDevice>) bt.search();
 		} catch (BluetoothException e) {
-			return;
+		    System.out.println("Search exeception " + e);
+			devList = null;
 		}
         if (devList == null || devList.size() <= 0)
         {
