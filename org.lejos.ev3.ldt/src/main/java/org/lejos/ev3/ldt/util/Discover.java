@@ -30,6 +30,7 @@ public class Discover {
         {
             socket = new DatagramSocket();
             socket.setBroadcast(true);
+            if (name == null) name = "*";
             boolean findAll = name.equalsIgnoreCase("*");
             broadcastFindRequest(socket, name, null, -1, MAX_HOPS);
             socket.setSoTimeout(MAX_DISCOVERY_TIME/4);
