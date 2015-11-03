@@ -2330,7 +2330,7 @@ public class GraphicStartup implements Menu {
               if (!echoIn.isAlive() && !echoErr.isAlive()) break;           
               Delay.msDelay(200);
             }
-            System.out.println("Waiting for process to die");;
+            //System.out.println("Waiting for process to die");;
             program.waitFor();
             System.out.println("Program finished");
       	    // Turn the LED off, in case left on
@@ -2386,7 +2386,7 @@ public class GraphicStartup implements Menu {
         	
         	program.destroy();
         
-            System.out.println("Waiting for process to die");;
+            //System.out.println("Waiting for process to die");;
             program.waitFor();
             System.out.println("Program finished");
           }
