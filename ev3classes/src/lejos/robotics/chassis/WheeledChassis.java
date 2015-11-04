@@ -811,3 +811,56 @@ protected Matrix copyAbsolute(Matrix in) {
 
 }
 
+/* 
+ * Some remarks regarding the design of the WheeledChassis. 
+ * These originate from a discussion between leJOS developers about the code of this class
+ * 
+ * The decision to use the same source for both differential and holonomic drive
+ * systems into one source is deliberate and well thought over. Let me explain
+ * starting with some facts. 1. Functionality both a holonomic and a
+ * differential chassis should be the same. 2. Except that the differential
+ * chassis has a constraint that the the holonomic chassis does not have. A
+ * differential chassis can only go forward and backward and not sideways. 3.
+ * This constraint means that you can leave the y-component out of the equation
+ * when implementing a differential chassis. As the y-component must always be
+ * zero.
+ * 
+ * When implementing the two chassis I considered three design options. The
+ * first was to implement a holonomic chassis on top of (as an extension of) a
+ * differential chassis. This is impossible when the differential implementation
+ * ignores the y-component and thus "hard codes" the differential constraint.
+ * The second option was to implement both chassis independently. This has a
+ * serious drawback. You need to maintain two sources. The adverse effects of
+ * this we see in the numerous pilots we now have. Implementing two chassis from
+ * scratch (including the PoseProvider) would have taken a few hundred lines of
+ * code extra. The third option was to implement the differential chassis on top
+ * of the holonomic chassis by adding the constraint of the differential chassis
+ * in some way. This was easy. I added a dummy (holonomic) wheel to the
+ * differential chassis. This wheel is oriented sideways and cannot rotate. This
+ * results in the constraint of y = 0, the differential constraint! With just
+ * two lines of code I was able to turn a holonomic chassis into a differential
+ * chassis. To understand the code it helps to always think in terms of a
+ * holonomic chassis.
+ * 
+ * Technically it is the inclusion of an y-component that complicates the source
+ * for a differential chassis. Matrix language is not to blame for that. Matrix
+ * language does complicates the code but not for this reason. It does
+ * complicate the code as it requires a different way of thinking. But there is
+ * a big advantage to linear algebra. It enables you to write an unlimited
+ * number of similar equations as a single equation or to implement this as a
+ * single line of code. Linear algebra gives compact code where the logic isn't
+ * diluted with endless numbers of for-loops. The advantages of linear algebra
+ * only become apparent when the number of equations (wheels) is more then two.
+ * So for a differential chassis you can do without and I would have done so if
+ * I hadn't implemented it as an extension of the holonomic chassis. But for a
+ * holonomic chassis the advantages are apparent. However now that it is used
+ * you no longer are constraint to two wheels only, you can have as much wheels
+ * on your robot as you like.
+ * 
+ * Then there is the argument of efficiency. Not ignoring the y-component and
+ * using linear algebra make the code for a differential chassis less efficient.
+ * This is true. But as long as this is not a bottleneck I see no reason to
+ * value this argument heavily. It is outweighed by the argument of improved
+ * maintain ability. I have not jet heard of the performance of the
+ * WheeledChassis being a bottleneck but only practice will tell.
+ */
