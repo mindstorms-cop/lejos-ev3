@@ -184,7 +184,7 @@ public class PCNavigationModel extends NavigationModel {
 		    menu.uploadFile("/home/lejos/programs/" + file.getName(), data);
 		    System.out.println("Starting " + file.getName());
 		    menu.runProgram(file.getName().replace(".jar",""));
-		    Delay.msDelay(10000);
+		    Delay.msDelay(12000);
 		} catch (IOException e) {
 			panel.error("Failed to upload program to EV3");
 		}
