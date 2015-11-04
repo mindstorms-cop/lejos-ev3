@@ -131,6 +131,7 @@ public class GraphicStartup implements Menu {
     private static final String ICNo = "\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u00f0\u0000\u0000\u000f\u00f0\u0000\u0000\u000f\u00fc\u0003\u00c0\u003f\u00fc\u0003\u00c0\u003f\u00fc\u000f\u00f0\u003f\u00fc\u000f\u00f0\u003f\u00f0\u003f\u00fc\u000f\u00f0\u003f\u00fc\u000f\u00c0\u00ff\u00ff\u0003\u00c0\u00ff\u00ff\u0003\u0000\u00ff\u00ff\u0000\u0000\u00ff\u00ff\u0000\u0000\u00fc\u003f\u0000\u0000\u00fc\u003f\u0000\u0000\u00fc\u003f\u0000\u0000\u00fc\u003f\u0000\u0000\u00ff\u00ff\u0000\u0000\u00ff\u00ff\u0000\u00c0\u00ff\u00ff\u0003\u00c0\u00ff\u00ff\u0003\u00f0\u003f\u00fc\u000f\u00f0\u003f\u00fc\u000f\u00fc\u000f\u00f0\u003f\u00fc\u000f\u00f0\u003f\u00fc\u0003\u00c0\u003f\u00fc\u0003\u00c0\u003f\u00f0\u0000\u0000\u000f\u00f0\u0000\u0000\u000f\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000";
     
     private static final String PROGRAMS_DIRECTORY = "/home/lejos/programs";
+    private static final String LIB_DIRECTORY = "/home/lejos/lib";
     private static final String SAMPLES_DIRECTORY = "/home/root/lejos/samples";
     private static final String TOOLS_DIRECTORY = "/home/root/lejos/tools";
     private static final String MENU_DIRECTORY = "/home/root/lejos/bin/utils";
@@ -297,7 +298,7 @@ public class GraphicStartup implements Menu {
             System.out.println("Save PAN config");
             try {
                 PrintWriter out = new PrintWriter(PAN_CONFIG);
-                out.print(modeIDS[curMode] + " " + BTAPName + " " + BTAPAddress);
+                out.print(modeIDS[curMode] + " " + BTAPName.replace(" ", "\\ ") + " " + BTAPAddress);
                 for(String ip : IPAddresses)
                     out.print(" " + ip);
                 out.print(" " + BTService + " " + persist);
@@ -322,7 +323,8 @@ public class GraphicStartup implements Menu {
             String[] vals = null;
             try {
                 BufferedReader in = new BufferedReader(new FileReader(PAN_CONFIG));
-                String line = in.readLine();
+                // nasty cludge preserve escaped spaces (convert them to no-break space
+                String line = in.readLine().replace("\\ ", "\u00a0");
                 vals = line.split("\\s+");
                 in.close();
             } catch (IOException e) {
@@ -337,7 +339,8 @@ public class GraphicStartup implements Menu {
                     curMode = i;
                     break;
                 }
-            BTAPName = getConfigString(vals, 1, anyAP);
+            // be sure to convert no-break space back - ahem.
+            BTAPName = getConfigString(vals, 1, anyAP).replace("\u00a0", " ");
             BTAPAddress = getConfigString(vals, 2, anyAP);
             for(int i = 0; i < IPAddresses.length; i++)
                 IPAddresses[i] = getConfigString(vals, i + 3, autoIP);
@@ -1254,12 +1257,12 @@ public class GraphicStartup implements Menu {
 			                			reply.reply = ((UARTPort) ioPorts[request.intValue]).getShort();
 			                			os.writeObject(reply);
 			                			break;
-			                		case UART_GET_SHORTS:
-			                			if (ioPorts[request.intValue] == null) throw new PortException("Port not open");
-			                			reply.shorts = new short[request.intValue2];
-			                			((UARTPort) ioPorts[request.intValue]).getShorts(reply.shorts, 0, request.intValue2);
-			                			os.writeObject(reply);
-			                			break;
+                                   case UART_GET_SHORTS:
+                                        if (ioPorts[request.intValue] == null) throw new PortException("Port not open");
+                                        reply.shorts = new short[request.intValue2];
+                                        ((UARTPort) ioPorts[request.intValue]).getShorts(reply.shorts, 0, request.intValue2);
+                                        os.writeObject(reply);
+                                        break;
 			                		case UART_INITIALISE_SENSOR:
 			                			if (ioPorts[request.intValue] == null) throw new PortException("Port not open");
 			                			reply.result = ((UARTPort) ioPorts[request.intValue]).initialiseSensor(request.intValue2);
@@ -1274,7 +1277,26 @@ public class GraphicStartup implements Menu {
 			                			reply.result = ((UARTPort) ioPorts[request.intValue]).setMode(request.intValue2);
 			                			os.writeObject(reply);
 			                			break;
-			                		case CREATE_REGULATED_MOTOR:
+                                    case UART_WRITE:
+                                        if (ioPorts[request.intValue] == null) throw new PortException("Port not open");
+                                        reply.reply = ((UARTPort) ioPorts[request.intValue]).write(request.byteData, request.intValue2, request.intValue3);
+                                        os.writeObject(reply);
+                                        break;
+                                    case UART_RAW_WRITE:
+                                        if (ioPorts[request.intValue] == null) throw new PortException("Port not open");
+                                        reply.reply = ((UARTPort) ioPorts[request.intValue]).rawWrite(request.byteData, request.intValue2, request.intValue3);
+                                        os.writeObject(reply);
+                                        break;
+                                    case UART_RAW_READ:
+                                        if (ioPorts[request.intValue] == null) throw new PortException("Port not open");
+                                        reply.reply = ((UARTPort) ioPorts[request.intValue]).rawRead(request.byteData, request.intValue2, request.intValue3);
+                                        os.writeObject(reply);
+                                        break;
+                                    case UART_SET_BIT_RATE:
+                                        if (ioPorts[request.intValue] == null) throw new PortException("Port not open");
+                                        ((UARTPort) ioPorts[request.intValue]).setBitRate(request.intValue2);
+                                        break;
+ 			                		case CREATE_REGULATED_MOTOR:
 			                			System.out.println("Creating motor on port " + request.str);
 			                			Port p = LocalEV3.get().getPort(request.str); // port name
 			                			RegulatedMotor motor = null;
@@ -1497,11 +1519,13 @@ public class GraphicStartup implements Menu {
 			                		case PILOT_GET_MOVEMENT:
 			                			break;
 			                		case PILOT_ROTATE:
-			                			pilot.rotate(request.doubleValue);
+			                			pilot.rotate(request.doubleValue);		                			
 			                			os.writeObject(reply);
 			                			break;
 			                		case PILOT_ROTATE_IMMEDIATE:
-			                			pilot.rotate(request.doubleValue, request.flag);
+			                			if (request.doubleValue == Double.POSITIVE_INFINITY) pilot.rotateRight();
+			                			else if (request.doubleValue == Double.NEGATIVE_INFINITY) pilot.rotateLeft();
+			                			else pilot.rotate(request.doubleValue, request.flag);
 			                			if (!request.flag) os.writeObject(reply);
 			                			break;
 			                		case PILOT_GET_ANGULAR_SPEED:
@@ -1730,7 +1754,8 @@ public class GraphicStartup implements Menu {
         try {
 			devList = (ArrayList<RemoteBTDevice>) bt.search();
 		} catch (BluetoothException e) {
-			return;
+		    System.out.println("Search exeception " + e);
+			devList = null;
 		}
         if (devList == null || devList.size() <= 0)
         {
@@ -1926,7 +1951,13 @@ public class GraphicStartup implements Menu {
                     	File dir = new File(PROGRAMS_DIRECTORY);
                         for (String fn : dir.list()) {
                             File aFile = new File(dir,fn);
-                            System.out.println("Deleting " + aFile.getPath());
+                            System.out.println("Deleting file " + aFile.getPath());
+                            aFile.delete();
+                        }
+                    	dir = new File(LIB_DIRECTORY);
+                        for (String fn : dir.list()) {
+                            File aFile = new File(dir,fn);
+                            System.out.println("Deleting lib " + aFile.getPath());
                             aFile.delete();
                         }
                     }
@@ -2299,7 +2330,7 @@ public class GraphicStartup implements Menu {
               if (!echoIn.isAlive() && !echoErr.isAlive()) break;           
               Delay.msDelay(200);
             }
-            System.out.println("Waiting for process to die");;
+            //System.out.println("Waiting for process to die");;
             program.waitFor();
             System.out.println("Program finished");
       	    // Turn the LED off, in case left on
@@ -2321,7 +2352,7 @@ public class GraphicStartup implements Menu {
      */
     private static void startProgram(String command, File jar) {
         try {
-            System.out.println("Start sus " + GraphicStartup.suspend + " program null " + (program == null));
+            //System.out.println("Start sus " + GraphicStartup.suspend + " program null " + (program == null));
         	if (program != null) return;
         	String[] args = command.split(" ");
         	File directory = jar.getParentFile();
@@ -2350,12 +2381,12 @@ public class GraphicStartup implements Menu {
     
     public void stopProgram() {           
         try {  
-            System.out.println("Stop sus " + GraphicStartup.suspend + " program null " + (program == null));
+            //System.out.println("Stop sus " + GraphicStartup.suspend + " program null " + (program == null));
         	if (program == null) return;
         	
         	program.destroy();
         
-            System.out.println("Waiting for process to die");;
+            //System.out.println("Waiting for process to die");;
             program.waitFor();
             System.out.println("Program finished");
           }

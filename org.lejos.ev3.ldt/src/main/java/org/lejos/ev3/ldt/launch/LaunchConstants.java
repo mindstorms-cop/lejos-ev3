@@ -17,5 +17,11 @@ public class LaunchConstants
 	public static final String KEY_NORMAL_RUN_AFTER_UPLOAD = PREFIX+ILaunchManager.RUN_MODE+SUFFIX_RUN_AFTER_UPLOAD;
 	
 	public static final String KEY_NORMAL_USE_DEFAULTS = PREFIX+ILaunchManager.RUN_MODE+SUFFIX_USE_DEFAULT;
+	
+	public static final String KEY_DEBUG_RUN_AFTER_UPLOAD = PREFIX+ILaunchManager.DEBUG_MODE+SUFFIX_RUN_AFTER_UPLOAD;
+	
+	public static final String KEY_DEBUG_USE_DEFAULTS = PREFIX+ILaunchManager.DEBUG_MODE+SUFFIX_USE_DEFAULT;
+	
+	public static final String KEY_TARGET_CONNECT_BY_NAME = PREFIX+PreferenceConstants.KEY_TARGET_CONNECT_BY_NAME;
 
 }

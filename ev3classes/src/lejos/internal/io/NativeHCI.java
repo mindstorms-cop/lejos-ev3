@@ -10,6 +10,7 @@ import java.util.List;
 import lejos.hardware.RemoteBTDevice;
 
 import com.sun.jna.LastErrorException;
+import com.sun.jna.Memory;
 import com.sun.jna.Native;
 import com.sun.jna.Pointer;
 import com.sun.jna.Structure;
@@ -128,7 +129,8 @@ public class NativeHCI {
 	
 	private int deviceId;
 	private int socket;
-	private PointerByReference refii = new PointerByReference();
+
+	private Pointer inquiryResults = new Memory(MAX_RSP*INQUIRY_INFO_SIZE);
 	
 	private ArrayList<RemoteBTDevice> remoteDevices = new ArrayList<RemoteBTDevice>();
 	
@@ -142,14 +144,13 @@ public class NativeHCI {
 	}
 
 	public Collection<RemoteBTDevice> hciInquiry() throws LastErrorException {
-		int numRsp = blue.hci_inquiry(deviceId, 8, MAX_RSP, null, refii, 0x0001);	
-		Pointer ii = refii.getValue();
+		int numRsp = blue.hci_inquiry(deviceId, 8, MAX_RSP, null, new PointerByReference(inquiryResults), 0x0001);	
 		remoteDevices.clear();
-		
+
 		for(int i=0;i<numRsp;i++) {			
 			byte[] name = new byte[248];		
-			byte[] bdaddr =  ii.getByteArray(i*INQUIRY_INFO_SIZE, 6);
-			byte[] cod =  ii.getByteArray(i*INQUIRY_INFO_SIZE + 9, 3);
+			byte[] bdaddr =  inquiryResults.getByteArray(i*INQUIRY_INFO_SIZE, 6);
+			byte[] cod =  inquiryResults.getByteArray(i*INQUIRY_INFO_SIZE + 9, 3);
 			int icod = (cod[0] & 0xff) | ((cod[1] & 0xff) << 8) | ((cod[2] & 0xff) << 16);
 			StringBuilder nameBuilder = new StringBuilder();
 			

@@ -65,7 +65,7 @@ public class UploadAction extends ActionDelegate {
 				ArrayList<String> args = new ArrayList<String>();
 				LeJOSEV3Util.getUploadOpts(args);
 				
-				BrickInfo[] bricks = Discover.discover();
+				BrickInfo[] bricks = Discover.discover(null);
 				
 				if (bricks.length ==  0) {
 					LeJOSEV3Util.error("No EV3 Found");					

@@ -43,6 +43,8 @@
         <make-jar jar.file="SensorFilter.jar" main.class="org.lejos.ev3.sample.sensorfilter.SensorAndFilterSample"/>
         <make-jar jar.file="Publish.jar" main.class="org.lejos.ev3.sample.publish.Publish"/>
         <make-jar jar.file="Follow.jar" main.class="org.lejos.ev3.sample.followbeacon.Follow"/>
+        <make-jar jar.file="MapTest.jar" main.class="org.lejos.ev3.sample.maptest.MapTest"/>
+        <make-jar jar.file="MCLTest.jar" main.class="org.lejos.ev3.sample.mcltest.MCLTest"/>
     </target>
 
     <target name="upload" depends="pc.files">

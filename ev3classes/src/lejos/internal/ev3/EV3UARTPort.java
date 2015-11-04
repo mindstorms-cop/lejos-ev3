@@ -597,6 +597,23 @@ public class EV3UARTPort extends EV3IOPort implements UARTPort
             return "Unknown";
     }
 
+
+    /**
+     * Write bytes to the sensor
+     * @param buffer bytes to be written
+     * @param offset offset to the start of the write
+     * @param len length of the write
+     * @return number of bytes written
+     */
+    public int write(byte[] buffer, int offset, int len) {
+        byte[] command = new byte[len + 1];
+        command[0] = (byte) port;
+        System.arraycopy(buffer, offset, command, 1, len);
+        int ret = uart.write(command, command.length);
+        if (ret > 0) ret--;
+        return ret;
+    }
+    
     /**
      * Return the current sensor reading to a string. 
      */

@@ -63,6 +63,15 @@ public interface RMIUARTPort extends Remote {
     void resetSensor() throws RemoteException;
     
     /**
+     * Write bytes to the sensor
+     * @param buffer bytes to be written
+     * @param offset offset to the start of the write
+     * @param len length of the write
+     * @return number of bytes written
+     */
+    int write(byte[] buffer, int offset, int len) throws RemoteException;
+    
+    /**
      * Read bytes from the uart port. If no bytes are available return 0.<p>
      * Note: The port must have been set into RAW mode to use this method.
      * @param buffer The buffer to store the read bytes
